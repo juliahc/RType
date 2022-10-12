@@ -22,12 +22,18 @@ public:
 	void setTileMap(TileMap *tileMap);
 	void setPosition(const glm::vec2 &pos);
 	
+	void collision();
+
 private:
 	bool bJumping;
+	bool boom = false;
+	int boomAnimation = -1;
 	glm::ivec2 tileMapDispl, posPlayer;
 	int jumpAngle, startY;
 	Texture spritesheet;
+	Texture spritesheetBoom;
 	Sprite *sprite;
+	Sprite* spriteBoom;
 	TileMap *map;
 
 };
