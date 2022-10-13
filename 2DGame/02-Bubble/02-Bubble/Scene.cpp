@@ -44,13 +44,6 @@ void Scene::init()
 	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 	player->setTileMap(map);
 
-	basicEnemy = new Enemy();
-	basicEnemy->init(glm::ivec2(SCREEN_X, SCREEN_Y), BASIC1, 3, texProgram);
-	basicEnemy->setPosition(glm::vec2(INIT_BASIC_ENEMY_X_TILES * map->getTileSize(), INIT_BASIC_ENEMY_Y_TILES * map->getTileSize()));
-	basicEnemy->setTileMap(map);
-
-	activeEnemies.push_back(basicEnemy);
-
 	currentTime = 0.0f;
 
 	/* MENU */
@@ -84,9 +77,30 @@ void Scene::init()
 
 void Scene::updateGame(int deltaTime)
 {
+	createEnemies();
 	currentTime += deltaTime;
 	player->update(deltaTime);
-	basicEnemy->update(deltaTime);
+	for (Enemy* enemy : activeEnemies) enemy->update(deltaTime);
+}
+
+void Scene::createEnemies() {
+	if (enemyGenerator == 121 || enemyGenerator == 0) {
+		Enemy* newEnemy = new Enemy();
+		if (activeEnemies.size() == 10) {
+			enemyGenerator = 122;
+			newEnemy->init(glm::ivec2(SCREEN_X, SCREEN_Y), BASIC2, texProgram);
+			newEnemy->setPosition(glm::vec2(7 * map->getTileSize(), 7 * map->getTileSize()));
+			newEnemy->setTileMap(map);
+		}
+		else {
+			newEnemy->init(glm::ivec2(SCREEN_X, SCREEN_Y), BASIC1, texProgram);
+			newEnemy->setPosition(glm::vec2(2 * map->getTileSize(), 2 * map->getTileSize()));
+			newEnemy->setTileMap(map);
+			enemyGenerator = 0;
+		}
+		activeEnemies.push_back(newEnemy);
+	}
+	++enemyGenerator;
 }
 
 void Scene::updateMenu(int deltaTime) {
@@ -142,7 +156,7 @@ void Scene::renderGame()
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
 	map->render();
 	player->render();
-	basicEnemy->render();
+	for (Enemy* enemy : activeEnemies) enemy->render();
 }
 
 void Scene::renderMenu() {

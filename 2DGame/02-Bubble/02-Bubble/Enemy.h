@@ -7,7 +7,7 @@ class Enemy :
     public Entity
 {
 public:
-	void init(const glm::ivec2& tileMapPos, Enemies enemy, int rotationAnimations, ShaderProgram& shaderProgram);
+	void init(const glm::ivec2& tileMapPos, Enemies enemy, ShaderProgram& shaderProgram);
 	void update(int deltaTime);
 	void render();
 
@@ -21,10 +21,8 @@ private:
 	Texture spritesheet;
 	Sprite* sprite;
 	TileMap* map;
-	vector<string> spriteFiles{ "images/enemicDeProba.png", "", "", "" };
-	vector<pair<int, int>> enemySizes{ make_pair(23,24), make_pair(0,0), make_pair(0,0), make_pair(0,0) };
-	//If the enemy have more than one animation assigned for the same animation movements
-	int rotationAnims;
+	vector<string> spriteFiles{ "images/enemies/basic1.png", "images/enemies/basic2.png", "", "" };
+	vector<pair<int, int>> enemySizes{ make_pair(23,24), make_pair(24,26), make_pair(0,0), make_pair(0,0) };
 	int lastRotationAnim = 0;
 	int timeLastRotationAnim = -1;
 };

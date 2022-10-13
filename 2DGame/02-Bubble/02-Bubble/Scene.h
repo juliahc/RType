@@ -37,12 +37,15 @@ public:
 
 private:
 	void initShaders();
+	void createEnemies();
 	TileMap *map;
 	Player *player;
 	Enemy *basicEnemy;
 	ShaderProgram simpleProgram, texProgram;
 	float currentTime;
 	glm::mat4 projection;
+
+	int enemyGenerator = 0;
 
 	/*menu*/
 	int menuState = 1; // 1=play/resume 2=instructions 3=credits
