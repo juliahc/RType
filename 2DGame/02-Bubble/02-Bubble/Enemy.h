@@ -18,6 +18,10 @@ public:
 	bool checkCollisionUp();
 	bool checkCollisionDown();
 
+	glm::ivec2 getPosition();
+	glm::ivec2 getSize();
+
+
 private:
 	bool right = false, bJumping = false, up = true, attacking = false;
 	glm::ivec2 tileMapDispl, posEnemy;

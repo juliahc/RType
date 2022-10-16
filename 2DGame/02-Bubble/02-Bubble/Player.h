@@ -27,6 +27,7 @@ public:
 
 	void setShotCharge(int charge);
 	int getShotCharge();
+	bool died();
 
 private:
 	bool bJumping;

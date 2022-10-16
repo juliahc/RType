@@ -203,3 +203,7 @@ int Player::getShotCharge()
 {
 	return shotCharge;
 }
+
+bool Player::died() {
+	return boom;
+}
