@@ -173,7 +173,6 @@ void Scene::renderGame()
 	texProgram.setUniformMatrix4f("modelview", modelview);
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
 	map->render();
-	basicEnemy->render();
 	player->render();
 	vector<Shot*> erase;
 	for (Shot* shot : shots) {

@@ -50,7 +50,6 @@ private:
 	void createEnemies();
 	TileMap *map;
 	Player *player;
-	Enemy *basicEnemy;
 	std::set<Shot*> shots;
 	ShaderProgram simpleProgram, texProgram;
 	float currentTime;
