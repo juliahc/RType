@@ -13,6 +13,7 @@
 #include "TexturedQuad.h"
 #include "Sprite.h"
 #include <vector>
+#include <map>
 #include <set>
 
 
@@ -45,6 +46,8 @@ public:
 
 private:
 	void initShaders();
+	void initEnemies();
+	void createEnemies();
 	TileMap *map;
 	Player *player;
 	Enemy *basicEnemy;
@@ -53,10 +56,15 @@ private:
 	float currentTime;
 	glm::mat4 projection;
 
+	int screenMovement = 0;
+	int screenExtraPosition = 0;
+	int enemyGenerator = 0;
+
 	/*menu*/
 	int menuState = 1; // 1=play/resume 2=instructions 3=credits
 	Texture menuTexs[5];
 	TexturedQuad* menuTexQuad[5];
+	std::map<int, Enemy> enemies;
 	vector<Enemy*> activeEnemies;
 };
 

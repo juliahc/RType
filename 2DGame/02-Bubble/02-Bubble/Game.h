@@ -4,9 +4,8 @@
 
 #include "Scene.h"
 
-
-#define SCREEN_WIDTH 640 //384
-#define SCREEN_HEIGHT 480 //256
+#define SCREEN_WIDTH 384 
+#define SCREEN_HEIGHT 256
 
 enum keyState { IDLE, PRESS, REPEAT, RELEASE };
 

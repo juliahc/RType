@@ -6,13 +6,13 @@
 #include "Scene.h"
 #include "Game.h"
 
-#define SCREEN_X 32
-#define SCREEN_Y 16
+#define SCREEN_X 0
+#define SCREEN_Y 0
 
 
 
 #define INIT_PLAYER_X_TILES 4
-#define INIT_PLAYER_Y_TILES 25
+#define INIT_PLAYER_Y_TILES 4
 
 #define INIT_BASIC_ENEMY_X_TILES 15
 #define INIT_BASIC_ENEMY_Y_TILES 24
@@ -44,12 +44,7 @@ void Scene::init()
 	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 	player->setTileMap(map);
 
-	basicEnemy = new Enemy();
-	basicEnemy->init(glm::ivec2(SCREEN_X, SCREEN_Y), BASIC1, 3, texProgram);
-	basicEnemy->setPosition(glm::vec2(INIT_BASIC_ENEMY_X_TILES * map->getTileSize(), INIT_BASIC_ENEMY_Y_TILES * map->getTileSize()));
-	basicEnemy->setTileMap(map);
-
-	activeEnemies.push_back(basicEnemy);
+	initEnemies();
 
 	currentTime = 0.0f;
 
@@ -82,13 +77,49 @@ void Scene::init()
 	currentTime = 0.0f;
 }
 
+void Scene::initEnemies() {
+	vector<pair<Enemies, glm::ivec2>> enemyPositions = { {make_pair(BASIC1, glm::ivec2 {400, 5 * map->getTileSize()})}, {make_pair(BASIC1, glm::ivec2 {410, 5 * map->getTileSize()})}, {make_pair(BASIC1, glm::ivec2 {420, 5 * map->getTileSize()})}, {make_pair(BASIC2, glm::ivec2 {440, 210})}, {make_pair(BASIC1, glm::ivec2 {460, 210})}};
+	for (auto pos : enemyPositions) {
+		Enemy* enemy = new Enemy();
+		enemy->init(glm::ivec2(SCREEN_X, SCREEN_Y), pos.first, texProgram);
+		enemy->setPosition(glm::vec2(pos.second.x, pos.second.y));
+		enemy->setTileMap(map);
+		enemies.insert(make_pair(pos.second.x, *enemy));
+	}
+}
+
 void Scene::updateGame(int deltaTime)
 {
-	if (Game::instance().getKey('s') == RELEASE) addPlayerShot();
 	currentTime += deltaTime;
+
+	//enemies
+	createEnemies();
+	for (Enemy* enemy : activeEnemies) enemy->update(deltaTime);
+
+	//Player
+	if (Game::instance().getKey('s') == RELEASE) addPlayerShot();
 	player->update(deltaTime);
-	basicEnemy->update(deltaTime);
+
+	//Shots
 	for (auto shot : shots) shot->update(deltaTime);
+
+	//screen movement
+	if (screenMovement == 2) {
+		screenExtraPosition += 1;
+		projection = glm::ortho(0.f + screenExtraPosition, float(SCREEN_WIDTH - 1) + screenExtraPosition, float(SCREEN_HEIGHT - 1), 0.f);
+		screenMovement = -1;
+	}
+	++screenMovement;
+
+}
+	
+
+void Scene::createEnemies() {
+	int acutalPosition = (SCREEN_WIDTH - 1) + screenExtraPosition;
+	auto it = enemies.find(acutalPosition);
+	if (it != enemies.end()) {
+		activeEnemies.push_back(&it->second);
+	}
 }
 
 void Scene::updateMenu(int deltaTime) {
@@ -120,7 +151,6 @@ void Scene::updateMenu(int deltaTime) {
 		default:
 			break;
 	}
-
 	currentTime += deltaTime;
 }
 
@@ -151,7 +181,7 @@ void Scene::renderGame()
 		else shot->render();
 	}
 	for (Shot* shot : erase) shots.erase(shot);
-	
+	for (Enemy* enemy : activeEnemies) enemy->render();
 }
 
 void Scene::renderMenu() {
