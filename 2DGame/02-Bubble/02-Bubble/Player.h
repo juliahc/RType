@@ -23,17 +23,23 @@ public:
 	void setPosition(const glm::vec2 &pos);
 	
 	void collision();
+	glm::ivec2 getPosition();
+
+	void setShotCharge(int charge);
+	int getShotCharge();
 
 private:
 	bool bJumping;
 	bool boom = false;
+	bool charging = false;
 	int boomAnimation = -1;
+	int chargeAnimation;
+	int shotCharge = 1;
+	int chargeAnimationChangeTime;
 	glm::ivec2 tileMapDispl, posPlayer;
 	int jumpAngle, startY;
-	Texture spritesheet;
-	Texture spritesheetBoom;
-	Sprite *sprite;
-	Sprite* spriteBoom;
+	Texture spritesheet, spritesheetBoom, spritesheetCharge;
+	Sprite	*sprite, *spriteBoom, *spriteCharge;
 	TileMap *map;
 
 };

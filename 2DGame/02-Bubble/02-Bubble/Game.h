@@ -5,9 +5,10 @@
 #include "Scene.h"
 
 
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 480
+#define SCREEN_WIDTH 640 //384
+#define SCREEN_HEIGHT 480 //256
 
+enum keyState { IDLE, PRESS, REPEAT, RELEASE };
 
 // Game is a singleton (a class with a single instance) that represents our whole application
 
@@ -39,13 +40,13 @@ public:
 	void mousePress(int button);
 	void mouseRelease(int button);
 	
-	bool getKey(int key) const;
-	bool getSpecialKey(int key) const;
+	keyState getKey(int key) const;
+	keyState getSpecialKey(int key) const;
 
 private:
 	bool bPlay;                       // Continue to play game?
 	Scene scene;                      // Scene to render
-	bool keys[256], specialKeys[256]; // Store key states so that 
+	keyState keys[256], specialKeys[256]; // Store key states so that 
 	enum GameState {MENU, GAME, INSTRUCTIONS, CREDITS}; // we can have access at any time
 	GameState state;                        
 	
