@@ -2,7 +2,6 @@
 #include <GL/glut.h>
 #include "Game.h"
 
-
 void Game::init()
 {
 	bPlay = true;
@@ -27,7 +26,11 @@ bool Game::update(int deltaTime)
 			scene.updateInstructions(deltaTime);
 			break;
 	}
-	
+
+	for (int i = 0; i < 256; i++) {
+		if (keys[i] == RELEASE) keys[i] = IDLE;
+		if (specialKeys[i] == RELEASE) specialKeys[i] = IDLE;
+	}
 	return bPlay;
 }
 
@@ -55,22 +58,24 @@ void Game::keyPressed(int key)
 {
 	if(key == 27) // Escape code
 		bPlay = false;
-	keys[key] = true;
+	if (keys[key] == IDLE || keys[key] == RELEASE) keys[key] = PRESS;
+	else if (keys[key] == PRESS) keys[key] = REPEAT;
 }
 
 void Game::keyReleased(int key)
 {
-	keys[key] = false;
+	keys[key] = RELEASE;
 }
 
 void Game::specialKeyPressed(int key)
 {
-	specialKeys[key] = true;
+	if (specialKeys[key] == IDLE || specialKeys[key] == RELEASE) specialKeys[key] = PRESS;
+	else if (specialKeys[key] == PRESS) specialKeys[key] = REPEAT;
 }
 
 void Game::specialKeyReleased(int key)
 {
-	specialKeys[key] = false;
+	specialKeys[key] = RELEASE;
 }
 
 void Game::mouseMove(int x, int y)
@@ -85,12 +90,12 @@ void Game::mouseRelease(int button)
 {
 }
 
-bool Game::getKey(int key) const
+keyState Game::getKey(int key) const
 {
 	return keys[key];
 }
 
-bool Game::getSpecialKey(int key) const
+keyState Game::getSpecialKey(int key) const
 {
 	return specialKeys[key];
 }

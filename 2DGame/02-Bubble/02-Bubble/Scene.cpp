@@ -90,18 +90,29 @@ void Scene::initEnemies() {
 
 void Scene::updateGame(int deltaTime)
 {
-	createEnemies();
 	currentTime += deltaTime;
-	player->update(deltaTime);
+
+	//enemies
+	createEnemies();
 	for (Enemy* enemy : activeEnemies) enemy->update(deltaTime);
 
+	//Player
+	if (Game::instance().getKey('s') == RELEASE) addPlayerShot();
+	player->update(deltaTime);
+
+	//Shots
+	for (auto shot : shots) shot->update(deltaTime);
+
+	//screen movement
 	if (screenMovement == 2) {
 		screenExtraPosition += 1;
-		projection = glm::ortho(0.f + screenExtraPosition , float(SCREEN_WIDTH - 1) + screenExtraPosition, float(SCREEN_HEIGHT - 1), 0.f);
+		projection = glm::ortho(0.f + screenExtraPosition, float(SCREEN_WIDTH - 1) + screenExtraPosition, float(SCREEN_HEIGHT - 1), 0.f);
 		screenMovement = -1;
 	}
 	++screenMovement;
+
 }
+	
 
 void Scene::createEnemies() {
 	int acutalPosition = (SCREEN_WIDTH - 1) + screenExtraPosition;
@@ -113,10 +124,10 @@ void Scene::createEnemies() {
 
 void Scene::updateMenu(int deltaTime) {
 
-	if (Game::instance().getSpecialKey(GLUT_KEY_UP)) {
+	if (Game::instance().getSpecialKey(GLUT_KEY_UP) == RELEASE) {
 		if (menuState == 1) menuState = 3;
 		else menuState -= 1;
-	} else if (Game::instance().getSpecialKey(GLUT_KEY_DOWN)) {
+	} else if (Game::instance().getSpecialKey(GLUT_KEY_DOWN) == RELEASE) {
 		if (menuState == 3) menuState = 1;
 		else menuState += 1;
 	} 
@@ -162,8 +173,15 @@ void Scene::renderGame()
 	texProgram.setUniformMatrix4f("modelview", modelview);
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
 	map->render();
-	for (Enemy* enemy : activeEnemies) enemy->render();
+	basicEnemy->render();
 	player->render();
+	vector<Shot*> erase;
+	for (Shot* shot : shots) {
+		if (!inScreen(shot->getPosition(), shot->getSize())) erase.push_back(shot);
+		else shot->render();
+	}
+	for (Shot* shot : erase) shots.erase(shot);
+	for (Enemy* enemy : activeEnemies) enemy->render();
 }
 
 void Scene::renderMenu() {
@@ -232,5 +250,88 @@ void Scene::initShaders()
 	fShader.free();
 }
 
+void Scene::addPlayerShot()
+{
+	//Player info
+	int charge = player->getShotCharge();
+	glm::ivec2 posPlayer = player->getPosition();
 
 
+	//Shot info
+	int damage;
+	string spriteFolder;
+	glm::ivec2 velocity, posShot, size;
+	glm::vec2 sizeInSpriteSheet;
+
+	damage = charge;
+	posShot = glm::ivec2(posPlayer.x + 16, posPlayer.y);
+	sizeInSpriteSheet = glm::vec2(1, 1);
+
+	switch (charge) {
+		case 1:
+			spriteFolder = "images/ship/shot.png";
+			velocity = glm::ivec2(6.f, 0.f);
+			size = glm::ivec2(8, 4);
+			posShot = glm::ivec2(posPlayer.x + 16, posPlayer.y + 6);
+			break;
+		case 2:
+			spriteFolder = "images/ship/chargedShots/shotCharged1.png";
+			velocity = glm::ivec2(6.f, 0.f);
+			size = glm::ivec2(15, 12);
+			break;
+		case 3:
+			spriteFolder = "images/ship/chargedShots/shotCharged2.png";
+			velocity = glm::ivec2(6.f, 0.f);
+			size = glm::ivec2(28, 14);
+			break;
+		case 4:
+			spriteFolder = "images/ship/chargedShots/shotCharged3.png";
+			velocity = glm::ivec2(6.f, 0.f);
+			size = glm::ivec2(44, 14);
+			break;
+		case 5:
+			spriteFolder = "images/ship/chargedShots/shotCharged4.png";
+			velocity = glm::ivec2(6.f, 0.f);
+			size = glm::ivec2(60, 14);
+			break;
+		default:
+			spriteFolder = "images/ship/shot.png";
+			velocity = glm::ivec2(6.f, 0.f);
+			size = glm::ivec2(8, 4);
+			break;
+	}
+	
+	//Add shot
+	addShot(spriteFolder, velocity, posShot, size, sizeInSpriteSheet, damage);
+
+	//Reset shot charge
+	player->setShotCharge(1);
+}
+
+void Scene::addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2& pos, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage)
+{
+	Shot* shot = new Shot();
+	shot->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, spriteFolder, velocity, size, sizeInSpriteSheet, damage);
+	shot->setPosition(glm::vec2(pos.x, pos.y));
+	shot->setTileMap(map);
+
+	shots.insert(shot);
+}
+
+bool Scene::inScreen(const glm::ivec2& pos, const glm::ivec2& size)
+{
+	glm::ivec2 vertex1, vertex2, vertex3, vertex4;
+	vertex1 = glm::ivec2(pos.x, pos.y);
+	vertex2 = glm::ivec2(pos.x + size.x - 1, pos.y);
+	vertex3 = glm::ivec2(pos.x, pos.y + size.y - 1);
+	vertex4 = glm::ivec2(pos.x + size.x - 1, pos.y + size.y - 1);
+
+	vector<glm::ivec2> vertexs = { vertex1, vertex2, vertex3, vertex4 };
+
+	
+	for (glm::ivec2 vertex : vertexs) {
+		if (vertex.x >= 0 && vertex.x < SCREEN_WIDTH && vertex.y >= 0 && vertex.y < SCREEN_HEIGHT) return true;
+	}
+
+	return false;
+}

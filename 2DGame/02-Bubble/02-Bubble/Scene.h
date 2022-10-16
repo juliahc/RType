@@ -8,19 +8,23 @@
 #include "Player.h"
 #include "Enemy.h"
 #include "Entity.h"
+#include "Shot.h"
 #include "Quad.h"
 #include "TexturedQuad.h"
+#include "Sprite.h"
 #include <vector>
 #include <map>
+#include <set>
+
 
 // Scene contains all the entities of our game.
 // It is responsible for updating and render them.
-
 
 class Scene
 {
 
 public:
+
 	Scene();
 	~Scene();
 
@@ -36,6 +40,10 @@ public:
 	void renderInstructions();
 	void renderCredits();
 
+	void addPlayerShot();
+	void addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2& pos, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage);
+	bool inScreen(const glm::ivec2& pos, const glm::ivec2& size);
+
 private:
 	void initShaders();
 	void initEnemies();
@@ -43,6 +51,7 @@ private:
 	TileMap *map;
 	Player *player;
 	Enemy *basicEnemy;
+	std::set<Shot*> shots;
 	ShaderProgram simpleProgram, texProgram;
 	float currentTime;
 	glm::mat4 projection;
