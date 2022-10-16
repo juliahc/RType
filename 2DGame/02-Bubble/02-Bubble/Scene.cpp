@@ -6,13 +6,13 @@
 #include "Scene.h"
 #include "Game.h"
 
-#define SCREEN_X 32
-#define SCREEN_Y 16
+#define SCREEN_X 0
+#define SCREEN_Y 0
 
 
 
 #define INIT_PLAYER_X_TILES 4
-#define INIT_PLAYER_Y_TILES 25
+#define INIT_PLAYER_Y_TILES 4
 
 #define INIT_BASIC_ENEMY_X_TILES 15
 #define INIT_BASIC_ENEMY_Y_TILES 24
@@ -43,6 +43,8 @@ void Scene::init()
 	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram);
 	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 	player->setTileMap(map);
+
+	initEnemies();
 
 	currentTime = 0.0f;
 
@@ -75,32 +77,38 @@ void Scene::init()
 	currentTime = 0.0f;
 }
 
+void Scene::initEnemies() {
+	vector<pair<Enemies, glm::ivec2>> enemyPositions = { {make_pair(BASIC1, glm::ivec2 {400, 5 * map->getTileSize()})}, {make_pair(BASIC1, glm::ivec2 {410, 5 * map->getTileSize()})}, {make_pair(BASIC1, glm::ivec2 {420, 5 * map->getTileSize()})}, {make_pair(BASIC2, glm::ivec2 {440, 210})}, {make_pair(BASIC1, glm::ivec2 {460, 210})}};
+	for (auto pos : enemyPositions) {
+		Enemy* enemy = new Enemy();
+		enemy->init(glm::ivec2(SCREEN_X, SCREEN_Y), pos.first, texProgram);
+		enemy->setPosition(glm::vec2(pos.second.x, pos.second.y));
+		enemy->setTileMap(map);
+		enemies.insert(make_pair(pos.second.x, *enemy));
+	}
+}
+
 void Scene::updateGame(int deltaTime)
 {
 	createEnemies();
 	currentTime += deltaTime;
 	player->update(deltaTime);
 	for (Enemy* enemy : activeEnemies) enemy->update(deltaTime);
+
+	if (screenMovement == 2) {
+		screenExtraPosition += 1;
+		projection = glm::ortho(0.f + screenExtraPosition , float(SCREEN_WIDTH - 1) + screenExtraPosition, float(SCREEN_HEIGHT - 1), 0.f);
+		screenMovement = -1;
+	}
+	++screenMovement;
 }
 
 void Scene::createEnemies() {
-	if (enemyGenerator == 121 || enemyGenerator == 0) {
-		Enemy* newEnemy = new Enemy();
-		if (activeEnemies.size() == 10) {
-			enemyGenerator = 122;
-			newEnemy->init(glm::ivec2(SCREEN_X, SCREEN_Y), BASIC2, texProgram);
-			newEnemy->setPosition(glm::vec2(7 * map->getTileSize(), 7 * map->getTileSize()));
-			newEnemy->setTileMap(map);
-		}
-		else {
-			newEnemy->init(glm::ivec2(SCREEN_X, SCREEN_Y), BASIC1, texProgram);
-			newEnemy->setPosition(glm::vec2(2 * map->getTileSize(), 2 * map->getTileSize()));
-			newEnemy->setTileMap(map);
-			enemyGenerator = 0;
-		}
-		activeEnemies.push_back(newEnemy);
+	int acutalPosition = (SCREEN_WIDTH - 1) + screenExtraPosition;
+	auto it = enemies.find(acutalPosition);
+	if (it != enemies.end()) {
+		activeEnemies.push_back(&it->second);
 	}
-	++enemyGenerator;
 }
 
 void Scene::updateMenu(int deltaTime) {
@@ -132,7 +140,6 @@ void Scene::updateMenu(int deltaTime) {
 		default:
 			break;
 	}
-
 	currentTime += deltaTime;
 }
 
@@ -155,8 +162,8 @@ void Scene::renderGame()
 	texProgram.setUniformMatrix4f("modelview", modelview);
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
 	map->render();
-	player->render();
 	for (Enemy* enemy : activeEnemies) enemy->render();
+	player->render();
 }
 
 void Scene::renderMenu() {
