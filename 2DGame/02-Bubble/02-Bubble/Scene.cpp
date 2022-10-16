@@ -92,24 +92,35 @@ void Scene::updateGame(int deltaTime)
 {
 	currentTime += deltaTime;
 
+	//screen movement
+	if (screenMovement == 2) {
+		glm::ivec2 posPlayer = player->getPosition();
+		posPlayer.x++;
+		player->setPosition(posPlayer);
+		screenExtraPosition += 1;
+		projection = glm::ortho(0.f + screenExtraPosition, float(SCREEN_WIDTH - 1) + screenExtraPosition, float(SCREEN_HEIGHT - 1), 0.f);
+		screenMovement = -1;
+	}
+	++screenMovement;
+	
 	//enemies
 	createEnemies();
 	for (Enemy* enemy : activeEnemies) enemy->update(deltaTime);
 
 	//Player
 	if (Game::instance().getKey('s') == RELEASE) addPlayerShot();
-	player->update(deltaTime);
+	player->update(deltaTime, screenExtraPosition);
 
 	//Shots
-	for (auto shot : shots) shot->update(deltaTime);
-
-	//screen movement
-	if (screenMovement == 2) {
-		screenExtraPosition += 1;
-		projection = glm::ortho(0.f + screenExtraPosition, float(SCREEN_WIDTH - 1) + screenExtraPosition, float(SCREEN_HEIGHT - 1), 0.f);
-		screenMovement = -1;
+	vector<Shot*> erase;
+	for (Shot* shot : shots) {
+		shot->update(deltaTime);
+		if (!inScreen(shot->getPosition(), shot->getSize())) erase.push_back(shot);
 	}
-	++screenMovement;
+	for (Shot* shot : erase) shots.erase(shot);
+
+	//Check collisions
+
 
 }
 	
@@ -174,12 +185,7 @@ void Scene::renderGame()
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
 	map->render();
 	player->render();
-	vector<Shot*> erase;
-	for (Shot* shot : shots) {
-		if (!inScreen(shot->getPosition(), shot->getSize())) erase.push_back(shot);
-		else shot->render();
-	}
-	for (Shot* shot : erase) shots.erase(shot);
+	for (Shot* shot : shots) shot->render();
 	for (Enemy* enemy : activeEnemies) enemy->render();
 }
 
@@ -327,9 +333,14 @@ bool Scene::inScreen(const glm::ivec2& pos, const glm::ivec2& size)
 
 	vector<glm::ivec2> vertexs = { vertex1, vertex2, vertex3, vertex4 };
 
+	int x0, xf, y0, yf;
+	x0 = screenExtraPosition;
+	xf = screenExtraPosition + SCREEN_WIDTH - 1;
+	y0 = 0;
+	yf = SCREEN_HEIGHT - 1;
 	
 	for (glm::ivec2 vertex : vertexs) {
-		if (vertex.x >= 0 && vertex.x < SCREEN_WIDTH && vertex.y >= 0 && vertex.y < SCREEN_HEIGHT) return true;
+		if (vertex.x >= x0 && vertex.x < xf && vertex.y >= y0 && vertex.y < yf) return true;
 	}
 
 	return false;

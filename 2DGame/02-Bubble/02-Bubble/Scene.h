@@ -42,6 +42,7 @@ public:
 
 	void addPlayerShot();
 	void addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2& pos, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage);
+	
 	bool inScreen(const glm::ivec2& pos, const glm::ivec2& size);
 
 private:
