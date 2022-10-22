@@ -104,9 +104,17 @@ void Scene::updateGame(int deltaTime)
 		}
 		++screenMovement;
 
-		//enemies
+		//Enemies
 		createEnemies();
 		for (Enemy* enemy : activeEnemies) enemy->update(deltaTime);
+
+		//Booming enemies
+		vector<Enemy*> enemyErase;
+		for (Enemy* enemy : boomEnemies) {
+			enemy->update(deltaTime);
+			if (enemy->boomFinished()) enemyErase.push_back(enemy);
+		}
+		for (Enemy* enemy : enemyErase) boomEnemies.erase(enemy);
 
 		//Player
 		if (Game::instance().getKey('s') == RELEASE) addPlayerShot();
@@ -188,6 +196,7 @@ void Scene::renderGame()
 	player->render();
 	for (Shot* shot : playerShots) shot->render();
 	for (Enemy* enemy : activeEnemies) enemy->render();
+	for (Enemy* boomEnemy : boomEnemies) boomEnemy->render();
 }
 
 void Scene::renderMenu() {
@@ -348,20 +357,45 @@ bool Scene::inScreen(const glm::ivec2& pos, const glm::ivec2& size)
 
 void Scene::checkCollisions()
 {
-	glm::ivec2 playerPos, playerSize, pos, size;
+	glm::ivec2 playerPos, playerSize, enemyPos, enemySize, shotPos, shotSize;
 	playerPos = player->getPosition();
 	playerSize = glm::ivec2(24, 15);
 	
 	//Player & enemies
 	for (Enemy* enemy : activeEnemies) {
-		pos = enemy->getPosition();
-		size = enemy->getSize();
-		if (isCollision(playerPos, playerSize, pos, size)) player->collision();
+		enemyPos = enemy->getPosition();
+		enemySize = enemy->getSize();
+		if (isCollision(playerPos, playerSize, enemyPos, enemySize)) player->collision();
 	}
 
 	//Player & enemy shots
+	for (Shot* shot : enemyShots) {
+		shotPos = shot->getPosition();
+		shotSize = shot->getSize();
+		if (isCollision(playerPos, playerSize, shotPos, shotSize)) player->collision();
+	}
 
 	//Enemies & player shots
+	vector<Enemy*> enemyErase;
+	vector<Shot*> shotErase;
+	for (Enemy* enemy : activeEnemies) {
+		enemyPos = enemy->getPosition();
+		enemySize = enemy->getSize();
+		for (Shot* shot : playerShots) {
+			shotPos = shot->getPosition();
+			shotSize = shot->getSize();
+			if (isCollision(enemyPos, enemySize, shotPos, shotSize)) {
+				enemyErase.push_back(enemy);
+				shotErase.push_back(shot); //TODO: check shot`s charge
+			}
+		}
+	}
+	for (Enemy* enemy : enemyErase) {
+		enemy->collision();
+		boomEnemies.insert(enemy);
+		activeEnemies.erase(enemy);
+	}
+	for (Shot* shot : shotErase) playerShots.erase(shot);
 }
 
 bool Scene::isCollision(const glm::ivec2& pos1, const glm::ivec2& size1, const glm::ivec2& pos2, const glm::ivec2& size2)
@@ -381,3 +415,4 @@ bool Scene::isCollision(const glm::ivec2& pos1, const glm::ivec2& size1, const g
 	if (((minx1 < maxx2) && (minx2 < maxx1)) && ((miny1 < maxy2) && (miny2 < maxy1))) return true;
 	return false;
 }
+

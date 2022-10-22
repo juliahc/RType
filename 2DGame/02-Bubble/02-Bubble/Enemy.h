@@ -21,13 +21,16 @@ public:
 	glm::ivec2 getPosition();
 	glm::ivec2 getSize();
 
+	void collision();
+	bool died();
+	bool boomFinished();
 
 private:
 	bool right = false, bJumping = false, up = true, attacking = false;
 	glm::ivec2 tileMapDispl, posEnemy;
 	int jumpAngle, startY;
-	Texture spritesheet;
-	Sprite* sprite;
+	Texture spritesheet, spritesheetBoom;
+	Sprite *sprite, *spriteBoom;
 	TileMap* map;
 	Enemies myType;
 	vector<string> spriteFiles{ "images/enemies/basic1.png", "images/enemies/basic2.png", "", "" };
@@ -35,5 +38,7 @@ private:
 	vector<glm::vec2> spriteSheetSize{ glm::vec2(0.25f, 0.5f), glm::vec2(0.2f, 0.5f), glm::vec2(0., 0.), glm::vec2(0., 0.) };
 	int lastRotationAnim = 0;
 	int timeLastRotationAnim = -1;
+	bool boom = false;
+	int boomAnimation = -1;
 };
 

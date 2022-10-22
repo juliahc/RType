@@ -80,157 +80,191 @@ void Enemy::init(const glm::ivec2& tileMapPos, Enemies enemy, ShaderProgram& sha
 		case BASIC4:
 			break;
 	}
+
+	//Enemy boom
+	spritesheetBoom.loadFromFile("images/enemies/enemyBoom.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	spriteBoom = Sprite::createSprite(glm::ivec2(16, 16), glm::vec2(0.5, 0.5f), &spritesheetBoom, &shaderProgram);
+	spriteBoom->setNumberAnimations(8);
+	spriteBoom->setAnimationSpeed(0, 8);
+	spriteBoom->addKeyframe(0, glm::vec2(0.f, 0.f));
+	spriteBoom->setAnimationSpeed(1, 8);
+	spriteBoom->addKeyframe(1, glm::vec2(0.5f, 0.f));
+	spriteBoom->setAnimationSpeed(2, 8);
+	spriteBoom->addKeyframe(2, glm::vec2(0.f, 0.f));
+	spriteBoom->setAnimationSpeed(3, 8);
+	spriteBoom->addKeyframe(3, glm::vec2(0.5f, 0.f));
+	spriteBoom->setAnimationSpeed(4, 8);
+	spriteBoom->addKeyframe(4, glm::vec2(0.f, 0.5f));
+	spriteBoom->setAnimationSpeed(5, 8);
+	spriteBoom->addKeyframe(5, glm::vec2(0.5f, 0.f));
+	spriteBoom->setAnimationSpeed(6, 8);
+	spriteBoom->addKeyframe(6, glm::vec2(0.0f, 0.f));
+	spriteBoom->setAnimationSpeed(7, 8);
+	spriteBoom->addKeyframe(7, glm::vec2(0.5f, 0.5f));
+
+	
 	
 	sprite->changeAnimation(0);
+	spriteBoom->changeAnimation(0);
 	tileMapDispl = tileMapPos;
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
+	spriteBoom->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
 }
 
 void Enemy::update(int deltaTime)
 {
-	sprite->update(deltaTime);
-	++timeLastRotationAnim;
-	// update the position of the enemy according to it's type
-	int random_number;
-	switch (myType) {
-	case BASIC1:
-		if (up) {
-			if (lastRotationAnim <= 2 && timeLastRotationAnim > 20) {
-				if (lastRotationAnim == 2) lastRotationAnim = 4;
-				sprite->changeAnimation(++lastRotationAnim);
-				timeLastRotationAnim = 0;
-			}
-			posEnemy.y -= 1;
-			if (checkCollisionUp()) {
-				posEnemy.y += 1;
-				up = false;
-				lastRotationAnim = 2;
-				sprite->changeAnimation(BASIC1_STANDARD);
-			}
-
-		}
-		else {
-			if (lastRotationAnim <= 4 && timeLastRotationAnim > 20) {
-				sprite->changeAnimation(++lastRotationAnim);
-				timeLastRotationAnim = 0;
-			}
-			posEnemy.y += 1;
-			if (checkCollisionDown()) {
+	if (!boom) {
+		sprite->update(deltaTime);
+		++timeLastRotationAnim;
+		// update the position of the enemy according to it's type
+		int random_number;
+		switch (myType) {
+		case BASIC1:
+			if (up) {
+				if (lastRotationAnim <= 2 && timeLastRotationAnim > 20) {
+					if (lastRotationAnim == 2) lastRotationAnim = 4;
+					sprite->changeAnimation(++lastRotationAnim);
+					timeLastRotationAnim = 0;
+				}
 				posEnemy.y -= 1;
-				up = true;
-				lastRotationAnim = 0;
-				sprite->changeAnimation(BASIC1_STANDARD);
-			}
-		}
+				if (checkCollisionUp()) {
+					posEnemy.y += 1;
+					up = false;
+					lastRotationAnim = 2;
+					sprite->changeAnimation(BASIC1_STANDARD);
+				}
 
-		if (!right) {
-			posEnemy.x -= 2;
-			if (checkCollisionLeft()) {
-				posEnemy.x += 2;
-				right = true;
-			}
-		}
-		else {
-			posEnemy.x += 2;
-			if (checkCollisionRight()) {
-				posEnemy.x -= 2;
-				right = false;
-			}
-		}
-
-		break;
-	case BASIC2:
-		// with a 10% chance, the enemy will attack
-		random_number = rand();
-		if (!attacking && (random_number % 100 < 1)) {
-			attacking = true;
-			if (right) {
-				sprite->changeAnimation(BASIC2_RIGHT_UP1);
-				lastRotationAnim = BASIC2_RIGHT_UP1;
 			}
 			else {
-				sprite->changeAnimation(++lastRotationAnim);
-			}
-			break;
-		}
-		else if (attacking) {
-			if (timeLastRotationAnim > 40) {
-				if (right) {
-					if (lastRotationAnim < BASIC2_UP) {
-						sprite->changeAnimation(++lastRotationAnim);
-					}
-					else {
-						attacking = false;
-						sprite->changeAnimation(BASIC2_STAYRIGHT);
-						lastRotationAnim = BASIC2_STAYRIGHT;
-					}
+				if (lastRotationAnim <= 4 && timeLastRotationAnim > 20) {
+					sprite->changeAnimation(++lastRotationAnim);
+					timeLastRotationAnim = 0;
 				}
-				else {
-					if (lastRotationAnim < BASIC2_LEFT_UP3) {
-						sprite->changeAnimation(++lastRotationAnim);
-					}
-					else {
-						attacking = false;
-						sprite->changeAnimation(BASIC2_STAYLEFT);
-						lastRotationAnim = BASIC2_STAYLEFT;
-					}
+				posEnemy.y += 1;
+				if (checkCollisionDown()) {
+					posEnemy.y -= 1;
+					up = true;
+					lastRotationAnim = 0;
+					sprite->changeAnimation(BASIC1_STANDARD);
 				}
-				timeLastRotationAnim = 0;
-				break;
 			}
-			else ++timeLastRotationAnim;
-		}
-		if (!attacking) {
+
 			if (!right) {
-				posEnemy.x -= 1;
+				posEnemy.x -= 2;
 				if (checkCollisionLeft()) {
 					posEnemy.x += 2;
 					right = true;
-					sprite->changeAnimation(BASIC2_STAYRIGHT);
-					lastRotationAnim = BASIC2_STAYRIGHT;
-					break;
 				}
-				posEnemy.y += 4;
-				posEnemy.x -= 15;
-				if (!checkCollisionDown()) {
-					posEnemy.x += 16;
-					right = true;
-					sprite->changeAnimation(BASIC2_STAYRIGHT);
-					lastRotationAnim = BASIC2_STAYRIGHT;
-					posEnemy.y -= 4;
-					break;
-				}
-				posEnemy.x += 15;
 			}
 			else {
-				posEnemy.x += 1;
+				posEnemy.x += 2;
 				if (checkCollisionRight()) {
-					posEnemy.x -= 1;
+					posEnemy.x -= 2;
 					right = false;
-					sprite->changeAnimation(BASIC2_STAYLEFT);
-					lastRotationAnim = BASIC2_STAYLEFT;
-					break;
 				}
-				posEnemy.y += 4;
-				posEnemy.x += 15;
-				if (!checkCollisionDown()) {
-					posEnemy.x -= 16;
-					right = false;
-					sprite->changeAnimation(BASIC2_STAYLEFT);
-					lastRotationAnim = BASIC2_STAYLEFT;
-					posEnemy.y -= 4;
-					break;
-				}
-				posEnemy.x -= 15;
 			}
+
+			break;
+		case BASIC2:
+			// with a 10% chance, the enemy will attack
+			random_number = rand();
+			if (!attacking && (random_number % 100 < 1)) {
+				attacking = true;
+				if (right) {
+					sprite->changeAnimation(BASIC2_RIGHT_UP1);
+					lastRotationAnim = BASIC2_RIGHT_UP1;
+				}
+				else {
+					sprite->changeAnimation(++lastRotationAnim);
+				}
+				break;
+			}
+			else if (attacking) {
+				if (timeLastRotationAnim > 40) {
+					if (right) {
+						if (lastRotationAnim < BASIC2_UP) {
+							sprite->changeAnimation(++lastRotationAnim);
+						}
+						else {
+							attacking = false;
+							sprite->changeAnimation(BASIC2_STAYRIGHT);
+							lastRotationAnim = BASIC2_STAYRIGHT;
+						}
+					}
+					else {
+						if (lastRotationAnim < BASIC2_LEFT_UP3) {
+							sprite->changeAnimation(++lastRotationAnim);
+						}
+						else {
+							attacking = false;
+							sprite->changeAnimation(BASIC2_STAYLEFT);
+							lastRotationAnim = BASIC2_STAYLEFT;
+						}
+					}
+					timeLastRotationAnim = 0;
+					break;
+				}
+				else ++timeLastRotationAnim;
+			}
+			if (!attacking) {
+				if (!right) {
+					posEnemy.x -= 1;
+					if (checkCollisionLeft()) {
+						posEnemy.x += 2;
+						right = true;
+						sprite->changeAnimation(BASIC2_STAYRIGHT);
+						lastRotationAnim = BASIC2_STAYRIGHT;
+						break;
+					}
+					posEnemy.y += 4;
+					posEnemy.x -= 15;
+					if (!checkCollisionDown()) {
+						posEnemy.x += 16;
+						right = true;
+						sprite->changeAnimation(BASIC2_STAYRIGHT);
+						lastRotationAnim = BASIC2_STAYRIGHT;
+						posEnemy.y -= 4;
+						break;
+					}
+					posEnemy.x += 15;
+				}
+				else {
+					posEnemy.x += 1;
+					if (checkCollisionRight()) {
+						posEnemy.x -= 1;
+						right = false;
+						sprite->changeAnimation(BASIC2_STAYLEFT);
+						lastRotationAnim = BASIC2_STAYLEFT;
+						break;
+					}
+					posEnemy.y += 4;
+					posEnemy.x += 15;
+					if (!checkCollisionDown()) {
+						posEnemy.x -= 16;
+						right = false;
+						sprite->changeAnimation(BASIC2_STAYLEFT);
+						lastRotationAnim = BASIC2_STAYLEFT;
+						posEnemy.y -= 4;
+						break;
+					}
+					posEnemy.x -= 15;
+				}
+			}
+			break;
+		case BASIC3:
+			break;
+		case BASIC4:
+			break;
 		}
-		break;
-	case BASIC3:
-		break;
-	case BASIC4:
-		break;
+		sprite->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
 	}
-	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
+	else {
+		spriteBoom->update(deltaTime);
+		if (boomAnimation < 8) {
+			boomAnimation += 1;
+			spriteBoom->changeAnimation(boomAnimation);
+		}
+	}
 }
 
 bool Enemy::checkCollisionRight() {
@@ -253,7 +287,8 @@ bool Enemy::checkCollisionDown() {
 
 void Enemy::render()
 {
-	sprite->render();
+	if (!boom) sprite->render();
+	else spriteBoom->render();
 }
 
 void Enemy::setTileMap(TileMap* tileMap)
@@ -277,3 +312,18 @@ glm::ivec2 Enemy::getSize()
 	return enemySizes[myType];
 }
 
+void Enemy::collision()
+{
+	spriteBoom->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
+	boom = true;
+}
+
+bool Enemy::died()
+{
+	return boom;
+}
+
+bool Enemy::boomFinished()
+{
+	return boomAnimation == 8;
+}
