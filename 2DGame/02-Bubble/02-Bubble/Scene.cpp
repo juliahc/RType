@@ -92,33 +92,53 @@ void Scene::updateGame(int deltaTime)
 {
 	currentTime += deltaTime;
 
-	//enemies
-	createEnemies();
-	for (Enemy* enemy : activeEnemies) enemy->update(deltaTime);
+	if (!player->died()) {
+		//screen movement
+		if (screenMovement == 2) {
+			glm::ivec2 posPlayer = player->getPosition();
+			posPlayer.x++;
+			player->setPosition(posPlayer);
+			screenExtraPosition += 1;
+			projection = glm::ortho(0.f + screenExtraPosition, float(SCREEN_WIDTH - 1) + screenExtraPosition, float(SCREEN_HEIGHT - 1), 0.f);
+			screenMovement = -1;
+		}
+		++screenMovement;
 
-	//Player
-	if (Game::instance().getKey('s') == RELEASE) addPlayerShot();
-	player->update(deltaTime);
+		//Enemies
+		createEnemies();
+		for (Enemy* enemy : activeEnemies) enemy->update(deltaTime);
 
-	//Shots
-	for (auto shot : shots) shot->update(deltaTime);
+		//Booming enemies
+		vector<Enemy*> enemyErase;
+		for (Enemy* enemy : boomEnemies) {
+			enemy->update(deltaTime);
+			if (enemy->boomFinished()) enemyErase.push_back(enemy);
+		}
+		for (Enemy* enemy : enemyErase) boomEnemies.erase(enemy);
 
-	//screen movement
-	if (screenMovement == 2) {
-		screenExtraPosition += 1;
-		projection = glm::ortho(0.f + screenExtraPosition, float(SCREEN_WIDTH - 1) + screenExtraPosition, float(SCREEN_HEIGHT - 1), 0.f);
-		screenMovement = -1;
+		//Player
+		if (Game::instance().getKey('s') == RELEASE) addPlayerShot();
+		player->update(deltaTime, screenExtraPosition);
+
+		//Shots
+		vector<Shot*> erase;
+		for (Shot* shot : playerShots) {
+			shot->update(deltaTime);
+			if (!inScreen(shot->getPosition(), shot->getSize())) erase.push_back(shot);
+		}
+		for (Shot* shot : erase) playerShots.erase(shot);
+
+		//Check collisions
+		checkCollisions();
 	}
-	++screenMovement;
-
+	else player->update(deltaTime, screenExtraPosition);
 }
 	
-
 void Scene::createEnemies() {
 	int acutalPosition = (SCREEN_WIDTH - 1) + screenExtraPosition;
 	auto it = enemies.find(acutalPosition);
 	if (it != enemies.end()) {
-		activeEnemies.push_back(&it->second);
+		activeEnemies.insert(&it->second);
 	}
 }
 
@@ -174,13 +194,9 @@ void Scene::renderGame()
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
 	map->render();
 	player->render();
-	vector<Shot*> erase;
-	for (Shot* shot : shots) {
-		if (!inScreen(shot->getPosition(), shot->getSize())) erase.push_back(shot);
-		else shot->render();
-	}
-	for (Shot* shot : erase) shots.erase(shot);
+	for (Shot* shot : playerShots) shot->render();
 	for (Enemy* enemy : activeEnemies) enemy->render();
+	for (Enemy* boomEnemy : boomEnemies) boomEnemy->render();
 }
 
 void Scene::renderMenu() {
@@ -261,7 +277,6 @@ void Scene::addPlayerShot()
 	string spriteFolder;
 	glm::ivec2 velocity, posShot, size;
 	glm::vec2 sizeInSpriteSheet;
-
 	damage = charge;
 	posShot = glm::ivec2(posPlayer.x + 16, posPlayer.y);
 	sizeInSpriteSheet = glm::vec2(1, 1);
@@ -301,20 +316,20 @@ void Scene::addPlayerShot()
 	}
 	
 	//Add shot
-	addShot(spriteFolder, velocity, posShot, size, sizeInSpriteSheet, damage);
+	addShot(spriteFolder, velocity, posShot, size, sizeInSpriteSheet, damage, true);
 
 	//Reset shot charge
 	player->setShotCharge(1);
 }
 
-void Scene::addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2& pos, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage)
+void Scene::addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2& pos, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage, bool fromPlayer)
 {
 	Shot* shot = new Shot();
 	shot->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, spriteFolder, velocity, size, sizeInSpriteSheet, damage);
 	shot->setPosition(glm::vec2(pos.x, pos.y));
 	shot->setTileMap(map);
 
-	shots.insert(shot);
+	if (fromPlayer) playerShots.insert(shot);
 }
 
 bool Scene::inScreen(const glm::ivec2& pos, const glm::ivec2& size)
@@ -327,10 +342,77 @@ bool Scene::inScreen(const glm::ivec2& pos, const glm::ivec2& size)
 
 	vector<glm::ivec2> vertexs = { vertex1, vertex2, vertex3, vertex4 };
 
+	int x0, xf, y0, yf;
+	x0 = screenExtraPosition;
+	xf = screenExtraPosition + SCREEN_WIDTH - 1;
+	y0 = 0;
+	yf = SCREEN_HEIGHT - 1;
 	
 	for (glm::ivec2 vertex : vertexs) {
-		if (vertex.x >= 0 && vertex.x < SCREEN_WIDTH && vertex.y >= 0 && vertex.y < SCREEN_HEIGHT) return true;
+		if (vertex.x >= x0 && vertex.x < xf && vertex.y >= y0 && vertex.y < yf) return true;
 	}
 
 	return false;
 }
+
+void Scene::checkCollisions()
+{
+	glm::ivec2 playerPos, playerSize, enemyPos, enemySize, shotPos, shotSize;
+	playerPos = player->getPosition();
+	playerSize = glm::ivec2(24, 15);
+	
+	//Player & enemies
+	for (Enemy* enemy : activeEnemies) {
+		enemyPos = enemy->getPosition();
+		enemySize = enemy->getSize();
+		if (isCollision(playerPos, playerSize, enemyPos, enemySize)) player->collision();
+	}
+
+	//Player & enemy shots
+	for (Shot* shot : enemyShots) {
+		shotPos = shot->getPosition();
+		shotSize = shot->getSize();
+		if (isCollision(playerPos, playerSize, shotPos, shotSize)) player->collision();
+	}
+
+	//Enemies & player shots
+	vector<Enemy*> enemyErase;
+	vector<Shot*> shotErase;
+	for (Enemy* enemy : activeEnemies) {
+		enemyPos = enemy->getPosition();
+		enemySize = enemy->getSize();
+		for (Shot* shot : playerShots) {
+			shotPos = shot->getPosition();
+			shotSize = shot->getSize();
+			if (isCollision(enemyPos, enemySize, shotPos, shotSize)) {
+				enemyErase.push_back(enemy);
+				shotErase.push_back(shot); //TODO: check shot`s charge
+			}
+		}
+	}
+	for (Enemy* enemy : enemyErase) {
+		enemy->collision();
+		boomEnemies.insert(enemy);
+		activeEnemies.erase(enemy);
+	}
+	for (Shot* shot : shotErase) playerShots.erase(shot);
+}
+
+bool Scene::isCollision(const glm::ivec2& pos1, const glm::ivec2& size1, const glm::ivec2& pos2, const glm::ivec2& size2)
+{
+	int minx1, miny1, maxx1, maxy1, minx2, miny2, maxx2, maxy2;
+
+	minx1 = pos1.x;
+	miny1 = pos1.y;
+	maxx1 = pos1.x + size1.x - 1;
+	maxy1 = pos1.y + size1.y - 1;
+	
+	minx2 = pos2.x;
+	miny2 = pos2.y;
+	maxx2 = pos2.x + size2.x - 1;
+	maxy2 = pos2.y + size2.y - 1;
+
+	if (((minx1 < maxx2) && (minx2 < maxx1)) && ((miny1 < maxy2) && (miny2 < maxy1))) return true;
+	return false;
+}
+

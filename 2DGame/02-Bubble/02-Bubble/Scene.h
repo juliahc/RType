@@ -40,9 +40,14 @@ public:
 	void renderInstructions();
 	void renderCredits();
 
+	void checkCollisions();
+
 	void addPlayerShot();
-	void addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2& pos, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage);
+	void addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2& pos, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage, bool fromPlayer);
+	
 	bool inScreen(const glm::ivec2& pos, const glm::ivec2& size);
+	bool isCollision(const glm::ivec2& posA, const glm::ivec2& sizeA, const glm::ivec2& posB, const glm::ivec2& sizeB);
+	void enemyBoom(Enemy* enemy);
 
 private:
 	void initShaders();
@@ -50,7 +55,7 @@ private:
 	void createEnemies();
 	TileMap *map;
 	Player *player;
-	std::set<Shot*> shots;
+	std::set<Shot*> playerShots, enemyShots;
 	ShaderProgram simpleProgram, texProgram;
 	float currentTime;
 	glm::mat4 projection;
@@ -64,7 +69,8 @@ private:
 	Texture menuTexs[5];
 	TexturedQuad* menuTexQuad[5];
 	std::map<int, Enemy> enemies;
-	vector<Enemy*> activeEnemies;
+	set<Enemy*> activeEnemies;
+	set<Enemy*> boomEnemies;
 };
 
 

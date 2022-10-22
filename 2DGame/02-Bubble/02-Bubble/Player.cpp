@@ -69,7 +69,7 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 		spriteCharge->changeAnimation(0);
 }
 
-void Player::update(int deltaTime)
+void Player::update(int deltaTime, int screenPosX)
 {
 	if (!boom) {
 
@@ -89,8 +89,7 @@ void Player::update(int deltaTime)
 		}
 		else if ((Game::instance().getSpecialKey(GLUT_KEY_DOWN) == PRESS) || (Game::instance().getSpecialKey(GLUT_KEY_DOWN) == REPEAT))
 		{
-			if (sprite->animation() != MOVE_DOWN)
-				sprite->changeAnimation(MOVE_DOWN);
+			if (sprite->animation() != MOVE_DOWN) sprite->changeAnimation(MOVE_DOWN);
 			posPlayer.y += 2;
 			if (map->collisionMoveDown(posPlayer, glm::ivec2(24, 15), &posPlayer.y))
 			{
@@ -101,23 +100,23 @@ void Player::update(int deltaTime)
 		}
 		else if ((Game::instance().getSpecialKey(GLUT_KEY_LEFT) == PRESS) || (Game::instance().getSpecialKey(GLUT_KEY_LEFT) == REPEAT))
 		{
-			if (sprite->animation() != NORMAL)
-				sprite->changeAnimation(NORMAL);
+			if (sprite->animation() != NORMAL) sprite->changeAnimation(NORMAL);
 			posPlayer.x -= 2;
 			if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 15))) {
 				posPlayer.x += 2;
 				collision();
 			}
+			else if (posPlayer.x < screenPosX) posPlayer.x = screenPosX;
 		}
 		else if ((Game::instance().getSpecialKey(GLUT_KEY_RIGHT) == PRESS) || (Game::instance().getSpecialKey(GLUT_KEY_RIGHT) == REPEAT))
 		{
-			if (sprite->animation() != NORMAL)
-				sprite->changeAnimation(NORMAL);
+			if (sprite->animation() != NORMAL) sprite->changeAnimation(NORMAL);
 			posPlayer.x += 2;
 			if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 15))) {
 				posPlayer.x -= 2;
 				collision();
 			}
+			else if ((posPlayer.x + 24 - 1) > (screenPosX + SCREEN_WIDTH - 1)) posPlayer.x = screenPosX + (SCREEN_WIDTH - 1) - 24;
 		}
 		else
 		{
@@ -203,4 +202,8 @@ void Player::setShotCharge(int charge)
 int Player::getShotCharge()
 {
 	return shotCharge;
+}
+
+bool Player::died() {
+	return boom;
 }
