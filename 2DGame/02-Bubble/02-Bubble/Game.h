@@ -8,6 +8,7 @@
 #define SCREEN_HEIGHT 256
 
 enum keyState { IDLE, PRESS, REPEAT, RELEASE };
+enum GameState { MENU, GAME, INSTRUCTIONS, CREDITS };
 
 // Game is a singleton (a class with a single instance) that represents our whole application
 
@@ -42,11 +43,12 @@ public:
 	keyState getKey(int key) const;
 	keyState getSpecialKey(int key) const;
 
+	void setState(GameState newState);
+
 private:
 	bool bPlay;                       // Continue to play game?
 	Scene scene;                      // Scene to render
 	keyState keys[256], specialKeys[256]; // Store key states so that 
-	enum GameState {MENU, GAME, INSTRUCTIONS, CREDITS}; // we can have access at any time
 	GameState state;                        
 	
 };

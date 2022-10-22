@@ -17,6 +17,8 @@
 #define INIT_BASIC_ENEMY_X_TILES 15
 #define INIT_BASIC_ENEMY_Y_TILES 24
 
+enum menuButtons {PLAY_BT, CONTINUE_BT, RESTART_BT, INSTRUCTIONS_BT, CREDITS_BT};
+
 Scene::Scene()
 {
 	map = NULL;
@@ -49,28 +51,37 @@ void Scene::init()
 	currentTime = 0.0f;
 
 	/* MENU */
-	glm::vec2 geomBackground[2] = { glm::vec2(0.f, 0.f), glm::vec2(640.f, 480.f) };
-	glm::vec2 geomMenuButton[2] = { glm::vec2(0.f, 0.f), glm::vec2(300.f, 50.f) };
-	glm::vec2 geomSmallMenuButton[2] = { glm::vec2(0.f, 0.f), glm::vec2(148.f, 50.f) };
-	glm::vec2 texCoords[2] = { glm::vec2(0.f, 0.f), glm::vec2(1.f, 1.f) };
-
+	glm::vec2 geomBackground[2] = { glm::vec2(0.f, 0.f), glm::vec2(384.f, 256.f) };
+	glm::vec2 geomMenuButton[2] = { glm::vec2(0.f, 0.f), glm::vec2(169.f, 23.f) };
+	glm::vec2 texCoords[2];
 	
-	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f); //play
+	texCoords[0] = glm::vec2(0.5f, 0.f); texCoords[1] = glm::vec2(1.f, 0.2f); //play
 	menuTexQuad[0] = TexturedQuad::createTexturedQuad(geomMenuButton, texCoords, texProgram);
-	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f); //instruction
+	texCoords[0] = glm::vec2(0.5f, 0.2f); texCoords[1] = glm::vec2(1.f, 0.4f); //continue
 	menuTexQuad[1] = TexturedQuad::createTexturedQuad(geomMenuButton, texCoords, texProgram);
-	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f); //credits
-	menuTexQuad[2] = TexturedQuad::createTexturedQuad(geomSmallMenuButton, texCoords, texProgram);
-	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f); //resume
+	texCoords[0] = glm::vec2(0.5f, 0.4f); texCoords[1] = glm::vec2(1.f, 0.6f); //restart
+	menuTexQuad[2] = TexturedQuad::createTexturedQuad(geomMenuButton, texCoords, texProgram);
+	texCoords[0] = glm::vec2(0.5f, 0.6f); texCoords[1] = glm::vec2(1.f, 0.8f); //instructions
 	menuTexQuad[3] = TexturedQuad::createTexturedQuad(geomMenuButton, texCoords, texProgram);
+	texCoords[0] = glm::vec2(0.5f, 0.8f); texCoords[1] = glm::vec2(1.f, 1.f); //credits
+	menuTexQuad[4] = TexturedQuad::createTexturedQuad(geomMenuButton, texCoords, texProgram);
+	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(0.5f, 0.2f); //play - selected
+	menuTexQuad[5] = TexturedQuad::createTexturedQuad(geomMenuButton, texCoords, texProgram); 
+	texCoords[0] = glm::vec2(0.f, 0.2f); texCoords[1] = glm::vec2(0.5f, 0.4f); //continue - selected
+	menuTexQuad[6] = TexturedQuad::createTexturedQuad(geomMenuButton, texCoords, texProgram);
+	texCoords[0] = glm::vec2(0.f, 0.4f); texCoords[1] = glm::vec2(0.5f, 0.6f); //restart - selected
+	menuTexQuad[7] = TexturedQuad::createTexturedQuad(geomMenuButton, texCoords, texProgram);
+	texCoords[0] = glm::vec2(0.f, 0.6f); texCoords[1] = glm::vec2(0.5f, 0.8f); //instructions - selected
+	menuTexQuad[8] = TexturedQuad::createTexturedQuad(geomMenuButton, texCoords, texProgram);
+	texCoords[0] = glm::vec2(0.f, 0.8f); texCoords[1] = glm::vec2(0.5f, 1.f); //credits - selected
+	menuTexQuad[9] = TexturedQuad::createTexturedQuad(geomMenuButton, texCoords, texProgram);
+	
+	
 	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f); //background
-	menuTexQuad[4] = TexturedQuad::createTexturedQuad(geomBackground, texCoords, texProgram);
+	menuBackground = TexturedQuad::createTexturedQuad(geomBackground, texCoords, texProgram);
 	// Load textures
-	menuTexs[0].loadFromFile("images/playButton.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	menuTexs[1].loadFromFile("images/instructionsButtonGrey.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	menuTexs[2].loadFromFile("images/creditsButtonGrey.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	menuTexs[3].loadFromFile("images/resumeButtonGrey.jpg", TEXTURE_PIXEL_FORMAT_RGB);
-	menuTexs[4].loadFromFile("images/planetsMenu.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	menuTexs[0].loadFromFile("images/menu/menuOptions.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	menuTexs[1].loadFromFile("images/menu/menuBackground.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	
 	
 	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
@@ -143,34 +154,21 @@ void Scene::createEnemies() {
 }
 
 void Scene::updateMenu(int deltaTime) {
-
 	if (Game::instance().getSpecialKey(GLUT_KEY_UP) == RELEASE) {
 		if (menuState == 1) menuState = 3;
 		else menuState -= 1;
 	} else if (Game::instance().getSpecialKey(GLUT_KEY_DOWN) == RELEASE) {
 		if (menuState == 3) menuState = 1;
 		else menuState += 1;
-	} 
-
-	menuTexs[0].loadFromFile("images/playButtonGrey.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	menuTexs[1].loadFromFile("images/instructionsButtonGrey.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	menuTexs[2].loadFromFile("images/creditsButtonGrey.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	menuTexs[3].loadFromFile("images/resumeButtonGrey.jpg", TEXTURE_PIXEL_FORMAT_RGB);
-
-	switch (menuState)
-	{
-		case 1:
-			menuTexs[0].loadFromFile("images/playButton.png", TEXTURE_PIXEL_FORMAT_RGBA);
-			break;
-		case 2:
-			menuTexs[1].loadFromFile("images/instructionsButton.png", TEXTURE_PIXEL_FORMAT_RGBA);
-			break;
-		case 3:
-			menuTexs[2].loadFromFile("images/creditsButton.png", TEXTURE_PIXEL_FORMAT_RGBA);
-			break;
-		default:
-			break;
 	}
+	else if (Game::instance().getKey(10) == PRESS) {
+		GameState newState;
+		if (menuState == 1) newState = GAME;
+		else if (menuState == 2) newState = INSTRUCTIONS;
+		else if (menuState == 3) newState = CREDITS;
+		Game::instance().setState(newState);
+	}
+
 	currentTime += deltaTime;
 }
 
@@ -200,6 +198,7 @@ void Scene::renderGame()
 }
 
 void Scene::renderMenu() {
+	vector<menuButtons> buttons = { PLAY_BT, INSTRUCTIONS_BT, CREDITS_BT};
 	glm::mat4 modelview = glm::mat4(1.0f);
 
 	texProgram.use();
@@ -209,13 +208,13 @@ void Scene::renderMenu() {
 	//Background
 	modelview = glm::mat4(1.0f);
 	texProgram.setUniformMatrix4f("modelview", modelview);
-	menuTexQuad[4]->render(menuTexs[4]);
-
+	menuBackground->render(menuTexs[1]);
+	
 	//Play button
-	modelview = glm::translate(modelview, glm::vec3(170.f, 150.f, 0.f));
+	modelview = glm::translate(modelview, glm::vec3(107.f, 80.f, 0.f));
 	texProgram.setUniformMatrix4f("modelview", modelview);
 	menuTexQuad[0]->render(menuTexs[0]);
-
+	/*
 	//Instructions button
 	modelview = glm::translate(modelview, glm::vec3(0.f, 100.f, 0.f));
 	texProgram.setUniformMatrix4f("modelview", modelview);
@@ -225,6 +224,7 @@ void Scene::renderMenu() {
 	modelview = glm::translate(modelview, glm::vec3(280.f, 150.f, 0.f));
 	texProgram.setUniformMatrix4f("modelview", modelview);
 	menuTexQuad[2]->render(menuTexs[2]);
+	*/
 }
 
 void Scene::renderInstructions() {
