@@ -52,7 +52,7 @@ void Scene::init()
 
 	/* MENU */
 	glm::vec2 geomBackground[2] = { glm::vec2(0.f, 0.f), glm::vec2(384.f, 256.f) };
-	glm::vec2 geomMenuButton[2] = { glm::vec2(0.f, 0.f), glm::vec2(169.f, 23.f) };
+	glm::vec2 geomMenuButton[2] = { glm::vec2(0.f, 0.f), glm::vec2(168.f, 23.f) };
 	glm::vec2 texCoords[2];
 	
 	texCoords[0] = glm::vec2(0.5f, 0.f); texCoords[1] = glm::vec2(1.f, 0.2f); //play
@@ -154,18 +154,30 @@ void Scene::createEnemies() {
 }
 
 void Scene::updateMenu(int deltaTime) {
+	int nbButtons;
+	if (menuType == INITIAL) nbButtons = 3;
+	else nbButtons = 4;
+
 	if (Game::instance().getSpecialKey(GLUT_KEY_UP) == RELEASE) {
-		if (menuState == 1) menuState = 3;
+		if (menuState == 1) menuState = nbButtons;
 		else menuState -= 1;
 	} else if (Game::instance().getSpecialKey(GLUT_KEY_DOWN) == RELEASE) {
-		if (menuState == 3) menuState = 1;
+		if (menuState == nbButtons) menuState = 1;
 		else menuState += 1;
 	}
-	else if (Game::instance().getKey(10) == PRESS) {
+	else if (Game::instance().getKey(13) == PRESS) {
 		GameState newState;
-		if (menuState == 1) newState = GAME;
-		else if (menuState == 2) newState = INSTRUCTIONS;
-		else if (menuState == 3) newState = CREDITS;
+		if (menuType == INITIAL) {
+			if (menuState == 1) newState = GAME;
+			else if (menuState == 2) newState = INSTRUCTIONS;
+			else if (menuState == 3) newState = CREDITS;
+		}
+		else {
+			if (menuState == 1) newState = GAME;
+			else if (menuState == 2) newState = GAME;
+			else if (menuState == 3) newState = INSTRUCTIONS;
+			else if (menuState == 4) newState = CREDITS;
+		}
 		Game::instance().setState(newState);
 	}
 
@@ -210,21 +222,46 @@ void Scene::renderMenu() {
 	texProgram.setUniformMatrix4f("modelview", modelview);
 	menuBackground->render(menuTexs[1]);
 	
-	//Play button
+	//1st button ("Start playing" or "Continue")
 	modelview = glm::translate(modelview, glm::vec3(107.f, 80.f, 0.f));
 	texProgram.setUniformMatrix4f("modelview", modelview);
-	menuTexQuad[0]->render(menuTexs[0]);
-	/*
-	//Instructions button
-	modelview = glm::translate(modelview, glm::vec3(0.f, 100.f, 0.f));
-	texProgram.setUniformMatrix4f("modelview", modelview);
-	menuTexQuad[1]->render(menuTexs[1]);
+	if (menuType == INITIAL) {
+		if (menuState != 1) menuTexQuad[0]->render(menuTexs[0]); //start playing
+		else menuTexQuad[5]->render(menuTexs[0]); //start playing - selected
+	}
+	else {
+		if (menuState != 1) menuTexQuad[1]->render(menuTexs[0]); //continue
+		else menuTexQuad[6]->render(menuTexs[0]); //continue - selected
+	}
+	
+	//2nd button ("Instructions" or "Restart")
+	if (menuType == INITIAL) {
+		modelview = glm::translate(modelview, glm::vec3(0.f, 50.f, 0.f));
+		texProgram.setUniformMatrix4f("modelview", modelview);
+		if (menuState != 2) menuTexQuad[3]->render(menuTexs[0]); //instructions
+		else menuTexQuad[8]->render(menuTexs[0]); //instructions - selected
+	}
+	else {
+		modelview = glm::translate(modelview, glm::vec3(0.f, 30.f, 0.f));
+		texProgram.setUniformMatrix4f("modelview", modelview);
+		if (menuState != 2) menuTexQuad[2]->render(menuTexs[0]); //continue
+		else menuTexQuad[7]->render(menuTexs[0]); //continue - selected
+	}
 
+	//3rd button ("" or "Instructions")
+	if (menuType == PLAYING) {
+		modelview = glm::translate(modelview, glm::vec3(0.f, 30.f, 0.f));
+		texProgram.setUniformMatrix4f("modelview", modelview);
+		if (menuState != 3) menuTexQuad[3]->render(menuTexs[0]); //instructions
+		else menuTexQuad[8]->render(menuTexs[0]); //instructions - selected
+	}
+	
 	//Credits button
-	modelview = glm::translate(modelview, glm::vec3(280.f, 150.f, 0.f));
+	if (menuType == INITIAL) modelview = glm::translate(modelview, glm::vec3(133.f, 80.f, 0.f));
+	else modelview = glm::translate(modelview, glm::vec3(123.f, 80.f, 0.f));
 	texProgram.setUniformMatrix4f("modelview", modelview);
-	menuTexQuad[2]->render(menuTexs[2]);
-	*/
+	if ((menuType == INITIAL && menuState == 3) || (menuType == PLAYING && menuState == 4)) menuTexQuad[9]->render(menuTexs[0]);
+	else menuTexQuad[4]->render(menuTexs[0]);
 }
 
 void Scene::renderInstructions() {

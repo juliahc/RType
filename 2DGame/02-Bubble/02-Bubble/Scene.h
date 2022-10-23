@@ -16,7 +16,7 @@
 #include <map>
 #include <set>
 
-
+enum menuTypeEnum {INITIAL, PLAYING};
 // Scene contains all the entities of our game.
 // It is responsible for updating and render them.
 
@@ -71,6 +71,7 @@ private:
 	std::map<int, Enemy> enemies;
 	set<Enemy*> activeEnemies;
 	set<Enemy*> boomEnemies;
+	menuTypeEnum menuType = INITIAL;
 };
 
 
