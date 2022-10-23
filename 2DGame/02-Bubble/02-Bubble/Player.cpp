@@ -157,6 +157,7 @@ void Player::update(int deltaTime, int screenPosX)
 			boomAnimation += 1;
 			spriteBoom->changeAnimation(boomAnimation);
 		}
+		else boomFinish = true;
 	}
 }
 
@@ -206,4 +207,9 @@ int Player::getShotCharge()
 
 bool Player::died() {
 	return boom;
+}
+
+bool Player::boomFinished()
+{
+	return boomFinish;
 }

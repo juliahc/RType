@@ -28,10 +28,12 @@ public:
 	void setShotCharge(int charge);
 	int getShotCharge();
 	bool died();
+	bool boomFinished();
 
 private:
 	bool bJumping;
 	bool boom = false;
+	bool boomFinish = false;
 	bool charging = false;
 	int boomAnimation = -1;
 	int chargeAnimation;

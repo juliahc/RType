@@ -29,7 +29,8 @@ public:
 	~Scene();
 
 	void init();
-	
+	void restartGame();
+
 	void updateGame(int deltaTime);
 	void updateMenu(int deltaTime);
 	void updateInstructions(int deltaTime);
@@ -55,23 +56,27 @@ private:
 	TileMap *map;
 	Player *player;
 	std::set<Shot*> playerShots, enemyShots;
-	ShaderProgram simpleProgram, texProgram;
+	ShaderProgram simpleProgram, texProgram, texProgramGame;
 	float currentTime;
-	glm::mat4 projection;
+	glm::mat4 projection, gameProjection;
 
 	int screenMovement = 0;
 	int screenExtraPosition = 0;
 	int enemyGenerator = 0;
+	std::map<int, Enemy> enemies;
+	set<Enemy*> activeEnemies;
+	set<Enemy*> boomEnemies;
+	TexturedQuad *heart, *gameBackground;
+	Texture heartTex, gameBackTex;
 
 	/*menu*/
 	int menuState = 1; // 1=play/resume 2=instructions 3=credits
 	Texture menuTexs[2];
 	TexturedQuad* menuTexQuad[10];
 	TexturedQuad* menuBackground;
-	std::map<int, Enemy> enemies;
-	set<Enemy*> activeEnemies;
-	set<Enemy*> boomEnemies;
 	menuTypeEnum menuType = INITIAL;
+
+	int lifes = 3;
 };
 
 
