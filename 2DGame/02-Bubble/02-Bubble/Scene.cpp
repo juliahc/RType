@@ -125,6 +125,7 @@ void Scene::restartGame() {
 	screenMovement = 0;
 	screenExtraPosition = 0;
 	enemyGenerator = 0;
+	gameOverNum = -1;
 	
 	initEnemies();
 
@@ -148,45 +149,11 @@ void Scene::updateGame(int deltaTime)
 	currentTime += deltaTime;
 
 	if (!player->died()) {
-		//screen movement
-		if (screenMovement == 2) {
-			glm::ivec2 posPlayer = player->getPosition();
-			posPlayer.x++;
-			player->setPosition(posPlayer);
-			screenExtraPosition += 1;
-			gameProjection = glm::ortho(0.f + screenExtraPosition, float(SCREEN_WIDTH - 1) + screenExtraPosition, float(SCREEN_HEIGHT - 1), 0.f);
-			screenMovement = -1;
-		}
-		++screenMovement;
-
-		//Enemies
-		createEnemies();
-		for (Enemy* enemy : activeEnemies) enemy->update(deltaTime);
-
-		//Booming enemies
-		vector<Enemy*> enemyErase;
-		for (Enemy* enemy : boomEnemies) {
-			enemy->update(deltaTime);
-			if (enemy->boomFinished()) enemyErase.push_back(enemy);
-		}
-		for (Enemy* enemy : enemyErase) boomEnemies.erase(enemy);
-
-		//Player
-		if (Game::instance().getKey('s') == RELEASE) addPlayerShot();
-		player->update(deltaTime, screenExtraPosition);
-
-		//Force
-		force->update(currentTime, player->getPosition());
-
-		//Shots
-		vector<Shot*> erase;
-		for (Shot* shot : playerShots) {
-			shot->update(deltaTime);
-			if (!inScreen(shot->getPosition(), shot->getSize())) erase.push_back(shot);
-		}
-		for (Shot* shot : erase) playerShots.erase(shot);
-
-		//Check collisions
+		updateGameBackground(deltaTime);
+		updateGameEnemies(deltaTime);
+		updateGamePlayer(deltaTime);
+		updateGameForce(deltaTime);
+		updateGameShots(deltaTime);
 		checkCollisions();
 	}
 	else {
@@ -207,6 +174,54 @@ void Scene::updateGame(int deltaTime)
 			}
 		}
 	}
+}
+
+void Scene::updateGameBackground(int deltaTime)
+{
+	if (screenMovement == 2) {
+		glm::ivec2 posPlayer = player->getPosition();
+		posPlayer.x++;
+		player->setPosition(posPlayer);
+		screenExtraPosition += 1;
+		gameProjection = glm::ortho(0.f + screenExtraPosition, float(SCREEN_WIDTH - 1) + screenExtraPosition, float(SCREEN_HEIGHT - 1), 0.f);
+		screenMovement = -1;
+	}
+	++screenMovement;
+}
+
+void Scene::updateGameEnemies(int deltaTime) {
+	//Enemies
+	createEnemies();
+	for (Enemy* enemy : activeEnemies) enemy->update(deltaTime);
+
+	//Booming enemies
+	vector<Enemy*> enemyErase;
+	for (Enemy* enemy : boomEnemies) {
+		enemy->update(deltaTime);
+		if (enemy->boomFinished()) enemyErase.push_back(enemy);
+	}
+	for (Enemy* enemy : enemyErase) boomEnemies.erase(enemy);
+}
+
+void Scene::updateGamePlayer(int deltaTime)
+{
+	if (Game::instance().getKey('s') == RELEASE) addPlayerShot();
+	player->update(deltaTime, screenExtraPosition);
+}
+
+void Scene::updateGameForce(int deltaTime)
+{
+	force->update(currentTime, player->getPosition());
+}
+
+void Scene::updateGameShots(int deltaTime) 
+{
+	vector<Shot*> erase;
+	for (Shot* shot : playerShots) {
+		shot->update(deltaTime);
+		if (!inScreen(shot->getPosition(), shot->getSize())) erase.push_back(shot);
+	}
+	for (Shot* shot : erase) playerShots.erase(shot);
 }
 	
 void Scene::createEnemies() {
@@ -267,7 +282,7 @@ void Scene::renderGame()
 	texProgram.setUniformMatrix4f("projection", projection);
 	texProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
 
-	if (!player->died() || (gameOverNum <= 200 && gameOverNum > 100)) {
+	if (!player->died() || (gameOverNum <= 200 && gameOverNum > 140)) {
 
 		//background
 		modelview = glm::mat4(1.0f);
@@ -301,22 +316,14 @@ void Scene::renderGame()
 			heart->render(heartTex);
 		}
 
-
 		player->render();
 		force->render();
 
 		for (Shot* shot : playerShots) shot->render();
 		for (Enemy* enemy : activeEnemies) enemy->render();
 		for (Enemy* boomEnemy : boomEnemies) boomEnemy->render();
-	} else if (gameOverNum >= 0 && gameOverNum <= 100) {
-		//fade black
-		program.use();
-		modelview = glm::mat4(1.0f);
-		modelview = glm::translate(modelview, glm::vec3(screenExtraPosition, 0.f, 0.f));
-		program.setUniformMatrix4f("modelview", modelview);
-		program.setUniform4f("color", 1.f, 1.f, 1.f, 1.0f);
-		fadeBlack->render();
 
+	} else if (gameOverNum >= 0 && gameOverNum <= 140) {
 		//game over
 		modelview = glm::mat4(1.0f);
 		modelview = glm::translate(modelview, glm::vec3(/*screenExtraPosition*/ + 120.f, 121.f, 0.f));
@@ -509,6 +516,7 @@ void Scene::addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2
 	shot->setTileMap(map);
 
 	if (fromPlayer) playerShots.insert(shot);
+	else enemyShots.insert(shot);
 }
 
 bool Scene::inScreen(const glm::ivec2& pos, const glm::ivec2& size)

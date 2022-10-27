@@ -12,6 +12,9 @@ void Game::init()
 
 bool Game::update(int deltaTime)
 {
+	//Process input
+
+	//Game loop
 	switch (state) {
 		case MENU:
 			scene.updateMenu(deltaTime);
