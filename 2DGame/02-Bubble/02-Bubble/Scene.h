@@ -33,6 +33,12 @@ public:
 	void restartGame();
 
 	void updateGame(int deltaTime);
+	void updateGameBackground(int deltaTime);
+	void updateGameEnemies(int deltaTime);
+	void updateGamePlayer(int deltaTime);
+	void updateGameForce(int deltaTime);
+	void updateGameShots(int deltaTime);
+
 	void updateMenu(int deltaTime);
 	void updateInstructions(int deltaTime);
 	void updateCredits(int deltaTime);
