@@ -120,32 +120,24 @@ void Enemy::update(int deltaTime)
 		int random_number;
 		switch (myType) {
 		case BASIC1:
+			if (lastRotationAnim <= 5 && timeLastRotationAnim > 5) {
+				if (lastRotationAnim == 5) lastRotationAnim = -1;
+				sprite->changeAnimation(++lastRotationAnim);
+				timeLastRotationAnim = 0;
+			}
 			if (up) {
-				if (lastRotationAnim <= 2 && timeLastRotationAnim > 20) {
-					if (lastRotationAnim == 2) lastRotationAnim = 4;
-					sprite->changeAnimation(++lastRotationAnim);
-					timeLastRotationAnim = 0;
-				}
 				posEnemy.y -= 1;
 				if (checkCollisionUp()) {
 					posEnemy.y += 1;
 					up = false;
-					lastRotationAnim = 2;
-					sprite->changeAnimation(BASIC1_STANDARD);
 				}
 
 			}
 			else {
-				if (lastRotationAnim <= 4 && timeLastRotationAnim > 20) {
-					sprite->changeAnimation(++lastRotationAnim);
-					timeLastRotationAnim = 0;
-				}
 				posEnemy.y += 1;
 				if (checkCollisionDown()) {
 					posEnemy.y -= 1;
 					up = true;
-					lastRotationAnim = 0;
-					sprite->changeAnimation(BASIC1_STANDARD);
 				}
 			}
 
@@ -163,7 +155,6 @@ void Enemy::update(int deltaTime)
 					right = false;
 				}
 			}
-
 			break;
 		case BASIC2:
 			// with a 10% chance, the enemy will attack
