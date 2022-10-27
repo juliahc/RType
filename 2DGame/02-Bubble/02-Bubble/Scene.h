@@ -6,6 +6,7 @@
 #include "ShaderProgram.h"
 #include "TileMap.h"
 #include "Player.h"
+#include "force.h"
 #include "Enemy.h"
 #include "Entity.h"
 #include "Shot.h"
@@ -55,8 +56,9 @@ private:
 	void createEnemies();
 	TileMap *map;
 	Player *player;
+	Force* force;
 	std::set<Shot*> playerShots, enemyShots;
-	ShaderProgram simpleProgram, texProgram, texProgramGame;
+	ShaderProgram simpleProgram, texProgram, texProgramGame, program;
 	float currentTime;
 	glm::mat4 projection, gameProjection;
 
@@ -66,8 +68,9 @@ private:
 	std::map<int, Enemy> enemies;
 	set<Enemy*> activeEnemies;
 	set<Enemy*> boomEnemies;
-	TexturedQuad *heart, *gameBackground;
-	Texture heartTex, gameBackTex;
+	TexturedQuad *heart, *gameBackground, *gameOver;
+	Texture heartTex, gameBackTex, gameOverTex;
+	Quad* fadeBlack;
 
 	/*menu*/
 	int menuState = 1; // 1=play/resume 2=instructions 3=credits
@@ -77,6 +80,7 @@ private:
 	menuTypeEnum menuType = INITIAL;
 
 	int lifes = 3;
+	int gameOverNum = -1;
 };
 
 

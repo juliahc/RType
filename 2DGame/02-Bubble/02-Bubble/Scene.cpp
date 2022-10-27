@@ -33,31 +33,44 @@ Scene::~Scene()
 		delete player;
 }
 
-
 void Scene::init()
 {
 	initShaders();
 	glm::vec2 texCoords[2];
-	
+
+	/* GAME */
+
+	//background
 	glm::vec2 geomBack[2] = { glm::vec2(0.f, 0.f), glm::vec2(3840.f, 256.f) };
 	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f);
 	gameBackground = TexturedQuad::createTexturedQuad(geomBack, texCoords, texProgram);
 	gameBackTex.loadFromFile("images/gameBackground.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	
-	/* GAME */
-	
+	//map
 	map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgramGame);
+	//player
 	player = new Player();
 	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame);
 	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 	player->setTileMap(map);
-
+	//force
+	force = new Force();
+	force->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame);
+	force->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize() + 24, INIT_PLAYER_Y_TILES * map->getTileSize() + 1));
+	force->setTileMap(map);
+	//enemies
 	initEnemies();
-
+	//heart
 	glm::vec2 geomHeart[2] = { glm::vec2(0.f, 0.f), glm::vec2(13.f, 10.f) };
-	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f); //play
+	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f);
 	heart = TexturedQuad::createTexturedQuad(geomHeart, texCoords, texProgramGame);
 	heartTex.loadFromFile("images/heart_13x10.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	//gameOver
+	glm::vec2 geomGameOver[2] = { glm::vec2(0.f, 0.f), glm::vec2(144.f, 14.f) };
+	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f); //play
+	gameOver = TexturedQuad::createTexturedQuad(geomGameOver, texCoords, texProgram);
+	gameOverTex.loadFromFile("images/gameOver.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	//quad fade black
+	fadeBlack = Quad::createQuad(0.f, 0.f, 384.f, 256.f, program);
 
 	currentTime = 0.0f;
 
@@ -87,13 +100,11 @@ void Scene::init()
 	texCoords[0] = glm::vec2(0.f, 0.8f); texCoords[1] = glm::vec2(0.5f, 1.f); //credits - selected
 	menuTexQuad[9] = TexturedQuad::createTexturedQuad(geomMenuButton, texCoords, texProgram);
 	
-	
 	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f); //background
 	menuBackground = TexturedQuad::createTexturedQuad(geomBackground, texCoords, texProgram);
 	// Load textures
 	menuTexs[0].loadFromFile("images/menu/menuOptions.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	menuTexs[1].loadFromFile("images/menu/menuBackground.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	
 	
 	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
 	gameProjection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
@@ -164,6 +175,9 @@ void Scene::updateGame(int deltaTime)
 		if (Game::instance().getKey('s') == RELEASE) addPlayerShot();
 		player->update(deltaTime, screenExtraPosition);
 
+		//Force
+		force->update(currentTime, player->getPosition());
+
 		//Shots
 		vector<Shot*> erase;
 		for (Shot* shot : playerShots) {
@@ -174,8 +188,6 @@ void Scene::updateGame(int deltaTime)
 
 		//Check collisions
 		checkCollisions();
-
-		
 	}
 	else {
 		if (!player->boomFinished()) player->update(deltaTime, screenExtraPosition);
@@ -183,11 +195,15 @@ void Scene::updateGame(int deltaTime)
 			lifes--;
 			if (lifes > 0) restartGame();
 			else {
-				Game::instance().setState(MENU);
-				restartGame();
-				menuType = INITIAL;
-				menuState = 1;
-				lifes = 3;
+				if (gameOverNum == -1) gameOverNum = 200;
+				else if (gameOverNum > 0) gameOverNum--;
+				else {
+					Game::instance().setState(MENU);
+					restartGame();
+					menuType = INITIAL;
+					menuState = 1;
+					lifes = 3;
+				}
 			}
 		}
 	}
@@ -251,41 +267,62 @@ void Scene::renderGame()
 	texProgram.setUniformMatrix4f("projection", projection);
 	texProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
 
-	modelview = glm::mat4(1.0f);
-	modelview = glm::translate(modelview, glm::vec3(0.f - screenExtraPosition, 0.f, 0.f));
-	texProgram.setUniformMatrix4f("modelview", modelview);
-	gameBackground->render(gameBackTex);
+	if (!player->died() || (gameOverNum <= 200 && gameOverNum > 100)) {
 
-	texProgramGame.use();
-	texProgramGame.setUniformMatrix4f("projection", gameProjection);
-	texProgramGame.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
-	
-	modelview = glm::mat4(1.0f);
-	texProgramGame.setUniformMatrix4f("modelview", modelview);
-	texProgramGame.setUniform2f("texCoordDispl", 0.f, 0.f);
-	map->render();
+		//background
+		modelview = glm::mat4(1.0f);
+		modelview = glm::translate(modelview, glm::vec3(0.f - screenExtraPosition, 0.f, 0.f));
+		texProgram.setUniformMatrix4f("modelview", modelview);
+		gameBackground->render(gameBackTex);
 
-	//hearts
-	modelview = glm::translate(modelview, glm::vec3(2.f + screenExtraPosition, 2.f, 0.f));
-	texProgramGame.setUniformMatrix4f("modelview", modelview);
-	heart->render(heartTex);
+		texProgramGame.use();
+		texProgramGame.setUniformMatrix4f("projection", gameProjection);
+		texProgramGame.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
 
-	if (lifes >= 2) {
-		modelview = glm::translate(modelview, glm::vec3(15.f, 0.f, 0.f));
+		//map
+		modelview = glm::mat4(1.0f);
+		texProgramGame.setUniformMatrix4f("modelview", modelview);
+		texProgramGame.setUniform2f("texCoordDispl", 0.f, 0.f);
+		map->render();
+
+		//hearts
+		modelview = glm::translate(modelview, glm::vec3(2.f + screenExtraPosition, 2.f, 0.f));
 		texProgramGame.setUniformMatrix4f("modelview", modelview);
 		heart->render(heartTex);
-	}
-	if (lifes >= 3) {
-		modelview = glm::translate(modelview, glm::vec3(15.f, 0.f, 0.f));
-		texProgramGame.setUniformMatrix4f("modelview", modelview);
-		heart->render(heartTex);
-	}
+
+		if (lifes >= 2) {
+			modelview = glm::translate(modelview, glm::vec3(15.f, 0.f, 0.f));
+			texProgramGame.setUniformMatrix4f("modelview", modelview);
+			heart->render(heartTex);
+		}
+		if (lifes >= 3) {
+			modelview = glm::translate(modelview, glm::vec3(15.f, 0.f, 0.f));
+			texProgramGame.setUniformMatrix4f("modelview", modelview);
+			heart->render(heartTex);
+		}
 
 
-	player->render();
-	for (Shot* shot : playerShots) shot->render();
-	for (Enemy* enemy : activeEnemies) enemy->render();
-	for (Enemy* boomEnemy : boomEnemies) boomEnemy->render();
+		player->render();
+		force->render();
+
+		for (Shot* shot : playerShots) shot->render();
+		for (Enemy* enemy : activeEnemies) enemy->render();
+		for (Enemy* boomEnemy : boomEnemies) boomEnemy->render();
+	} else if (gameOverNum >= 0 && gameOverNum <= 100) {
+		//fade black
+		program.use();
+		modelview = glm::mat4(1.0f);
+		modelview = glm::translate(modelview, glm::vec3(screenExtraPosition, 0.f, 0.f));
+		program.setUniformMatrix4f("modelview", modelview);
+		program.setUniform4f("color", 1.f, 1.f, 1.f, 1.0f);
+		fadeBlack->render();
+
+		//game over
+		modelview = glm::mat4(1.0f);
+		modelview = glm::translate(modelview, glm::vec3(/*screenExtraPosition*/ + 120.f, 121.f, 0.f));
+		texProgram.setUniformMatrix4f("modelview", modelview);
+		gameOver->render(gameOverTex);
+	}
 
 	if (Game::instance().getKey('m')) {
 		Game::instance().setState(MENU);
@@ -393,6 +430,16 @@ void Scene::initShaders()
 	}
 	texProgram.bindFragmentOutput("outColor");
 	texProgramGame.bindFragmentOutput("outColor");
+	program.init();
+	program.addShader(vShader);
+	program.addShader(fShader);
+	program.link();
+	if (!program.isLinked())
+	{
+		cout << "Shader Linking Error" << endl;
+		cout << "" << program.log() << endl << endl;
+	}
+	program.bindFragmentOutput("outColor");
 	vShader.free();
 	fShader.free();
 }
@@ -518,7 +565,7 @@ void Scene::checkCollisions()
 			shotSize = shot->getSize();
 			if (isCollision(enemyPos, enemySize, shotPos, shotSize)) {
 				enemyErase.push_back(enemy);
-				shotErase.push_back(shot); //TODO: check shot`s charge
+				if (shot->getDamage() == 1) shotErase.push_back(shot);
 			}
 		}
 	}

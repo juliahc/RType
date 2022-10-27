@@ -25,6 +25,7 @@ public:
 
 	glm::ivec2 getPosition();
 	glm::ivec2 getSize();
+	int getDamage();
 
 private:
 	glm::ivec2 tileMapDispl, velocity, posShot, sizeShot;
