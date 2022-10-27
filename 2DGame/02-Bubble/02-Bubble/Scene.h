@@ -6,6 +6,7 @@
 #include "ShaderProgram.h"
 #include "TileMap.h"
 #include "Player.h"
+#include "force.h"
 #include "Enemy.h"
 #include "Entity.h"
 #include "Shot.h"
@@ -16,7 +17,7 @@
 #include <map>
 #include <set>
 
-
+enum menuTypeEnum {INITIAL, PLAYING};
 // Scene contains all the entities of our game.
 // It is responsible for updating and render them.
 
@@ -29,7 +30,8 @@ public:
 	~Scene();
 
 	void init();
-	
+	void restartGame();
+
 	void updateGame(int deltaTime);
 	void updateMenu(int deltaTime);
 	void updateInstructions(int deltaTime);
@@ -46,8 +48,7 @@ public:
 	void addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2& pos, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage, bool fromPlayer);
 	
 	bool inScreen(const glm::ivec2& pos, const glm::ivec2& size);
-	bool isCollision(const glm::ivec2& posA, const glm::ivec2& sizeA, const glm::ivec2& posB, const glm::ivec2& sizeB);
-	void enemyBoom(Enemy* enemy);
+	bool isCollision(const glm::ivec2& pos1, const glm::ivec2& size1, const glm::ivec2& pos2, const glm::ivec2& size2);
 
 private:
 	void initShaders();
@@ -55,22 +56,31 @@ private:
 	void createEnemies();
 	TileMap *map;
 	Player *player;
+	Force* force;
 	std::set<Shot*> playerShots, enemyShots;
-	ShaderProgram simpleProgram, texProgram;
+	ShaderProgram simpleProgram, texProgram, texProgramGame, program;
 	float currentTime;
-	glm::mat4 projection;
+	glm::mat4 projection, gameProjection;
 
 	int screenMovement = 0;
 	int screenExtraPosition = 0;
 	int enemyGenerator = 0;
-
-	/*menu*/
-	int menuState = 1; // 1=play/resume 2=instructions 3=credits
-	Texture menuTexs[5];
-	TexturedQuad* menuTexQuad[5];
 	std::map<int, Enemy> enemies;
 	set<Enemy*> activeEnemies;
 	set<Enemy*> boomEnemies;
+	TexturedQuad *heart, *gameBackground, *gameOver;
+	Texture heartTex, gameBackTex, gameOverTex;
+	Quad* fadeBlack;
+
+	/*menu*/
+	int menuState = 1; // 1=play/resume 2=instructions 3=credits
+	Texture menuTexs[2];
+	TexturedQuad* menuTexQuad[10];
+	TexturedQuad* menuBackground;
+	menuTypeEnum menuType = INITIAL;
+
+	int lifes = 3;
+	int gameOverNum = -1;
 };
 
 

@@ -69,3 +69,8 @@ glm::ivec2 Shot::getSize()
 {
 	return sizeShot;
 }
+
+int Shot::getDamage()
+{
+	return shotDamage;
+}

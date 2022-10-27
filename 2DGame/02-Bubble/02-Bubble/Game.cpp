@@ -5,7 +5,7 @@
 void Game::init()
 {
 	bPlay = true;
-	state = GAME;
+	state = MENU;
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 	scene.init();
 }
@@ -100,7 +100,10 @@ keyState Game::getSpecialKey(int key) const
 	return specialKeys[key];
 }
 
-
+void Game::setState(GameState newState)
+{
+	state = newState;
+}
 
 
 
