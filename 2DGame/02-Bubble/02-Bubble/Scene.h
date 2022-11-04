@@ -42,11 +42,15 @@ public:
 	void updateMenu(int deltaTime);
 	void updateInstructions(int deltaTime);
 	void updateCredits(int deltaTime);
+	void updateTransition(int deltaTime);
+	void updateGameOver(int deltaTime);
 
 	void renderGame();
 	void renderMenu();
 	void renderInstructions();
 	void renderCredits();
+	void renderTransition();
+	void renderGameover();
 
 	void checkCollisions();
 
@@ -64,7 +68,7 @@ private:
 	Player *player;
 	Force* force;
 	std::set<Shot*> playerShots, enemyShots;
-	ShaderProgram simpleProgram, texProgram, texProgramGame, program;
+	ShaderProgram texProgram, texProgramGame, simpleProgram;
 	float currentTime;
 	glm::mat4 projection, gameProjection;
 
@@ -76,7 +80,7 @@ private:
 	set<Enemy*> boomEnemies;
 	TexturedQuad *heart, *gameBackground, *gameOver;
 	Texture heartTex, gameBackTex, gameOverTex;
-	Quad* fadeBlack;
+	Quad* quad;
 
 	/*menu*/
 	int menuState = 1; // 1=play/resume 2=instructions 3=credits
@@ -86,7 +90,9 @@ private:
 	menuTypeEnum menuType = INITIAL;
 
 	int lifes = 3;
-	int gameOverNum = -1;
+	int gameOverCount = 0;
+
+	int transitionCount = 0;
 };
 
 
