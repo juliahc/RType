@@ -32,7 +32,7 @@ public:
 	*/
 	bool isShooting();
 	glm::ivec2 getShotSize();
-	glm::ivec2 getShotVelocity();
+	glm::ivec2 getShotVelocity(glm::ivec2 playerPosition);
 	string getShotSprite();
 	glm::vec2 getShotSizeInSpriteSheet();
 
@@ -51,9 +51,9 @@ private:
 	bool attacking = false;
 
 	bool shooting = false;
-	glm::ivec2 shotSize = glm::ivec2(8, 4);
+	vector<glm::ivec2> shotSize = { glm::ivec2(6, 6), glm::ivec2(1,1), glm::ivec2(1,1), glm::ivec2(1,1) };
 	glm::ivec2 shotvelocity = glm::ivec2(-4, 0);
-	string spriteShot = "images/ship/shot.png";
+	vector<string> spriteShot = { "images/enemies/basic1/shot.png", "", "", "" };
 	glm::vec2 shotSizeInSpriteSheet = glm::vec2(1, 1);
 
 	int timesWithoutAttacking = 50;
@@ -85,7 +85,7 @@ private:
 	TileMap* map;
 
 	//Sprites + sizes
-	vector<string> spriteFiles{ "images/enemies/basic1.png", "images/enemies/basic2.png", "", "" };
+	vector<string> spriteFiles{ "images/enemies/basic1/basic1.png", "images/enemies/basic2/basic2.png", "", "" };
 	vector<glm::ivec2> enemySizes{ glm::ivec2(23, 24), glm::ivec2(30, 28), glm::ivec2(0, 0), glm::ivec2(0, 0) };
 	vector<glm::vec2> spriteSheetSize{ glm::vec2(0.25f, 0.5f), glm::vec2(0.2f, 0.5f), glm::vec2(0., 0.), glm::vec2(0., 0.) };
 
