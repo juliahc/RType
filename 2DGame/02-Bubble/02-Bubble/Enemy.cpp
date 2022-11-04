@@ -387,13 +387,20 @@ bool Enemy::isShooting() {
 	return shooting;
 }
 glm::ivec2 Enemy::getShotSize() {
-	return shotSize;
+	return shotSize[myType];
 }
-glm::ivec2 Enemy::getShotVelocity() {
-	return shotvelocity;
+glm::ivec2 Enemy::getShotVelocity(glm::ivec2 playerPosition) {
+	int difference = playerPosition.y - posEnemy.y;
+	int yvel = ceil(difference / 20);
+	if (yvel < 0) yvel = max(yvel, -3);
+	else yvel = min(yvel, 3);
+	int xvel = playerPosition.x - posEnemy.x;
+	if (xvel < 1) xvel = -4;
+	else xvel = 4;
+	return glm::ivec2(xvel, yvel);
 }
 string Enemy::getShotSprite() {
-	return spriteShot;
+	return spriteShot[myType];
 }
 
 void Enemy::enemyAlreadyAttacked() {
