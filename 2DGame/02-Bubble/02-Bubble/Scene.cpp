@@ -306,7 +306,7 @@ void Scene::updateGame(int deltaTime)
 		checkCollisions();
 	}
 	else {
-		if (!player->boomFinished()) player->update(deltaTime, screenExtraPosition); //Player explosion animation
+		if (!player->boomFinished()) player->update(deltaTime, screenExtraPosition, force->getWidth()); //Player explosion animation
 		else {
 			lifes--;
 			if (lifes > 0) restartGame(); //Play again with one less life
@@ -359,9 +359,17 @@ void Scene::updateGameOver(int deltaTime)
 void Scene::updateGameBackground(int deltaTime)
 {
 	if (screenMovement == 2) {
+		//update player position
 		glm::ivec2 posPlayer = player->getPosition();
 		posPlayer.x++;
 		player->setPosition(posPlayer);
+
+		//update force position
+		glm::ivec2 posForce = force->getPosition();
+		posForce.x++;
+		force->setPosition(posForce);
+
+		//update background position
 		screenExtraPosition += 1;
 		gameProjection = glm::ortho(0.f + screenExtraPosition, float(SCREEN_WIDTH - 1) + screenExtraPosition, float(SCREEN_HEIGHT - 1), 0.f);
 		screenMovement = -1;
@@ -393,21 +401,21 @@ void Scene::updateGameEnemies(int deltaTime) {
 void Scene::updateGamePlayer(int deltaTime)
 {
 	//If "s" released, add shot with damage > 1
-	if (Game::instance().getKey('s') == RELEASE) addPlayerShot();
+	if (Game::instance().getKey('s') == PRESS || (Game::instance().getKey('s') == RELEASE && player->getShotCharge() > 1)) addPlayerShot();
 
 	//TODO: if s "press" add shot with damage = 1
 	
 	//Player update
-	player->update(deltaTime, screenExtraPosition);
+	player->update(deltaTime, screenExtraPosition, force->getWidth());
 }
 
 void Scene::updateGameForce(int deltaTime)
 {
 	//Tokens TODO: que apareguin quan mor enemic
 	//for (int i = 0; i < sizeof(showTokens); i++) showTokens[i] = true;
-	tokenPositions[0] = glm::vec3(250.f, 50.f, 0.f);
-	tokenPositions[1] = glm::vec3(250.f, 120.f, 0.f);
-	tokenPositions[2] = glm::vec3(250.f, 200.f, 0.f);
+	tokenPositions[0] = glm::vec3(200.f, 50.f, 0.f);
+	tokenPositions[1] = glm::vec3(400.f, 120.f, 0.f);
+	tokenPositions[2] = glm::vec3(600.f, 200.f, 0.f);
 	
 	//Force update
 	force->update(currentTime, player->getPosition(), screenExtraPosition);
@@ -762,7 +770,7 @@ bool Scene::inScreen(const glm::ivec2& pos, const glm::ivec2& size)
 
 void Scene::checkCollisions()
 {
-	glm::ivec2 playerPos, playerSize, enemyPos, enemySize, shotPos, shotSize, tokenPos, tokenSize;
+	glm::ivec2 playerPos, playerSize, enemyPos, enemySize, shotPos, shotSize, tokenPos, tokenSize, forcePos, forceSize;
 	playerPos = player->getPosition();
 	playerSize = glm::ivec2(24, 15);
 	
@@ -815,14 +823,34 @@ void Scene::checkCollisions()
 				}
 				else if (i == 1) {
 					//upgrade 1
-
+					force->setType(1);
 				}
 				else if (i == 2) {
 					//upgrade 3
-
+					force->setType(2);
 				}
 			}
 		}
+	}
+
+	//Player & force
+	if (Game::instance().getKey('a') == PRESS) {
+		int a = 0;
+	}
+
+	glm::ivec2 playerFrontPos, playerBottomPos, playerMidSize;
+	playerMidSize = glm::ivec2(playerSize.x / 2, playerSize.y / 2);
+	playerBottomPos = playerPos;
+	playerFrontPos = glm::ivec2(playerPos.x + playerMidSize.x - 1, playerPos.y);
+	
+
+	forcePos = force->getPosition();
+	forceSize = force->getSize();
+	if (isCollision(playerBottomPos, playerMidSize, forcePos, forceSize)) {
+		force->setAttached("bottom");
+	}
+	else if (isCollision(playerFrontPos, playerMidSize, forcePos, forceSize)) {
+		force->setAttached("front");
 	}
 }
 

@@ -57,7 +57,7 @@ private:
 	int keysInt[256];
 	keyState keys[256], specialKeys[256]; // Store key states so that 
 	GameState state, previousState, nextState;
-	int nbFramesRepeat = 10;
+	int nbFramesRepeat = 8;
 };
 
 

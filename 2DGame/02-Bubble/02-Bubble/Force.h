@@ -5,43 +5,52 @@
 #include "Sprite.h"
 #include "TileMap.h"
 #include "Entity.h"
+#include <queue>
 
 
 // Player is basically a Sprite that represents the player. As such it has
 // all properties it needs to track its movement, jumping, and collisions.
 
 enum forceState { INACTIVE, INIT, LEFT, RIGHT, UP, DOWN };
-enum forceType { UPGRADE_0, UPGRADE_1, UPGRADE_2 };
+enum forceAttached { NOATTACHED, FRONT, BOTTOM };
 
 class Force : public Entity
 {
 
 public:
 	void init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram);
-	void update(int deltaTime, const glm::ivec2& posPlayer, const int screenExtraPosition);
+	void update(int deltaTime, const glm::ivec2& posPlayer, const int screenPosX);
 	void render();
 
 	void setTileMap(TileMap* tileMap);
 	void setPosition(const glm::vec2& pos);
 
 	glm::ivec2 getPosition();
+	glm::ivec2 getSize();
 	bool isActive();
 	void setActive(bool newActive);
+	void setAttached(string newAttached);
+	void setType(int newType);
+	int getWidth();
 
 private:
-	glm::ivec2 tileMapDispl, posForce;
-	Sprite* sprite;
+
+	void nextPosition(const int screenPosX);
+
+	glm::ivec2 tileMapDispl, posForce, sizeForces[3], sizeForce, vel;
+	Sprite* sprites[3];
 	TileMap* map;
-	Texture spritesheet;
+	Texture spritesheets[3];
 	int animation = 0;
 	bool active;
 
-	forceType type;
+	int type; // 0=upgrade0 1=upgrade1 2=upgrade2
 	forceState state;
 
-	bool frontAttached;
-	bool bottomAttached;
+	forceAttached attached;
 
+	int rightLine, leftLine;
+	queue<glm::ivec2> lastPlayerPos;
 };
 
 
