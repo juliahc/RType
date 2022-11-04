@@ -29,70 +29,120 @@ public:
 	Scene();
 	~Scene();
 
+	//Init
 	void init();
-	void restartGame();
 
+	//Updates
+	void updateMenu(int deltaTime);
 	void updateGame(int deltaTime);
+	void updateInstructions(int deltaTime);
+	void updateCredits(int deltaTime);
+	void updateTransition(int deltaTime);
+	void updateGameOver(int deltaTime);
+
+	//Renders
+	void renderMenu();
+	void renderGame();
+	void renderInstructions();
+	void renderCredits();
+	void renderTransition();
+	void renderGameover();
+
+private:
+
+	/* FUNCTIONS */
+
+	//Subinits
+	void initMenu();
+	void initGame();
+	void initInstructions();
+	void initCredits();
+	void initTransition();
+	void initGameover();
+
+	void initShaders();
+	void initEnemies();
+	
+	//Subupdates
 	void updateGameBackground(int deltaTime);
 	void updateGameEnemies(int deltaTime);
 	void updateGamePlayer(int deltaTime);
 	void updateGameForce(int deltaTime);
 	void updateGameShots(int deltaTime);
 
-	void updateMenu(int deltaTime);
-	void updateInstructions(int deltaTime);
-	void updateCredits(int deltaTime);
-	void updateTransition(int deltaTime);
-	void updateGameOver(int deltaTime);
-
-	void renderGame();
-	void renderMenu();
-	void renderInstructions();
-	void renderCredits();
-	void renderTransition();
-	void renderGameover();
-
-	void checkCollisions();
-
+	//Subupdates functions
+	void createEnemies();
+	void restartGame();
 	void addPlayerShot();
 	void addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2& pos, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage, bool fromPlayer);
-	
-	bool inScreen(const glm::ivec2& pos, const glm::ivec2& size);
+
+	//Collisions
+	void checkCollisions();
 	bool isCollision(const glm::ivec2& pos1, const glm::ivec2& size1, const glm::ivec2& pos2, const glm::ivec2& size2);
+	bool inScreen(const glm::ivec2& pos, const glm::ivec2& size);
+	
 
-private:
-	void initShaders();
-	void initEnemies();
-	void createEnemies();
-	TileMap *map;
-	Player *player;
-	Force* force;
-	std::set<Shot*> playerShots, enemyShots;
+	/* ATTRIBUTES */
+	
 	ShaderProgram texProgram, texProgramGame, simpleProgram;
-	float currentTime;
-	glm::mat4 projection, gameProjection;
+	glm::mat4 projection;
 
-	int screenMovement = 0;
-	int screenExtraPosition = 0;
-	int enemyGenerator = 0;
-	std::map<int, Enemy> enemies;
-	set<Enemy*> activeEnemies;
-	set<Enemy*> boomEnemies;
-	TexturedQuad *heart, *gameBackground, *gameOver;
-	Texture heartTex, gameBackTex, gameOverTex;
-	Quad* quad;
 
-	/*menu*/
+	/* MENU ATTRIBUTES */
+	
 	int menuState = 1; // 1=play/resume 2=instructions 3=credits
 	Texture menuTexs[2];
 	TexturedQuad* menuTexQuad[10];
 	TexturedQuad* menuBackground;
 	menuTypeEnum menuType = INITIAL;
 
-	int lifes = 3;
-	int gameOverCount = 0;
 
+	/* GAME ATTRIBUTES */
+
+	float currentTime;
+	TileMap *map;
+	glm::mat4 gameProjection;
+	TexturedQuad *gameBackground, * heart;
+	Texture gameBackTex, heartTex;
+
+	//Background
+	int screenMovement = 0;
+	int screenExtraPosition = 0;
+
+	//Player
+	Player *player;
+	Force* force;
+
+	//Enemies
+	int enemyGenerator = 0;
+	std::map<int, Enemy> enemies;
+	set<Enemy*> activeEnemies;
+	set<Enemy*> boomEnemies;
+
+	//Shots
+	std::set<Shot*> playerShots, enemyShots;
+
+	//Lifes (hearts)
+	int lifes = 3;
+
+
+	/* INSTRUCTIONS ATTRIBUTES */
+
+
+	/* CREDITS ATTRIBUTES */
+
+
+	/* TRANSITION ATTRIBUTES */
+	
+	Quad* quad;
 	int transitionCount = 0;
+
+
+	/* GAMEOVER ATTRIBUTES */
+	
+	TexturedQuad* gameOver;
+	Texture gameOverTex;
+	int gameOverCount = 0;
 };
 
 

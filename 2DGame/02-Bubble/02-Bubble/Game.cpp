@@ -10,11 +10,14 @@ void Game::init()
 	nextState = MENU;
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 	scene.init();
+	for (int key : keysInt) key = 0;
+	for (int key : specialKeysInt) key = 0;
 }
 
 bool Game::update(int deltaTime)
 {
-	//Process input
+	//Process key input
+	processInput();
 
 	//Game loop
 	switch (state) {
@@ -38,10 +41,6 @@ bool Game::update(int deltaTime)
 			break;
 	}
 
-	for (int i = 0; i < 256; i++) {
-		if (keys[i] == RELEASE) keys[i] = IDLE;
-		if (specialKeys[i] == RELEASE) specialKeys[i] = IDLE;
-	}
 	return bPlay;
 }
 
@@ -78,24 +77,23 @@ void Game::keyPressed(int key)
 {
 	if(key == 27) // Escape code
 		bPlay = false;
-	if (keys[key] == IDLE || keys[key] == RELEASE) keys[key] = PRESS;
-	else if (keys[key] == PRESS) keys[key] = REPEAT;
+
+	keysBool[key] = true;
 }
 
 void Game::keyReleased(int key)
 {
-	keys[key] = RELEASE;
+	keysBool[key] = false;
 }
 
 void Game::specialKeyPressed(int key)
 {
-	if (specialKeys[key] == IDLE || specialKeys[key] == RELEASE) specialKeys[key] = PRESS;
-	else if (specialKeys[key] == PRESS) specialKeys[key] = REPEAT;
+	specialKeysBool[key] = true;
 }
 
 void Game::specialKeyReleased(int key)
 {
-	specialKeys[key] = RELEASE;
+	specialKeysBool[key] = false;
 }
 
 void Game::mouseMove(int x, int y)
@@ -132,7 +130,6 @@ void Game::setState(GameState newState)
 		state = newState;
 		nextState = NONE;
 	}
-	
 }
 
 GameState Game::getPreviousState()
@@ -143,5 +140,40 @@ GameState Game::getPreviousState()
 GameState Game::getNextState()
 {
 	return nextState;
+}
+
+void Game::processInput() 
+{
+	//Process keys
+	for (int i = 0; i < sizeof(keysBool); ++i) {
+		if (keysBool[i]) { //i key is pressed
+			keysInt[i]++;
+			if (keys[i] == IDLE || keys[i] == RELEASE) keys[i] = PRESS;
+			else if (keys[i] == PRESS && keysInt[i] > nbFramesRepeat) keys[i] = REPEAT;
+		}
+		else { //i key is not pressed
+			if (keys[i] == PRESS || keys[i] == REPEAT) {
+				keysInt[i] = 0;
+				keys[i] = RELEASE;
+			}
+			else if (keys[i] == RELEASE) keys[i] = IDLE;
+		}
+	}
+
+	//Process special keys
+	for (int i = 0; i < sizeof(specialKeysBool); ++i) {
+		if (specialKeysBool[i]) { //i key is pressed
+			specialKeysInt[i]++;
+			if (specialKeys[i] == IDLE || specialKeys[i] == RELEASE) specialKeys[i] = PRESS;
+			else if (specialKeys[i] == PRESS && specialKeysInt[i] > nbFramesRepeat) specialKeys[i] = REPEAT;
+		}
+		else { //i key is not pressed
+			if (specialKeys[i] == PRESS || specialKeys[i] == REPEAT) {
+				specialKeysInt[i] = 0;
+				specialKeys[i] = RELEASE;
+			}
+			else if (specialKeys[i] == RELEASE) specialKeys[i] = IDLE;
+		}
+	}
 }
 

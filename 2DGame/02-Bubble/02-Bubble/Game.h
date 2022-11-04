@@ -49,10 +49,15 @@ public:
 	GameState getNextState();
 
 private:
+	void processInput();
+
 	bool bPlay;                       // Continue to play game?
 	Scene scene;                      // Scene to render
+	bool keysBool[256], specialKeysBool[256];
+	int keysInt[256], specialKeysInt[256];
 	keyState keys[256], specialKeys[256]; // Store key states so that 
 	GameState state, previousState, nextState;
+	int nbFramesRepeat = 10;
 };
 
 
