@@ -35,6 +35,7 @@ private:
 	bool boom = false;
 	bool boomFinish = false;
 	bool charging = false;
+	bool invulnerable = false;
 	int boomAnimation = -1;
 	int chargeAnimation;
 	int shotCharge = 1;
