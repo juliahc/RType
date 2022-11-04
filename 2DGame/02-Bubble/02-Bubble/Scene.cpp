@@ -192,7 +192,14 @@ void Scene::updateGameBackground(int deltaTime)
 void Scene::updateGameEnemies(int deltaTime) {
 	//Enemies
 	createEnemies();
-	for (Enemy* enemy : activeEnemies) enemy->update(deltaTime);
+	for (Enemy* enemy : activeEnemies) {
+		enemy->update(deltaTime);
+		if (enemy->isShooting()) {
+			//Shot
+			addShot(enemy->getShotSprite(), enemy->getShotVelocity(), enemy->getPosition(), enemy->getShotSize(), enemy->getShotSizeInSpriteSheet(), 1, false);
+			enemy->enemyAlreadyAttacked();
+		}
+	}
 
 	//Booming enemies
 	vector<Enemy*> enemyErase;
@@ -217,11 +224,19 @@ void Scene::updateGameForce(int deltaTime)
 void Scene::updateGameShots(int deltaTime) 
 {
 	vector<Shot*> erase;
+	//Player shots
 	for (Shot* shot : playerShots) {
 		shot->update(deltaTime);
 		if (!inScreen(shot->getPosition(), shot->getSize())) erase.push_back(shot);
 	}
 	for (Shot* shot : erase) playerShots.erase(shot);
+
+	//enemies shots
+	for (Shot* shot : enemyShots) {
+		shot->update(deltaTime);
+		if (!inScreen(shot->getPosition(), shot->getSize())) erase.push_back(shot);
+	}
+	for (Shot* shot : erase) enemyShots.erase(shot);
 }
 	
 void Scene::createEnemies() {
@@ -320,6 +335,7 @@ void Scene::renderGame()
 		force->render();
 
 		for (Shot* shot : playerShots) shot->render();
+		for (Shot* shot : enemyShots) shot->render();
 		for (Enemy* enemy : activeEnemies) enemy->render();
 		for (Enemy* boomEnemy : boomEnemies) boomEnemy->render();
 
