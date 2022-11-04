@@ -394,6 +394,8 @@ void Scene::updateGamePlayer(int deltaTime)
 
 void Scene::updateGameForce(int deltaTime)
 {
+	
+	
 	//Force update
 	force->update(currentTime, player->getPosition());
 }
