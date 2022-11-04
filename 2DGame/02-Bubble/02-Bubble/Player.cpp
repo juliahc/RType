@@ -11,10 +11,7 @@
 #define FALL_STEP 4
 
 
-enum PlayerAnims
-{
-	NORMAL, MOVE_UP, MOVE_DOWN
-};
+enum PlayerAnims { NORMAL, MOVE_UP, MOVE_DOWN };
 
 
 void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
@@ -69,14 +66,13 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 		spriteCharge->changeAnimation(0);
 }
 
-void Player::update(int deltaTime, int screenPosX)
+void Player::update(int deltaTime, int screenPosX, int forceWidth)
 {
 	if (!boom) {
 
 		sprite->update(deltaTime);
 
-		if (sprite->animation() == MOVE_UP || sprite->animation() == MOVE_DOWN)
-			sprite->changeAnimation(NORMAL);
+		if (sprite->animation() == MOVE_UP || sprite->animation() == MOVE_DOWN) sprite->changeAnimation(NORMAL);
 
 		//check UP, DOWN, LEFT, RIGHT keys
 		if ((Game::instance().getSpecialKey(GLUT_KEY_UP) == PRESS) || (Game::instance().getSpecialKey(GLUT_KEY_UP) == REPEAT))
@@ -129,7 +125,7 @@ void Player::update(int deltaTime, int screenPosX)
 		//Charge animation
 		if (Game::instance().getKey('s') == REPEAT)
 		{
-			spriteCharge->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x + 24), float(tileMapDispl.y + posPlayer.y)));
+			spriteCharge->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x + 24 + forceWidth), float(tileMapDispl.y + posPlayer.y)));
 			if (!charging) {
 				charging = true;
 				chargeAnimationChangeTime = 0;
@@ -137,10 +133,11 @@ void Player::update(int deltaTime, int screenPosX)
 				spriteCharge->changeAnimation(0);
 			}
 			else {
-				if (chargeAnimationChangeTime % 5 == 0) {
+				if (chargeAnimationChangeTime % 20 == 0 && shotCharge < 5) shotCharge++;
+				if (chargeAnimationChangeTime % 7 == 0) {
 					if (chargeAnimation < 4) chargeAnimation++;
 					else {
-						if (shotCharge < 5) shotCharge++;
+						
 						chargeAnimation = 0;
 					}
 					spriteCharge->changeAnimation(chargeAnimation);

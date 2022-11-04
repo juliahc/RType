@@ -9,8 +9,6 @@
 #define SCREEN_X 0
 #define SCREEN_Y 0
 
-
-
 #define INIT_PLAYER_X_TILES 4
 #define INIT_PLAYER_Y_TILES 4
 
@@ -126,6 +124,17 @@ void Scene::initGame()
 	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f);
 	heart = TexturedQuad::createTexturedQuad(geomHeart, texCoords, texProgramGame);
 	heartTex.loadFromFile("images/heart_13x10.png", TEXTURE_PIXEL_FORMAT_RGBA);
+
+	//Tokens
+	for (int i = 0; i < sizeof(showTokens); i++) showTokens[i] = true; //TODO: set to false
+	glm::vec2 geomToken[2] = { glm::vec2(0.f, 0.f), glm::vec2(10.f, 10.f) };
+	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(0.5f, 0.5f);
+	upgradeTokens[0] = TexturedQuad::createTexturedQuad(geomToken, texCoords, texProgramGame); //Token force
+	texCoords[0] = glm::vec2(0.5f, 0.f); texCoords[1] = glm::vec2(1.f, 0.5f);
+	upgradeTokens[1] = TexturedQuad::createTexturedQuad(geomToken, texCoords, texProgramGame); //Token upgrade 1
+	texCoords[0] = glm::vec2(0.f, 0.5f); texCoords[1] = glm::vec2(0.5f, 1.f);
+	upgradeTokens[2] = TexturedQuad::createTexturedQuad(geomToken, texCoords, texProgramGame); //Token upgrade 2
+	upgradeTokensTex.loadFromFile("images/force/upgradeTokens10x10.png", TEXTURE_PIXEL_FORMAT_RGBA);
 }
 
 void Scene::initInstructions()
@@ -297,7 +306,7 @@ void Scene::updateGame(int deltaTime)
 		checkCollisions();
 	}
 	else {
-		if (!player->boomFinished()) player->update(deltaTime, screenExtraPosition); //Player explosion animation
+		if (!player->boomFinished()) player->update(deltaTime, screenExtraPosition, force->getWidth()); //Player explosion animation
 		else {
 			lifes--;
 			if (lifes > 0) restartGame(); //Play again with one less life
@@ -350,9 +359,17 @@ void Scene::updateGameOver(int deltaTime)
 void Scene::updateGameBackground(int deltaTime)
 {
 	if (screenMovement == 2) {
+		//update player position
 		glm::ivec2 posPlayer = player->getPosition();
 		posPlayer.x++;
 		player->setPosition(posPlayer);
+
+		//update force position
+		glm::ivec2 posForce = force->getPosition();
+		posForce.x++;
+		force->setPosition(posForce);
+
+		//update background position
 		screenExtraPosition += 1;
 		gameProjection = glm::ortho(0.f + screenExtraPosition, float(SCREEN_WIDTH - 1) + screenExtraPosition, float(SCREEN_HEIGHT - 1), 0.f);
 		screenMovement = -1;
@@ -384,20 +401,24 @@ void Scene::updateGameEnemies(int deltaTime) {
 void Scene::updateGamePlayer(int deltaTime)
 {
 	//If "s" released, add shot with damage > 1
-	if (Game::instance().getKey('s') == RELEASE) addPlayerShot();
+	if (Game::instance().getKey('s') == PRESS || (Game::instance().getKey('s') == RELEASE && player->getShotCharge() > 1)) addPlayerShot();
 
 	//TODO: if s "press" add shot with damage = 1
 	
 	//Player update
-	player->update(deltaTime, screenExtraPosition);
+	player->update(deltaTime, screenExtraPosition, force->getWidth());
 }
 
 void Scene::updateGameForce(int deltaTime)
 {
-	
+	//Tokens TODO: que apareguin quan mor enemic
+	//for (int i = 0; i < sizeof(showTokens); i++) showTokens[i] = true;
+	tokenPositions[0] = glm::vec3(200.f, 50.f, 0.f);
+	tokenPositions[1] = glm::vec3(400.f, 120.f, 0.f);
+	tokenPositions[2] = glm::vec3(600.f, 200.f, 0.f);
 	
 	//Force update
-	force->update(currentTime, player->getPosition());
+	force->update(currentTime, player->getPosition(), screenExtraPosition);
 }
 
 void Scene::updateGameShots(int deltaTime) 
@@ -435,10 +456,17 @@ void Scene::createEnemies() {
 }
 
 void Scene::restartGame() {
+	//restart player
 	player = new Player();
 	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame);
 	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 	player->setTileMap(map);
+
+	//restart force
+	force = new Force();
+	force->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame);
+	force->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize() + 24, INIT_PLAYER_Y_TILES * map->getTileSize() + 1));
+	force->setTileMap(map);
 
 	playerShots.clear();
 	enemyShots.clear();
@@ -448,6 +476,7 @@ void Scene::restartGame() {
 	screenMovement = 0;
 	screenExtraPosition = 0;
 	enemyGenerator = 0;
+	for (int i = 0; i < sizeof(showTokens); i++) showTokens[i] = true; //TODO: set to false
 	
 	initEnemies();
 
@@ -528,7 +557,6 @@ void Scene::addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2
 
 void Scene::renderGame()
 {
-	
 	glm::mat4 modelview;
 
 	texProgram.use();
@@ -569,11 +597,25 @@ void Scene::renderGame()
 			heart->render(heartTex);
 		}
 
-		player->render();
-		force->render();
+		//upgrade tokens
+		for (int i = 0; i < sizeof(showTokens); i++) {
+			if (showTokens[i]) {
+				modelview = glm::mat4(1.0f);
+				modelview = glm::translate(modelview, tokenPositions[i]);
+				texProgramGame.setUniformMatrix4f("modelview", modelview);
+				upgradeTokens[i]->render(upgradeTokensTex);
+			}
+		}
 
+		//player and force
+		player->render();
+		if (force->isActive()) force->render();
+
+		//shots
 		for (Shot* shot : playerShots) shot->render();
 		for (Shot* shot : enemyShots) shot->render();
+
+		//enemies
 		for (Enemy* enemy : activeEnemies) enemy->render();
 		for (Enemy* boomEnemy : boomEnemies) boomEnemy->render();
 	}
@@ -728,7 +770,7 @@ bool Scene::inScreen(const glm::ivec2& pos, const glm::ivec2& size)
 
 void Scene::checkCollisions()
 {
-	glm::ivec2 playerPos, playerSize, enemyPos, enemySize, shotPos, shotSize;
+	glm::ivec2 playerPos, playerSize, enemyPos, enemySize, shotPos, shotSize, tokenPos, tokenSize, forcePos, forceSize;
 	playerPos = player->getPosition();
 	playerSize = glm::ivec2(24, 15);
 	
@@ -767,6 +809,49 @@ void Scene::checkCollisions()
 		activeEnemies.erase(enemy);
 	}
 	for (Shot* shot : shotErase) playerShots.erase(shot);
+
+	//Player & upgradeTokens
+	tokenSize = glm::ivec2(10, 10);
+	for (int i = 0; i < sizeof(showTokens); i++) {
+		if (showTokens[i]) {
+			tokenPos = glm::ivec2(tokenPositions[i].x, tokenPositions[i].y);
+			if (isCollision(playerPos, playerSize, tokenPos, tokenSize)) {
+				showTokens[i] = false;
+				if (i == 0) {
+					//force
+					force->setActive(true);
+				}
+				else if (i == 1) {
+					//upgrade 1
+					force->setType(1);
+				}
+				else if (i == 2) {
+					//upgrade 3
+					force->setType(2);
+				}
+			}
+		}
+	}
+
+	//Player & force
+	if (Game::instance().getKey('a') == PRESS) {
+		int a = 0;
+	}
+
+	glm::ivec2 playerFrontPos, playerBottomPos, playerMidSize;
+	playerMidSize = glm::ivec2(playerSize.x / 2, playerSize.y / 2);
+	playerBottomPos = playerPos;
+	playerFrontPos = glm::ivec2(playerPos.x + playerMidSize.x - 1, playerPos.y);
+	
+
+	forcePos = force->getPosition();
+	forceSize = force->getSize();
+	if (isCollision(playerBottomPos, playerMidSize, forcePos, forceSize)) {
+		force->setAttached("bottom");
+	}
+	else if (isCollision(playerFrontPos, playerMidSize, forcePos, forceSize)) {
+		force->setAttached("front");
+	}
 }
 
 bool Scene::isCollision(const glm::ivec2& pos1, const glm::ivec2& size1, const glm::ivec2& pos2, const glm::ivec2& size2)
