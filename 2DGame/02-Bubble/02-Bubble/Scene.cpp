@@ -33,56 +33,39 @@ Scene::~Scene()
 		delete player;
 }
 
+
 /* INIT */
 
 void Scene::init()
 {
+	//Shaders
 	initShaders();
-	glm::vec2 texCoords[2];
 
-	/* GAME */
-
-	//background
-	glm::vec2 geomBack[2] = { glm::vec2(0.f, 0.f), glm::vec2(3840.f, 256.f) };
-	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f);
-	gameBackground = TexturedQuad::createTexturedQuad(geomBack, texCoords, texProgram);
-	gameBackTex.loadFromFile("images/gameBackground.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	//map
-	map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgramGame);
-	//player
-	player = new Player();
-	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame);
-	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
-	player->setTileMap(map);
-	//force
-	force = new Force();
-	force->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame);
-	force->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize() + 24, INIT_PLAYER_Y_TILES * map->getTileSize() + 1));
-	force->setTileMap(map);
-	//enemies
-	initEnemies();
-	//heart
-	glm::vec2 geomHeart[2] = { glm::vec2(0.f, 0.f), glm::vec2(13.f, 10.f) };
-	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f);
-	heart = TexturedQuad::createTexturedQuad(geomHeart, texCoords, texProgramGame);
-	heartTex.loadFromFile("images/heart_13x10.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	//gameOver
-	glm::vec2 geomGameOver[2] = { glm::vec2(0.f, 0.f), glm::vec2(144.f, 14.f) };
-	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f); //play
-	gameOver = TexturedQuad::createTexturedQuad(geomGameOver, texCoords, texProgram);
-	gameOverTex.loadFromFile("images/gameOver.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	//Subinits
+	initGame();
+	initMenu();
+	initInstructions();
+	initCredits();
+	initTransition();
+	initGameover();
 	
-	
-	/* TRANSITION */
-	quad = Quad::createQuad(0.f, 0.f, 384.f, 256.f, simpleProgram);
+	//Projections
+	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
+	gameProjection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
 
+	
 	currentTime = 0.0f;
+}
 
-	/* MENU */
+//Subinits
+
+void Scene::initMenu()
+{
+	glm::vec2 texCoords[2];
 	glm::vec2 geomBackground[2] = { glm::vec2(0.f, 0.f), glm::vec2(384.f, 256.f) };
 	glm::vec2 geomMenuButton[2] = { glm::vec2(0.f, 0.f), glm::vec2(168.f, 23.f) };
-	
-	
+
+
 	texCoords[0] = glm::vec2(0.5f, 0.f); texCoords[1] = glm::vec2(1.f, 0.2f); //play
 	menuTexQuad[0] = TexturedQuad::createTexturedQuad(geomMenuButton, texCoords, texProgram);
 	texCoords[0] = glm::vec2(0.5f, 0.2f); texCoords[1] = glm::vec2(1.f, 0.4f); //continue
@@ -94,7 +77,7 @@ void Scene::init()
 	texCoords[0] = glm::vec2(0.5f, 0.8f); texCoords[1] = glm::vec2(1.f, 1.f); //credits
 	menuTexQuad[4] = TexturedQuad::createTexturedQuad(geomMenuButton, texCoords, texProgram);
 	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(0.5f, 0.2f); //play - selected
-	menuTexQuad[5] = TexturedQuad::createTexturedQuad(geomMenuButton, texCoords, texProgram); 
+	menuTexQuad[5] = TexturedQuad::createTexturedQuad(geomMenuButton, texCoords, texProgram);
 	texCoords[0] = glm::vec2(0.f, 0.2f); texCoords[1] = glm::vec2(0.5f, 0.4f); //continue - selected
 	menuTexQuad[6] = TexturedQuad::createTexturedQuad(geomMenuButton, texCoords, texProgram);
 	texCoords[0] = glm::vec2(0.f, 0.4f); texCoords[1] = glm::vec2(0.5f, 0.6f); //restart - selected
@@ -103,45 +86,158 @@ void Scene::init()
 	menuTexQuad[8] = TexturedQuad::createTexturedQuad(geomMenuButton, texCoords, texProgram);
 	texCoords[0] = glm::vec2(0.f, 0.8f); texCoords[1] = glm::vec2(0.5f, 1.f); //credits - selected
 	menuTexQuad[9] = TexturedQuad::createTexturedQuad(geomMenuButton, texCoords, texProgram);
-	
+
 	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f); //background
 	menuBackground = TexturedQuad::createTexturedQuad(geomBackground, texCoords, texProgram);
 	// Load textures
 	menuTexs[0].loadFromFile("images/menu/menuOptions.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	menuTexs[1].loadFromFile("images/menu/menuBackground.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	
-	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
-	gameProjection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
-	currentTime = 0.0f;
 }
 
-void Scene::restartGame() {
+void Scene::initGame()
+{
+	//background
+	glm::vec2 texCoords[2];
+	glm::vec2 geomBack[2] = { glm::vec2(0.f, 0.f), glm::vec2(3840.f, 256.f) };
+	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f);
+	gameBackground = TexturedQuad::createTexturedQuad(geomBack, texCoords, texProgram);
+	gameBackTex.loadFromFile("images/gameBackground.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	
+	//map
+	map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgramGame);
+	
+	//player
 	player = new Player();
 	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame);
 	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 	player->setTileMap(map);
-
-	playerShots.clear();
-	enemyShots.clear();
-	enemies.clear();
-	activeEnemies.clear();
-	boomEnemies.clear();
-	screenMovement = 0;
-	screenExtraPosition = 0;
-	enemyGenerator = 0;
 	
+	//force
+	force = new Force();
+	force->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame);
+	force->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize() + 24, INIT_PLAYER_Y_TILES * map->getTileSize() + 1));
+	force->setTileMap(map);
+	
+	//enemies
 	initEnemies();
+	
+	//heart
+	glm::vec2 geomHeart[2] = { glm::vec2(0.f, 0.f), glm::vec2(13.f, 10.f) };
+	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f);
+	heart = TexturedQuad::createTexturedQuad(geomHeart, texCoords, texProgramGame);
+	heartTex.loadFromFile("images/heart_13x10.png", TEXTURE_PIXEL_FORMAT_RGBA);
+}
 
+void Scene::initInstructions()
+{
 
-	gameProjection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
-	currentTime = 0.0f;
+}
+
+void Scene::initCredits()
+{
+
+}
+
+void Scene::initTransition()
+{
+	quad = Quad::createQuad(0.f, 0.f, 384.f, 256.f, simpleProgram);
+}
+
+void Scene::initGameover()
+{
+	glm::vec2 texCoords[2];
+	glm::vec2 geomGameOver[2] = { glm::vec2(0.f, 0.f), glm::vec2(144.f, 14.f) };
+	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f); //play
+	gameOver = TexturedQuad::createTexturedQuad(geomGameOver, texCoords, texProgram);
+	gameOverTex.loadFromFile("images/gameOver.png", TEXTURE_PIXEL_FORMAT_RGBA);
+}
+
+//Other subinit functions
+
+void Scene::initShaders()
+{
+	Shader vShader, fShader;
+
+	//Simple program
+	vShader.initFromFile(VERTEX_SHADER, "shaders/simple.vert");
+	if (!vShader.isCompiled())
+	{
+		cout << "Vertex Shader Error" << endl;
+		cout << "" << vShader.log() << endl << endl;
+	}
+	fShader.initFromFile(FRAGMENT_SHADER, "shaders/simple.frag");
+	if (!fShader.isCompiled())
+	{
+		cout << "Fragment Shader Error" << endl;
+		cout << "" << fShader.log() << endl << endl;
+	}
+	simpleProgram.init();
+	simpleProgram.addShader(vShader);
+	simpleProgram.addShader(fShader);
+	simpleProgram.link();
+	if (!simpleProgram.isLinked())
+	{
+		cout << "Shader Linking Error" << endl;
+		cout << "" << simpleProgram.log() << endl << endl;
+	}
+	simpleProgram.bindFragmentOutput("outColor");
+	vShader.free();
+	fShader.free();
+
+	//texProgram
+	vShader.initFromFile(VERTEX_SHADER, "shaders/texture.vert");
+	if (!vShader.isCompiled())
+	{
+		cout << "Vertex Shader Error" << endl;
+		cout << "" << vShader.log() << endl << endl;
+	}
+	fShader.initFromFile(FRAGMENT_SHADER, "shaders/texture.frag");
+	if (!fShader.isCompiled())
+	{
+		cout << "Fragment Shader Error" << endl;
+		cout << "" << fShader.log() << endl << endl;
+	}
+	texProgram.init();
+	texProgram.addShader(vShader);
+	texProgram.addShader(fShader);
+	texProgram.link();
+	if (!texProgram.isLinked())
+	{
+		cout << "Shader Linking Error" << endl;
+		cout << "" << texProgram.log() << endl << endl;
+	}
+	texProgram.bindFragmentOutput("outColor");
+
+	//TexProgramGame
+	vShader.initFromFile(VERTEX_SHADER, "shaders/texture.vert");
+	if (!vShader.isCompiled())
+	{
+		cout << "Vertex Shader Error" << endl;
+		cout << "" << vShader.log() << endl << endl;
+	}
+	fShader.initFromFile(FRAGMENT_SHADER, "shaders/texture.frag");
+	if (!fShader.isCompiled())
+	{
+		cout << "Fragment Shader Error" << endl;
+		cout << "" << fShader.log() << endl << endl;
+	}
+	texProgramGame.init();
+	texProgramGame.addShader(vShader);
+	texProgramGame.addShader(fShader);
+	texProgramGame.link();
+	if (!texProgramGame.isLinked())
+	{
+		cout << "Shader Linking Error" << endl;
+		cout << "" << texProgramGame.log() << endl << endl;
+	}
+	texProgramGame.bindFragmentOutput("outColor");
 }
 
 void Scene::initEnemies() {
 	vector<pair<Enemies, glm::ivec2>> enemyPositions = { 
-		{make_pair(BASIC2, glm::ivec2 {402, 220})},
-		{make_pair(BASIC1, glm::ivec2 {403, 150})},
-	};
+        {make_pair(BASIC2, glm::ivec2 {402, 220})},
+        {make_pair(BASIC1, glm::ivec2 {403, 150})},
+  };
 	for (auto pos : enemyPositions) {
 		Enemy* enemy = new Enemy();
 		enemy->init(glm::ivec2(SCREEN_X, SCREEN_Y), pos.first, texProgramGame);
@@ -151,7 +247,42 @@ void Scene::initEnemies() {
 	}
 }
 
+
 /* UPDATES */
+
+void Scene::updateMenu(int deltaTime) {
+	int nbButtons;
+	if (menuType == INITIAL) nbButtons = 3;
+	else nbButtons = 4;
+
+	if (Game::instance().getSpecialKey(GLUT_KEY_UP) == RELEASE) {
+		if (menuState == 1) menuState = nbButtons;
+		else menuState -= 1;
+	} else if (Game::instance().getSpecialKey(GLUT_KEY_DOWN) == RELEASE) {
+		if (menuState == nbButtons) menuState = 1;
+		else menuState += 1;
+	}
+	else if (Game::instance().getKey(13) == PRESS) {
+		GameState newState;
+		if (menuType == INITIAL) {
+			if (menuState == 1) newState = GAME;
+			else if (menuState == 2) newState = INSTRUCTIONS;
+			else if (menuState == 3) newState = CREDITS;
+		}
+		else {
+			if (menuState == 1) newState = GAME;
+			else if (menuState == 2) {
+				restartGame();
+				newState = GAME;
+			}
+			else if (menuState == 3) newState = INSTRUCTIONS;
+			else if (menuState == 4) newState = CREDITS;
+		}
+		Game::instance().setState(newState);
+	}
+
+	currentTime += deltaTime;
+}
 
 void Scene::updateGame(int deltaTime)
 {
@@ -178,6 +309,43 @@ void Scene::updateGame(int deltaTime)
 		}
 	}
 }
+
+void Scene::updateInstructions(int deltaTime) {
+	currentTime += deltaTime;
+}
+
+void Scene::updateCredits(int deltaTime) {
+	currentTime += deltaTime;
+}
+
+void Scene::updateTransition(int deltaTime)
+{
+	transitionCount++;
+
+	int middle = 80;
+	int max = 160;
+
+	if (transitionCount >= max) {
+		transitionCount = 0;
+		GameState nextState = Game::instance().getNextState();
+		Game::instance().setState(nextState);
+	}
+}
+
+void Scene::updateGameOver(int deltaTime)
+{
+	gameOverCount++;
+
+	if (gameOverCount >= 100) {
+		gameOverCount = 0;
+		Game::instance().setState(MENU);
+		menuType = INITIAL;
+		menuState = 1;
+		lifes = 3;
+	}
+}
+
+//Subupdates
 
 void Scene::updateGameBackground(int deltaTime)
 {
@@ -253,7 +421,9 @@ void Scene::updateGameShots(int deltaTime)
 	}
 	for (Shot* shot : erase) enemyShots.erase(shot);
 }
-	
+
+//Other subupdate functions
+
 void Scene::createEnemies() {
 	int acutalPosition = (SCREEN_WIDTH - 1) + screenExtraPosition;
 	auto it = enemies.find(acutalPosition);
@@ -262,74 +432,95 @@ void Scene::createEnemies() {
 	}
 }
 
-void Scene::updateMenu(int deltaTime) {
-	int nbButtons;
-	if (menuType == INITIAL) nbButtons = 3;
-	else nbButtons = 4;
+void Scene::restartGame() {
+	player = new Player();
+	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame);
+	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
+	player->setTileMap(map);
 
-	if (Game::instance().getSpecialKey(GLUT_KEY_UP) == RELEASE) {
-		if (menuState == 1) menuState = nbButtons;
-		else menuState -= 1;
-	} else if (Game::instance().getSpecialKey(GLUT_KEY_DOWN) == RELEASE) {
-		if (menuState == nbButtons) menuState = 1;
-		else menuState += 1;
-	}
-	else if (Game::instance().getKey(13) == PRESS) {
-		GameState newState;
-		if (menuType == INITIAL) {
-			if (menuState == 1) newState = GAME;
-			else if (menuState == 2) newState = INSTRUCTIONS;
-			else if (menuState == 3) newState = CREDITS;
-		}
-		else {
-			if (menuState == 1) newState = GAME;
-			else if (menuState == 2) {
-				restartGame();
-				newState = GAME;
-			}
-			else if (menuState == 3) newState = INSTRUCTIONS;
-			else if (menuState == 4) newState = CREDITS;
-		}
-		Game::instance().setState(newState);
-	}
+	playerShots.clear();
+	enemyShots.clear();
+	enemies.clear();
+	activeEnemies.clear();
+	boomEnemies.clear();
+	screenMovement = 0;
+	screenExtraPosition = 0;
+	enemyGenerator = 0;
+	
+	initEnemies();
 
-	currentTime += deltaTime;
+	gameProjection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
+	currentTime = 0.0f;
 }
 
-void Scene::updateInstructions(int deltaTime) {
-	currentTime += deltaTime;
-}
-
-void Scene::updateCredits(int deltaTime) {
-	currentTime += deltaTime;
-}
-
-void Scene::updateTransition(int deltaTime)
+void Scene::addPlayerShot()
 {
-	transitionCount++;
+	//Player info
+	int charge = player->getShotCharge();
+	glm::ivec2 posPlayer = player->getPosition();
 
-	int middle = 80;
-	int max = 160;
 
-	if (transitionCount >= max) {
-		transitionCount = 0;
-		GameState nextState = Game::instance().getNextState();
-		Game::instance().setState(nextState);
+	//Shot info
+	int damage;
+	string spriteFolder;
+	glm::ivec2 velocity, posShot, size;
+	glm::vec2 sizeInSpriteSheet;
+	damage = charge;
+	posShot = glm::ivec2(posPlayer.x + 16, posPlayer.y);
+	sizeInSpriteSheet = glm::vec2(1, 1);
+
+	switch (charge) {
+		case 1:
+			spriteFolder = "images/ship/shot.png";
+			velocity = glm::ivec2(6.f, 0.f);
+			size = glm::ivec2(8, 4);
+			posShot = glm::ivec2(posPlayer.x + 16, posPlayer.y + 6);
+			break;
+		case 2:
+			spriteFolder = "images/ship/chargedShots/shotCharged1.png";
+			velocity = glm::ivec2(6.f, 0.f);
+			size = glm::ivec2(15, 12);
+			break;
+		case 3:
+			spriteFolder = "images/ship/chargedShots/shotCharged2.png";
+			velocity = glm::ivec2(6.f, 0.f);
+			size = glm::ivec2(28, 14);
+			break;
+		case 4:
+			spriteFolder = "images/ship/chargedShots/shotCharged3.png";
+			velocity = glm::ivec2(6.f, 0.f);
+			size = glm::ivec2(44, 14);
+			break;
+		case 5:
+			spriteFolder = "images/ship/chargedShots/shotCharged4.png";
+			velocity = glm::ivec2(6.f, 0.f);
+			size = glm::ivec2(60, 14);
+			break;
+		default:
+			spriteFolder = "images/ship/shot.png";
+			velocity = glm::ivec2(6.f, 0.f);
+			size = glm::ivec2(8, 4);
+			break;
 	}
+	
+	//Add shot
+	addShot(spriteFolder, velocity, posShot, size, sizeInSpriteSheet, damage, true);
+
+	//Reset shot charge
+	player->setShotCharge(1);
 }
 
-void Scene::updateGameOver(int deltaTime)
+void Scene::addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2& pos, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage, bool fromPlayer)
 {
-	gameOverCount++;
+	Shot* shot = new Shot();
+	shot->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame, spriteFolder, velocity, size, sizeInSpriteSheet, damage);
+	shot->setPosition(glm::vec2(pos.x, pos.y));
+	shot->setTileMap(map);
 
-	if (gameOverCount >= 100) {
-		gameOverCount = 0;
-		Game::instance().setState(MENU);
-		menuType = INITIAL;
-		menuState = 1;
-		lifes = 3;
-	}
+	if (fromPlayer) playerShots.insert(shot);
+	else enemyShots.insert(shot);
 }
+
 
 /* RENDERS */
 
@@ -505,154 +696,10 @@ void Scene::renderGameover()
 	gameOver->render(gameOverTex);
 }
 
+
 /* OTHERS */
 
-void Scene::initShaders()
-{
-	Shader vShader, fShader;
-
-	//Simple program
-	vShader.initFromFile(VERTEX_SHADER, "shaders/simple.vert");
-	if (!vShader.isCompiled())
-	{
-		cout << "Vertex Shader Error" << endl;
-		cout << "" << vShader.log() << endl << endl;
-	}
-	fShader.initFromFile(FRAGMENT_SHADER, "shaders/simple.frag");
-	if (!fShader.isCompiled())
-	{
-		cout << "Fragment Shader Error" << endl;
-		cout << "" << fShader.log() << endl << endl;
-	}
-	simpleProgram.init();
-	simpleProgram.addShader(vShader);
-	simpleProgram.addShader(fShader);
-	simpleProgram.link();
-	if (!simpleProgram.isLinked())
-	{
-		cout << "Shader Linking Error" << endl;
-		cout << "" << simpleProgram.log() << endl << endl;
-	}
-	simpleProgram.bindFragmentOutput("outColor");
-	vShader.free();
-	fShader.free();
-
-	//texProgram
-	vShader.initFromFile(VERTEX_SHADER, "shaders/texture.vert");
-	if (!vShader.isCompiled())
-	{
-		cout << "Vertex Shader Error" << endl;
-		cout << "" << vShader.log() << endl << endl;
-	}
-	fShader.initFromFile(FRAGMENT_SHADER, "shaders/texture.frag");
-	if (!fShader.isCompiled())
-	{
-		cout << "Fragment Shader Error" << endl;
-		cout << "" << fShader.log() << endl << endl;
-	}
-	texProgram.init();
-	texProgram.addShader(vShader);
-	texProgram.addShader(fShader);
-	texProgram.link();
-	if (!texProgram.isLinked())
-	{
-		cout << "Shader Linking Error" << endl;
-		cout << "" << texProgram.log() << endl << endl;
-	}
-	texProgram.bindFragmentOutput("outColor");
-
-	//TexProgramGame
-	vShader.initFromFile(VERTEX_SHADER, "shaders/texture.vert");
-	if (!vShader.isCompiled())
-	{
-		cout << "Vertex Shader Error" << endl;
-		cout << "" << vShader.log() << endl << endl;
-	}
-	fShader.initFromFile(FRAGMENT_SHADER, "shaders/texture.frag");
-	if (!fShader.isCompiled())
-	{
-		cout << "Fragment Shader Error" << endl;
-		cout << "" << fShader.log() << endl << endl;
-	}
-	texProgramGame.init();
-	texProgramGame.addShader(vShader);
-	texProgramGame.addShader(fShader);
-	texProgramGame.link();
-	if (!texProgramGame.isLinked())
-	{
-		cout << "Shader Linking Error" << endl;
-		cout << "" << texProgramGame.log() << endl << endl;
-	}
-	texProgramGame.bindFragmentOutput("outColor");	
-}
-
-void Scene::addPlayerShot()
-{
-	//Player info
-	int charge = player->getShotCharge();
-	glm::ivec2 posPlayer = player->getPosition();
-
-
-	//Shot info
-	int damage;
-	string spriteFolder;
-	glm::ivec2 velocity, posShot, size;
-	glm::vec2 sizeInSpriteSheet;
-	damage = charge;
-	posShot = glm::ivec2(posPlayer.x + 16, posPlayer.y);
-	sizeInSpriteSheet = glm::vec2(1, 1);
-
-	switch (charge) {
-		case 1:
-			spriteFolder = "images/ship/shot.png";
-			velocity = glm::ivec2(6.f, 0.f);
-			size = glm::ivec2(8, 4);
-			posShot = glm::ivec2(posPlayer.x + 16, posPlayer.y + 6);
-			break;
-		case 2:
-			spriteFolder = "images/ship/chargedShots/shotCharged1.png";
-			velocity = glm::ivec2(6.f, 0.f);
-			size = glm::ivec2(15, 12);
-			break;
-		case 3:
-			spriteFolder = "images/ship/chargedShots/shotCharged2.png";
-			velocity = glm::ivec2(6.f, 0.f);
-			size = glm::ivec2(28, 14);
-			break;
-		case 4:
-			spriteFolder = "images/ship/chargedShots/shotCharged3.png";
-			velocity = glm::ivec2(6.f, 0.f);
-			size = glm::ivec2(44, 14);
-			break;
-		case 5:
-			spriteFolder = "images/ship/chargedShots/shotCharged4.png";
-			velocity = glm::ivec2(6.f, 0.f);
-			size = glm::ivec2(60, 14);
-			break;
-		default:
-			spriteFolder = "images/ship/shot.png";
-			velocity = glm::ivec2(6.f, 0.f);
-			size = glm::ivec2(8, 4);
-			break;
-	}
-	
-	//Add shot
-	addShot(spriteFolder, velocity, posShot, size, sizeInSpriteSheet, damage, true);
-
-	//Reset shot charge
-	player->setShotCharge(1);
-}
-
-void Scene::addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2& pos, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage, bool fromPlayer)
-{
-	Shot* shot = new Shot();
-	shot->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame, spriteFolder, velocity, size, sizeInSpriteSheet, damage);
-	shot->setPosition(glm::vec2(pos.x, pos.y));
-	shot->setTileMap(map);
-
-	if (fromPlayer) playerShots.insert(shot);
-	else enemyShots.insert(shot);
-}
+//Collisions
 
 bool Scene::inScreen(const glm::ivec2& pos, const glm::ivec2& size)
 {
