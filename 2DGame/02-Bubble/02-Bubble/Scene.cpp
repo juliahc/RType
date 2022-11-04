@@ -129,50 +129,15 @@ void Scene::restartGame() {
 	
 	initEnemies();
 
+
 	gameProjection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
 	currentTime = 0.0f;
 }
 
 void Scene::initEnemies() {
 	vector<pair<Enemies, glm::ivec2>> enemyPositions = { 
-		{make_pair(BASIC1, glm::ivec2 {400, 5 * map->getTileSize()})},
-		{make_pair(BASIC1, glm::ivec2 {410, 5 * map->getTileSize()})},
-		{make_pair(BASIC1, glm::ivec2 {420, 5 * map->getTileSize()})},
-		{make_pair(BASIC2, glm::ivec2 {440, 210})},
-		{make_pair(BASIC1, glm::ivec2 {460, 210})},
-		{make_pair(BASIC1, glm::ivec2 {460, 210})},
-		{make_pair(BASIC1, glm::ivec2 {463, 210})},
-		{make_pair(BASIC1, glm::ivec2 {469, 210})},
-		{make_pair(BASIC1, glm::ivec2 {473, 210})},
-		{make_pair(BASIC1, glm::ivec2 {492, 210})},
-		{make_pair(BASIC1, glm::ivec2 {513, 210})},
-		{make_pair(BASIC1, glm::ivec2 {650, 100})},
-		{make_pair(BASIC1, glm::ivec2 {655, 100})},
-		{make_pair(BASIC1, glm::ivec2 {660, 100})},
-		{make_pair(BASIC1, glm::ivec2 {665, 100})},
-		{make_pair(BASIC1, glm::ivec2 {670, 100})},
-		{make_pair(BASIC1, glm::ivec2 {675, 100})},
-		{make_pair(BASIC1, glm::ivec2 {680, 100})},
-		{make_pair(BASIC1, glm::ivec2 {685, 100})},
-		{make_pair(BASIC1, glm::ivec2 {690, 100})},
-		{make_pair(BASIC1, glm::ivec2 {695, 100})},
-		{make_pair(BASIC1, glm::ivec2 {700, 100})},
-		{make_pair(BASIC1, glm::ivec2 {800, 100})},
-		{make_pair(BASIC1, glm::ivec2 {805, 100})},
-		{make_pair(BASIC1, glm::ivec2 {810, 100})},
-		{make_pair(BASIC1, glm::ivec2 {815, 100})},
-		{make_pair(BASIC1, glm::ivec2 {820, 100})},
-		{make_pair(BASIC1, glm::ivec2 {825, 100})},
-		{make_pair(BASIC1, glm::ivec2 {855, 100})},
-		{make_pair(BASIC1, glm::ivec2 {860, 100})},
-		{make_pair(BASIC1, glm::ivec2 {865, 100})},
-		{make_pair(BASIC1, glm::ivec2 {870, 100})},
-		{make_pair(BASIC1, glm::ivec2 {875, 100})},
-		{make_pair(BASIC1, glm::ivec2 {880, 100})},
-		{make_pair(BASIC1, glm::ivec2 {885, 100})},
-		{make_pair(BASIC1, glm::ivec2 {890, 100})},
-		{make_pair(BASIC1, glm::ivec2 {895, 100})},
-		{make_pair(BASIC1, glm::ivec2 {900, 100})},
+		{make_pair(BASIC2, glm::ivec2 {402, 220})},
+		{make_pair(BASIC1, glm::ivec2 {403, 150})},
 	};
 	for (auto pos : enemyPositions) {
 		Enemy* enemy = new Enemy();
