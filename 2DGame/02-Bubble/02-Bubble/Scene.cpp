@@ -33,6 +33,8 @@ Scene::~Scene()
 		delete player;
 }
 
+/* INIT */
+
 void Scene::init()
 {
 	initShaders();
@@ -69,8 +71,10 @@ void Scene::init()
 	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f); //play
 	gameOver = TexturedQuad::createTexturedQuad(geomGameOver, texCoords, texProgram);
 	gameOverTex.loadFromFile("images/gameOver.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	//quad fade black
-	fadeBlack = Quad::createQuad(0.f, 0.f, 384.f, 256.f, program);
+	
+	
+	/* TRANSITION */
+	quad = Quad::createQuad(0.f, 0.f, 384.f, 256.f, simpleProgram);
 
 	currentTime = 0.0f;
 
@@ -125,7 +129,6 @@ void Scene::restartGame() {
 	screenMovement = 0;
 	screenExtraPosition = 0;
 	enemyGenerator = 0;
-	gameOverNum = -1;
 	
 	initEnemies();
 
@@ -144,6 +147,8 @@ void Scene::initEnemies() {
 	}
 }
 
+/* UPDATES */
+
 void Scene::updateGame(int deltaTime)
 {
 	currentTime += deltaTime;
@@ -157,20 +162,14 @@ void Scene::updateGame(int deltaTime)
 		checkCollisions();
 	}
 	else {
-		if (!player->boomFinished()) player->update(deltaTime, screenExtraPosition);
+		if (!player->boomFinished()) player->update(deltaTime, screenExtraPosition); //Player explosion animation
 		else {
 			lifes--;
-			if (lifes > 0) restartGame();
+			if (lifes > 0) restartGame(); //Play again with one less life
 			else {
-				if (gameOverNum == -1) gameOverNum = 200;
-				else if (gameOverNum > 0) gameOverNum--;
-				else {
-					Game::instance().setState(MENU);
-					restartGame();
-					menuType = INITIAL;
-					menuState = 1;
-					lifes = 3;
-				}
+				//Game over, player lifes == 0
+				Game::instance().setState(GAMEOVER);
+				restartGame();
 			}
 		}
 	}
@@ -212,12 +211,18 @@ void Scene::updateGameEnemies(int deltaTime) {
 
 void Scene::updateGamePlayer(int deltaTime)
 {
+	//If "s" released, add shot with damage > 1
 	if (Game::instance().getKey('s') == RELEASE) addPlayerShot();
+
+	//TODO: if s "press" add shot with damage = 1
+	
+	//Player update
 	player->update(deltaTime, screenExtraPosition);
 }
 
 void Scene::updateGameForce(int deltaTime)
 {
+	//Force update
 	force->update(currentTime, player->getPosition());
 }
 
@@ -226,9 +231,15 @@ void Scene::updateGameShots(int deltaTime)
 	vector<Shot*> erase;
 	//Player shots
 	for (Shot* shot : playerShots) {
+		
+		//Update shots
 		shot->update(deltaTime);
+		
+		//Check shots that are out of the screen
 		if (!inScreen(shot->getPosition(), shot->getSize())) erase.push_back(shot);
 	}
+
+	//Erase player shots that are out of the screen
 	for (Shot* shot : erase) playerShots.erase(shot);
 
 	//enemies shots
@@ -289,15 +300,45 @@ void Scene::updateCredits(int deltaTime) {
 	currentTime += deltaTime;
 }
 
+void Scene::updateTransition(int deltaTime)
+{
+	transitionCount++;
+
+	int middle = 80;
+	int max = 160;
+
+	if (transitionCount >= max) {
+		transitionCount = 0;
+		GameState nextState = Game::instance().getNextState();
+		Game::instance().setState(nextState);
+	}
+}
+
+void Scene::updateGameOver(int deltaTime)
+{
+	gameOverCount++;
+
+	if (gameOverCount >= 100) {
+		gameOverCount = 0;
+		Game::instance().setState(MENU);
+		menuType = INITIAL;
+		menuState = 1;
+		lifes = 3;
+	}
+}
+
+/* RENDERS */
+
 void Scene::renderGame()
 {
+	
 	glm::mat4 modelview;
 
 	texProgram.use();
 	texProgram.setUniformMatrix4f("projection", projection);
 	texProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
 
-	if (!player->died() || (gameOverNum <= 200 && gameOverNum > 140)) {
+	if (!player->died()) {
 
 		//background
 		modelview = glm::mat4(1.0f);
@@ -338,13 +379,6 @@ void Scene::renderGame()
 		for (Shot* shot : enemyShots) shot->render();
 		for (Enemy* enemy : activeEnemies) enemy->render();
 		for (Enemy* boomEnemy : boomEnemies) boomEnemy->render();
-
-	} else if (gameOverNum >= 0 && gameOverNum <= 140) {
-		//game over
-		modelview = glm::mat4(1.0f);
-		modelview = glm::translate(modelview, glm::vec3(/*screenExtraPosition*/ + 120.f, 121.f, 0.f));
-		texProgram.setUniformMatrix4f("modelview", modelview);
-		gameOver->render(gameOverTex);
 	}
 
 	if (Game::instance().getKey('m')) {
@@ -407,6 +441,11 @@ void Scene::renderMenu() {
 	texProgram.setUniformMatrix4f("modelview", modelview);
 	if ((menuType == INITIAL && menuState == 3) || (menuType == PLAYING && menuState == 4)) menuTexQuad[9]->render(menuTexs[0]);
 	else menuTexQuad[4]->render(menuTexs[0]);
+
+
+
+
+
 }
 
 void Scene::renderInstructions() {
@@ -417,54 +456,130 @@ void Scene::renderCredits() {
 
 }
 
+void Scene::renderTransition()
+{
+	
+	int middle = 80;
+	int max = 160;
+
+	float alpha;
+
+	if (transitionCount < middle) { //fadeOut
+		GameState previousState = Game::instance().getPreviousState();
+		if (previousState != NONE) Game::instance().renderState(previousState);
+		alpha = float(transitionCount) / float(middle);
+		int a = 0;
+	}
+	else if (transitionCount >= middle && transitionCount < max) { //fadeIn
+		GameState nextState = Game::instance().getNextState();
+		if (nextState != NONE) Game::instance().renderState(nextState);
+		alpha = 1.f - float(transitionCount - middle)/ float(middle);
+	}
+
+	
+	glm::mat4 modelview = glm::mat4(1.0f);
+
+	simpleProgram.use();
+	simpleProgram.setUniformMatrix4f("projection", projection);
+	simpleProgram.setUniform4f("color", 0.f, 0.f, 0.f, alpha);
+
+	modelview = glm::mat4(1.0f);
+	simpleProgram.setUniformMatrix4f("modelview", modelview);
+	quad->render();
+}
+
+void Scene::renderGameover()
+{
+	glm::mat4 modelview = glm::mat4(1.0f);
+	texProgram.use();
+	texProgram.setUniformMatrix4f("projection", projection);
+	texProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
+
+	//game over
+	modelview = glm::translate(modelview, glm::vec3(120.f, 121.f, 0.f));
+	texProgram.setUniformMatrix4f("modelview", modelview);
+	gameOver->render(gameOverTex);
+}
+
+/* OTHERS */
+
 void Scene::initShaders()
 {
 	Shader vShader, fShader;
 
+	//Simple program
+	vShader.initFromFile(VERTEX_SHADER, "shaders/simple.vert");
+	if (!vShader.isCompiled())
+	{
+		cout << "Vertex Shader Error" << endl;
+		cout << "" << vShader.log() << endl << endl;
+	}
+	fShader.initFromFile(FRAGMENT_SHADER, "shaders/simple.frag");
+	if (!fShader.isCompiled())
+	{
+		cout << "Fragment Shader Error" << endl;
+		cout << "" << fShader.log() << endl << endl;
+	}
+	simpleProgram.init();
+	simpleProgram.addShader(vShader);
+	simpleProgram.addShader(fShader);
+	simpleProgram.link();
+	if (!simpleProgram.isLinked())
+	{
+		cout << "Shader Linking Error" << endl;
+		cout << "" << simpleProgram.log() << endl << endl;
+	}
+	simpleProgram.bindFragmentOutput("outColor");
+	vShader.free();
+	fShader.free();
+
+	//texProgram
 	vShader.initFromFile(VERTEX_SHADER, "shaders/texture.vert");
-	if(!vShader.isCompiled())
+	if (!vShader.isCompiled())
 	{
 		cout << "Vertex Shader Error" << endl;
 		cout << "" << vShader.log() << endl << endl;
 	}
 	fShader.initFromFile(FRAGMENT_SHADER, "shaders/texture.frag");
-	if(!fShader.isCompiled())
+	if (!fShader.isCompiled())
 	{
 		cout << "Fragment Shader Error" << endl;
 		cout << "" << fShader.log() << endl << endl;
 	}
 	texProgram.init();
-	texProgramGame.init();
 	texProgram.addShader(vShader);
-	texProgramGame.addShader(vShader);
 	texProgram.addShader(fShader);
-	texProgramGame.addShader(fShader);
 	texProgram.link();
-	texProgramGame.link();
-	if(!texProgram.isLinked())
+	if (!texProgram.isLinked())
 	{
 		cout << "Shader Linking Error" << endl;
 		cout << "" << texProgram.log() << endl << endl;
 	}
+	texProgram.bindFragmentOutput("outColor");
+
+	//TexProgramGame
+	vShader.initFromFile(VERTEX_SHADER, "shaders/texture.vert");
+	if (!vShader.isCompiled())
+	{
+		cout << "Vertex Shader Error" << endl;
+		cout << "" << vShader.log() << endl << endl;
+	}
+	fShader.initFromFile(FRAGMENT_SHADER, "shaders/texture.frag");
+	if (!fShader.isCompiled())
+	{
+		cout << "Fragment Shader Error" << endl;
+		cout << "" << fShader.log() << endl << endl;
+	}
+	texProgramGame.init();
+	texProgramGame.addShader(vShader);
+	texProgramGame.addShader(fShader);
+	texProgramGame.link();
 	if (!texProgramGame.isLinked())
 	{
 		cout << "Shader Linking Error" << endl;
 		cout << "" << texProgramGame.log() << endl << endl;
 	}
-	texProgram.bindFragmentOutput("outColor");
-	texProgramGame.bindFragmentOutput("outColor");
-	program.init();
-	program.addShader(vShader);
-	program.addShader(fShader);
-	program.link();
-	if (!program.isLinked())
-	{
-		cout << "Shader Linking Error" << endl;
-		cout << "" << program.log() << endl << endl;
-	}
-	program.bindFragmentOutput("outColor");
-	vShader.free();
-	fShader.free();
+	texProgramGame.bindFragmentOutput("outColor");	
 }
 
 void Scene::addPlayerShot()
@@ -618,4 +733,3 @@ bool Scene::isCollision(const glm::ivec2& pos1, const glm::ivec2& size1, const g
 	if (((minx1 < maxx2) && (minx2 < maxx1)) && ((miny1 < maxy2) && (miny2 < maxy1))) return true;
 	return false;
 }
-

@@ -27,6 +27,8 @@ void Quad::render() const
 {
 	glBindVertexArray(vao);
 	glEnableVertexAttribArray(posLocation);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
@@ -34,4 +36,3 @@ void Quad::free()
 {
 	glDeleteBuffers(1, &vbo);
 }
-

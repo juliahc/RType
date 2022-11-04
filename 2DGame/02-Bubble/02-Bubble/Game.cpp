@@ -5,7 +5,9 @@
 void Game::init()
 {
 	bPlay = true;
-	state = MENU;
+	previousState = NONE;
+	state = TRANSITION;
+	nextState = MENU;
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 	scene.init();
 }
@@ -28,6 +30,12 @@ bool Game::update(int deltaTime)
 		case INSTRUCTIONS:
 			scene.updateInstructions(deltaTime);
 			break;
+		case TRANSITION:
+			scene.updateTransition(deltaTime);
+			break;
+		case GAMEOVER:
+			scene.updateGameOver(deltaTime);
+			break;
 	}
 
 	for (int i = 0; i < 256; i++) {
@@ -37,10 +45,7 @@ bool Game::update(int deltaTime)
 	return bPlay;
 }
 
-void Game::render()
-{
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+void Game::renderState(GameState state) {
 	switch (state) {
 		case MENU:
 			scene.renderMenu();
@@ -54,7 +59,19 @@ void Game::render()
 		case INSTRUCTIONS:
 			scene.renderInstructions();
 			break;
+		case TRANSITION:
+			scene.renderTransition();
+			break;
+		case GAMEOVER:
+			scene.renderGameover();
 	}
+}
+
+void Game::render()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	renderState(state);
 }
 
 void Game::keyPressed(int key)
@@ -105,8 +122,26 @@ keyState Game::getSpecialKey(int key) const
 
 void Game::setState(GameState newState)
 {
-	state = newState;
+	previousState = state;
+	
+	if (state != TRANSITION) {
+		state = TRANSITION;
+		nextState = newState;
+	}
+	else {
+		state = newState;
+		nextState = NONE;
+	}
+	
 }
 
+GameState Game::getPreviousState()
+{
+	return previousState;
+}
 
+GameState Game::getNextState()
+{
+	return nextState;
+}
 

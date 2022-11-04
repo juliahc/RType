@@ -32,3 +32,4 @@ private:
 
 
 #endif // _QUAD_INCLUDE
+
