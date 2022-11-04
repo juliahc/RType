@@ -51,9 +51,9 @@ private:
 	bool attacking = false;
 
 	bool shooting = false;
-	vector<glm::ivec2> shotSize = { glm::ivec2(6, 6), glm::ivec2(1,1), glm::ivec2(1,1), glm::ivec2(1,1) };
+	vector<glm::ivec2> shotSize = { glm::ivec2(6, 6), glm::ivec2(6, 6), glm::ivec2(1,1), glm::ivec2(1,1) };
 	glm::ivec2 shotvelocity = glm::ivec2(-4, 0);
-	vector<string> spriteShot = { "images/enemies/basic1/shot.png", "", "", "" };
+	vector<string> spriteShot = { "images/enemies/basic1/shot.png", "images/enemies/basic1/shot.png", "", "" };
 	glm::vec2 shotSizeInSpriteSheet = glm::vec2(1, 1);
 
 	int timesWithoutAttacking = 50;
@@ -93,6 +93,9 @@ private:
 	int lastRotationAnim = 0;
 	int actualAnimation = 0;
 
+		//BASIC2 helper
+	bool startWalking = false;
+
 	int actualAttackAnimation = -1;
 	int previousAttackAnimation = 0;
 
@@ -114,6 +117,7 @@ private:
 	//Movement
 	void moveEnemyHorizontally(int length, bool right);
 	void moveEnemyVertically(int length, bool up);
+	void restartWalking();
 
 	//Attack player
 	bool attack(int probability);

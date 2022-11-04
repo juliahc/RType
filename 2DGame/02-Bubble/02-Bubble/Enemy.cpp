@@ -136,16 +136,24 @@ void Enemy::update(int deltaTime)
 			else moveEnemyHorizontally(2, false);
 			break;
 		case BASIC2:
-			//Check if the enemy have to attack the player. Probability 5%
-			attacking = attack(5);
-			//Attack + animation
-			if (attacking) attackPlayer();
-
-			//Horizontal movement + Animations
-			if (!attacking) {
-				if (right) moveEnemyHorizontally(2, true);
-				else moveEnemyHorizontally(2, false);
+			if (startWalking) {
+				//restart Walking
+				restartWalking();
 			}
+			else {
+				if (!attacking) {
+					//Check if the enemy have to attack the player. Probability 5%
+					attacking = attack(2);
+				}
+				//Attack + animation
+				if (attacking) attackPlayer();
+				else {
+					//Horizontal movement + Animations
+					if (right) moveEnemyHorizontally(2, true);
+					else moveEnemyHorizontally(2, false);
+				}
+			}
+
 			break;
 		case BASIC3:
 			break;
@@ -267,15 +275,34 @@ void Enemy::moveEnemyVertically(int length, bool up) {
 	}
 }
 
+void Enemy::restartWalking() {
+	if (timeLastRotationAnim > 30) {
+		--lastRotationAnim;
+		if (!right && lastRotationAnim == BASIC2_RIGHT_UP3) {
+			lastRotationAnim = BASIC2_LEFT_UP3;
+		}
+		if (lastRotationAnim == BASIC2_STAYLEFT || lastRotationAnim == BASIC2_STAYRIGHT) startWalking = false;
+		sprite->changeAnimation(lastRotationAnim);
+		actualAttackAnimation = lastRotationAnim;
+		timeLastRotationAnim = 0;
+	}
+	else ++timeLastRotationAnim;
+}
+
 bool Enemy::attack(int probability) {
 	// Random number to decide actions
 	int random_number = rand();
-	if (random_number % 100 < probability % 101 && timesWithoutAttacking > 49) {
-		timesWithoutAttacking = 0;
-		return true;
+	switch (myType) {
+		case BASIC1:
+		case BASIC2:
+			if (random_number % 100 < probability % 101 && timesWithoutAttacking > 49) {
+				timesWithoutAttacking = 0;
+				return true;
+			}
+			timesWithoutAttacking++;
+			return false;
+			break;
 	}
-	timesWithoutAttacking++;
-	return false;
 }
 
 void Enemy::attackPlayer() {
@@ -293,30 +320,25 @@ void Enemy::attackPlayer() {
 				else {
 					sprite->changeAnimation(++lastRotationAnim);
 				}
+				actualAttackAnimation = lastRotationAnim;
+			}
+			else if (lastRotationAnim == BASIC2_UP) {
+				if (timeLastRotationAnim > 30) {
+					shooting = true;
+					timeLastRotationAnim = 0;
+				}
+				else ++timeLastRotationAnim;
+				return;
 			}
 			else {
-				if (timeLastRotationAnim > 40) {
-					if (right) {
-						if (lastRotationAnim < BASIC2_UP) {
-							sprite->changeAnimation(++lastRotationAnim);
-						}
-						else {
-							attacking = false;
-							sprite->changeAnimation(BASIC2_STAYRIGHT);
-							lastRotationAnim = BASIC2_STAYRIGHT;
-						}
+				if (timeLastRotationAnim > 30) {
+					++lastRotationAnim;
+					if (!right && lastRotationAnim == BASIC2_STAYRIGHT) {
+						lastRotationAnim = BASIC2_UP;
 					}
-					else {
-						if (lastRotationAnim < BASIC2_LEFT_UP3) {
-							sprite->changeAnimation(++lastRotationAnim);
-						}
-						else {
-							attacking = false;
-							sprite->changeAnimation(BASIC2_STAYLEFT);
-							lastRotationAnim = BASIC2_STAYLEFT;
-						}
-					}
+					sprite->changeAnimation(lastRotationAnim);
 					timeLastRotationAnim = 0;
+					actualAttackAnimation = lastRotationAnim;
 					break;
 				}
 				else ++timeLastRotationAnim;
@@ -390,13 +412,40 @@ glm::ivec2 Enemy::getShotSize() {
 	return shotSize[myType];
 }
 glm::ivec2 Enemy::getShotVelocity(glm::ivec2 playerPosition) {
-	int difference = playerPosition.y - posEnemy.y;
-	int yvel = ceil(difference / 20);
-	if (yvel < 0) yvel = max(yvel, -3);
-	else yvel = min(yvel, 3);
-	int xvel = playerPosition.x - posEnemy.x;
-	if (xvel < 1) xvel = -4;
-	else xvel = 4;
+	int xvel, yvel, differenceX, differenceY, threashholdX, threashholdY, denominator;
+	switch (myType) {
+		case BASIC1:
+			threashholdX = 4;
+			threashholdY = 3;
+			denominator = 20;
+
+			differenceY = playerPosition.y - posEnemy.y;
+			yvel = ceil(differenceY / denominator);
+			if (yvel < 0) yvel = max(yvel, -threashholdY);
+			else yvel = min(yvel, threashholdY);
+
+			xvel = playerPosition.x - posEnemy.x;
+			if (xvel < 1) xvel = -threashholdX;
+			else xvel = threashholdX;
+
+			break;
+		case BASIC2:
+			threashholdX = 5;
+			threashholdY = 4;
+			denominator = 20;
+
+			differenceX = playerPosition.x - posEnemy.x;
+			differenceY = playerPosition.y - posEnemy.y;
+			yvel = ceil(differenceY / denominator);
+			xvel = ceil(differenceX / denominator);
+			if (yvel < 0) yvel = max(yvel, -threashholdY);
+			else yvel = min(yvel, threashholdY);
+
+			if (xvel < 0) xvel = max(xvel, -threashholdX);
+			else xvel = min(xvel, threashholdX);
+
+			break;
+	}
 	return glm::ivec2(xvel, yvel);
 }
 string Enemy::getShotSprite() {
@@ -405,6 +454,13 @@ string Enemy::getShotSprite() {
 
 void Enemy::enemyAlreadyAttacked() {
 	this->shooting = false;
+	switch (myType) {
+		case BASIC2:
+			attacking = false;
+			startWalking = true;
+			timeLastRotationAnim = 0;
+			break;
+	}
 }
 glm::vec2 Enemy::getShotSizeInSpriteSheet() {
 	return shotSizeInSpriteSheet;
