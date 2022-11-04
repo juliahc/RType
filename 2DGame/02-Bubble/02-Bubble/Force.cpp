@@ -10,13 +10,6 @@
 #define JUMP_HEIGHT 96
 #define FALL_STEP 4
 
-
-enum PlayerAnims
-{
-	STAND_LEFT, STAND_RIGHT, MOVE_LEFT, MOVE_RIGHT
-};
-
-
 void Force::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram)
 {
 	tileMapDispl = tileMapPos;
@@ -36,18 +29,48 @@ void Force::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram)
 	sprite->changeAnimation(0);
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posForce.x), float(tileMapDispl.y + posForce.y)));
 
+	active = false;
+	
+	state = INACTIVE;
+	type = UPGRADE_0;
 
+	frontAttached = false;
+	bottomAttached = false;
+
+	posForce.x = 0;
+	posForce.y = (SCREEN_HEIGHT / 2) - (12 / 2);
 }
 
-void Force::update(int deltaTime, const glm::ivec2& posPlayer)
+void Force::update(int deltaTime, const glm::ivec2& posPlayer, const int screenExtraPosition)
 {
 	sprite->update(deltaTime);
 
-	if (active) {
+	if (state == INACTIVE) {
+		posForce.x = 0;
+		posForce.y = (SCREEN_HEIGHT / 2) - (12 / 2);
+	}
+	else if (state == INIT) {
+		posForce.x += 2;
+		if (posForce.x >= ((SCREEN_WIDTH / 2) - (12 / 2)) ) {
+			state = UP;
+		}
+	}
+	else if (frontAttached) {
+		//Position to be in front of player
 		posForce = posPlayer;
 		posForce.x += 24;
 		posForce.y += 1;
 	}
+	else if (bottomAttached) {
+		//Position to be in the bottom of player
+		posForce = posPlayer;
+		posForce.x -= 12;
+		posForce.y += 1;
+	}
+	else {
+
+	}
+
 
 	if (deltaTime%7 == 0) {
 		if (animation == 3) animation = 0;
@@ -55,7 +78,7 @@ void Force::update(int deltaTime, const glm::ivec2& posPlayer)
 		sprite->changeAnimation(animation);
 	}
 
-	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posForce.x), float(tileMapDispl.y + posForce.y)));
+	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posForce.x + screenExtraPosition), float(tileMapDispl.y + posForce.y)));
 }
 
 void Force::render()
@@ -77,4 +100,15 @@ void Force::setTileMap(TileMap* tileMap)
 glm::ivec2 Force::getPosition()
 {
 	return posForce;
+}
+
+bool Force::isActive()
+{
+	return active;
+}
+
+void Force::setActive(bool newActive)
+{
+	active = newActive;
+	if (active) state = INIT;
 }

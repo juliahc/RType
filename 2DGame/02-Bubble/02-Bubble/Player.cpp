@@ -11,10 +11,7 @@
 #define FALL_STEP 4
 
 
-enum PlayerAnims
-{
-	NORMAL, MOVE_UP, MOVE_DOWN
-};
+enum PlayerAnims { NORMAL, MOVE_UP, MOVE_DOWN };
 
 
 void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)

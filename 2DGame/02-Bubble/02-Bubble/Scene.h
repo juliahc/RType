@@ -102,8 +102,8 @@ private:
 	float currentTime;
 	TileMap *map;
 	glm::mat4 gameProjection;
-	TexturedQuad *gameBackground, * heart;
-	Texture gameBackTex, heartTex;
+	TexturedQuad *gameBackground, *heart, *upgradeTokens[3];
+	Texture gameBackTex, heartTex, upgradeTokensTex;
 
 	//Background
 	int screenMovement = 0;
@@ -124,6 +124,10 @@ private:
 
 	//Lifes (hearts)
 	int lifes = 3;
+
+	//tokens
+	bool showTokens[3];
+	glm::vec3 tokenPositions[3];
 
 
 	/* INSTRUCTIONS ATTRIBUTES */
