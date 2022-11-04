@@ -234,7 +234,10 @@ void Scene::initShaders()
 }
 
 void Scene::initEnemies() {
-	vector<pair<Enemies, glm::ivec2>> enemyPositions = { {make_pair(BASIC1, glm::ivec2 {400, 5 * map->getTileSize()})}, {make_pair(BASIC1, glm::ivec2 {410, 5 * map->getTileSize()})}, {make_pair(BASIC1, glm::ivec2 {420, 5 * map->getTileSize()})}, {make_pair(BASIC2, glm::ivec2 {440, 210})}, {make_pair(BASIC1, glm::ivec2 {460, 210})}};
+	vector<pair<Enemies, glm::ivec2>> enemyPositions = { 
+        {make_pair(BASIC2, glm::ivec2 {402, 220})},
+        {make_pair(BASIC1, glm::ivec2 {403, 150})},
+  };
 	for (auto pos : enemyPositions) {
 		Enemy* enemy = new Enemy();
 		enemy->init(glm::ivec2(SCREEN_X, SCREEN_Y), pos.first, texProgramGame);
@@ -364,7 +367,7 @@ void Scene::updateGameEnemies(int deltaTime) {
 		enemy->update(deltaTime);
 		if (enemy->isShooting()) {
 			//Shot
-			addShot(enemy->getShotSprite(), enemy->getShotVelocity(), enemy->getPosition(), enemy->getShotSize(), enemy->getShotSizeInSpriteSheet(), 1, false);
+			addShot(enemy->getShotSprite(), enemy->getShotVelocity(player->getPosition()), enemy->getPosition(), enemy->getShotSize(), enemy->getShotSizeInSpriteSheet(), 1, false);
 			enemy->enemyAlreadyAttacked();
 		}
 	}
