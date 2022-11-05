@@ -74,6 +74,7 @@ private:
 	void createEnemies();
 	void restartGame();
 	void addPlayerShot();
+	void addForceShot();
 	void addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2& pos, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage, bool fromPlayer);
 
 	//Collisions
