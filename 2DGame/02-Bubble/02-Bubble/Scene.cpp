@@ -539,7 +539,60 @@ void Scene::addPlayerShot()
 
 	//Reset shot charge
 	player->setShotCharge(1);
+
+	//Add Force shot
+	if(force->isActive() && !force->isAttached() && Game::instance().getKey('s') == PRESS) addForceShot();
 }
+
+void Scene::addForceShot() {
+	int nbShots; // 1 o 2 o 4
+	int damage = 1;
+	bool front;
+	string spriteFolder;
+	glm::ivec2 velocity, velocities[4], posShot, auxPos, size;
+	glm::vec2 sizeInSpriteSheet;
+	sizeInSpriteSheet = glm::vec2(1, 1);
+	glm::ivec2 forceSize = force->getSize();
+	
+	force->addShot(nbShots, posShot, velocities, front);
+	if (nbShots == 1) {
+		//Simple shot
+		spriteFolder = "images/ship/shot.png";
+		velocity = glm::ivec2(6.f, 0.f);
+		size = glm::ivec2(8, 4);
+		addShot(spriteFolder, velocity, posShot, size, sizeInSpriteSheet, damage, true);
+	}
+	if (nbShots == 2 || nbShots == 4) {
+		//Diagonal shots
+		size = glm::ivec2(8, 6);
+
+		spriteFolder = "images/force/diagonal_front_up.png";
+		velocity = velocities[0];
+		addShot(spriteFolder, velocity, posShot, size, sizeInSpriteSheet, damage, true);
+
+		spriteFolder = "images/force/diagonal_front_down.png";
+		velocity = velocities[1];
+		addShot(spriteFolder, velocity, posShot, size, sizeInSpriteSheet, damage, true);
+	}
+	if (nbShots == 4) {
+		size = glm::ivec2(3, 8);
+
+		auxPos = posShot;
+		auxPos.x -= forceSize.x / 2;
+		auxPos.y -= forceSize.y / 2;
+		spriteFolder = "images/force/up_shot.png";
+		velocity = velocities[2];
+		addShot(spriteFolder, velocity, auxPos, size, sizeInSpriteSheet, damage, true);
+
+		auxPos = posShot;
+		auxPos.x -= forceSize.x / 2;
+		auxPos.y += forceSize.y / 2;
+		spriteFolder = "images/force/down_shot.png";
+		velocity = velocities[3];
+		addShot(spriteFolder, velocity, auxPos, size, sizeInSpriteSheet, damage, true);
+	}	
+}
+
 
 void Scene::addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2& pos, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage, bool fromPlayer)
 {
@@ -770,9 +823,11 @@ bool Scene::inScreen(const glm::ivec2& pos, const glm::ivec2& size)
 
 void Scene::checkCollisions()
 {
-	glm::ivec2 playerPos, playerSize, enemyPos, enemySize, shotPos, shotSize, tokenPos, tokenSize, forcePos, forceSize;
+	glm::ivec2 playerPos, playerSize, forcePos, forceSize, enemyPos, enemySize, shotPos, shotSize, tokenPos, tokenSize;
 	playerPos = player->getPosition();
 	playerSize = player->getSize();
+	forcePos = force->getPosition();
+	forceSize = force->getSize();
 	
 	//Player & enemies
 	for (Enemy* enemy : activeEnemies) {
@@ -781,12 +836,15 @@ void Scene::checkCollisions()
 		if (isCollision(playerPos, playerSize, enemyPos, enemySize)) player->collision();
 	}
 
-	//Player & enemy shots
+	//(Player and Force)  and enemy shots
+	vector<Shot*> erase;
 	for (Shot* shot : enemyShots) {
 		shotPos = shot->getPosition();
 		shotSize = shot->getSize();
 		if (isCollision(playerPos, playerSize, shotPos, shotSize)) player->collision();
+		if (isCollision( forcePos, forceSize, shotPos, shotSize)) erase.push_back(shot);
 	}
+	for (Shot* shot : erase) enemyShots.erase(shot);
 
 	//Enemies & player shots
 	vector<Enemy*> enemyErase;

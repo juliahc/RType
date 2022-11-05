@@ -19,6 +19,7 @@ void Force::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram)
 	sizeForces[0] = glm::ivec2(12, 12);
 	sizeForces[1] = glm::ivec2(15, 12);
 	sizeForces[2] = glm::ivec2(16, 16);
+	sizeForces[3] = glm::ivec2(15, 12);
 
 	sizeForce = sizeForces[starterType];
 	type = starterType;
@@ -26,8 +27,9 @@ void Force::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram)
 	spritesheets[0].loadFromFile("images/force/force.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	spritesheets[1].loadFromFile("images/force/force1.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	spritesheets[2].loadFromFile("images/force/force2.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	spritesheets[3].loadFromFile("images/force/force1Bottom.png", TEXTURE_PIXEL_FORMAT_RGBA);
 
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 4; i++) {
 		sprites[i] = Sprite::createSprite(sizeForce, glm::vec2(0.25, 1.f), &spritesheets[i], &shaderProgram);
 		sprites[i]->setNumberAnimations(4);
 		sprites[i]->setAnimationSpeed(0, 8);
@@ -68,7 +70,6 @@ void Force::update(int deltaTime, const glm::ivec2& posPlayer, const int screenP
 	if (Game::instance().getKey('f') == PRESS) {
 		active = true;
 		state = ACTIVE;
-		attached = FRONT;
 	}
 
 	if (state == INACTIVE) {
@@ -86,9 +87,11 @@ void Force::update(int deltaTime, const glm::ivec2& posPlayer, const int screenP
 	}
 	else if (Game::instance().getKey('z') == PRESS && (attached == FRONT || attached == BOTTOM)) {
 		if (attached == FRONT) state = PUSHED_RIGHT;
-		else state = PUSHED_LEFT;
+		else {
+			state = PUSHED_LEFT;
+			if (type == 3) type = 1;
+		}
 		attached = NOATTACHED;
-		int a = 0;
 	}
 	else if (attached == FRONT) {
 		//Position to be in front of player
@@ -105,7 +108,13 @@ void Force::update(int deltaTime, const glm::ivec2& posPlayer, const int screenP
 		//Position to be in the bottom of player
 		posForce = posPlayer;
 		posForce.x -= sizeForce.x;
-		posForce.y += 1;
+		//posForce.y += 1;
+		if (type == 1 || type == 3) posForce.y -= 1;
+		if (type == 3) posForce.x += 4;
+		if (type == 2) {
+			posForce.x += 5;
+			posForce.y -= 1;
+		}
 	}
 	else {
 		leftLine = (SCREEN_WIDTH / 4) + screenPosX;
@@ -158,6 +167,10 @@ bool Force::isActive()
 	return active;
 }
 
+bool Force::isAttached() {
+	return !(attached == NOATTACHED);
+}
+
 void Force::setActive(bool newActive)
 {
 	active = newActive;
@@ -167,7 +180,10 @@ void Force::setActive(bool newActive)
 void Force::setAttached(string newAttached)
 {
 	if (state != PUSHED_LEFT && state != PUSHED_RIGHT) {
-		if (newAttached == "bottom") attached = BOTTOM;
+		if (newAttached == "bottom") {
+			attached = BOTTOM;
+			if (type == 1) type = 3;
+		}
 		else if (newAttached == "front") attached = FRONT;
 	}
 }
@@ -176,6 +192,7 @@ void Force::setType(int newType)
 {
 	if (newType == 0 || newType == 1 || newType == 2) {
 		type = newType;
+		if (type == 1 && attached == BOTTOM) type = 3;
 		sizeForce = sizeForces[type];
 	}
 }
@@ -263,4 +280,29 @@ void Force::nextPositionPushed(const int screenPosX)
 		else if (posForce.x > minX) posForce.x -= 6;
 		else state = ACTIVE;
 	}
+}
+
+void Force::addShot(int& nbShots, glm::ivec2& posShot, glm::ivec2* velocities, bool& front)
+{
+	if (!attached) {
+		posShot = posForce;
+		posShot.x += sizeForce.x;
+		posShot.y += sizeForce.y / 2;
+		if (type == 0) {
+			nbShots = 1;
+		}
+		if (type == 1 || type == 2 || type == 3) {
+			//Diagonal shots
+			nbShots = 2;
+			velocities[0] = glm::ivec2(4,-2);
+			velocities[1] = glm::ivec2(4, 2);
+		} 
+		if (type == 2) {
+			//Up and down shots
+			nbShots = 4;
+			velocities[2] = glm::ivec2(vel.x,-4);
+			velocities[3] = glm::ivec2(vel.x, 4);
+		}
+	}
+	front = attached == FRONT;
 }

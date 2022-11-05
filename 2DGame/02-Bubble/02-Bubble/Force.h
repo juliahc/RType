@@ -27,11 +27,13 @@ public:
 
 	glm::ivec2 getPosition();
 	glm::ivec2 getSize();
+	int getWidth();
 	bool isActive();
+	bool isAttached();
 	void setActive(bool newActive);
 	void setAttached(string newAttached);
 	void setType(int newType);
-	int getWidth();
+	void addShot(int& nbShots, glm::ivec2 & posShot, glm::ivec2* velocities, bool& front);
 
 private:
 
@@ -39,13 +41,13 @@ private:
 	void nextPositionPushed(const int screenPosX);
 
 	glm::ivec2 tileMapDispl, posForce, sizeForces[3], sizeForce, vel;
-	Sprite* sprites[3];
+	Sprite* sprites[4];
 	TileMap* map;
-	Texture spritesheets[3];
+	Texture spritesheets[4];
 	int animation = 0;
 	bool active;
 
-	int type; // 0=upgrade0 1=upgrade1 2=upgrade2
+	int type; // 0=upgrade0 1=upgrade1 2=upgrade2 3=upgrade1Bottom
 	forceState state;
 
 	forceAttached attached;
