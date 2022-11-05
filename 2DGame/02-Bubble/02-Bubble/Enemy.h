@@ -11,7 +11,7 @@ public:
 	Basic functions
 	*/
 	void init(const glm::ivec2& tileMapPos, Enemies enemy, ShaderProgram& shaderProgram);
-	void update(int deltaTime);
+	void update(int deltaTime, glm::ivec2 posPlayer);
 	void render();
 
 	void setTileMap(TileMap* tileMap);
@@ -32,7 +32,7 @@ public:
 	*/
 	bool isShooting();
 	glm::ivec2 getShotSize();
-	glm::ivec2 getShotVelocity(glm::ivec2 playerPosition);
+	glm::ivec2 getShotVelocity();
 	string getShotSprite();
 	glm::vec2 getShotSizeInSpriteSheet();
 
@@ -46,20 +46,30 @@ private:
 	//Movement
 	bool right = false;
 	bool up = true;
-
+	bool stay = false;
+	int stayCounter = 0;
+	
+	bool rightFoot = true; // Helper for the BASIC3 movement animation
+	bool lookingTop = false; // Helper for the BASIC4 movement animation
+	
 	//Attack player
+	glm::ivec2 posPlayer;
 	bool attacking = false;
 
 	bool shooting = false;
-	vector<glm::ivec2> shotSize = { glm::ivec2(6, 6), glm::ivec2(1,1), glm::ivec2(1,1), glm::ivec2(1,1) };
+	vector<glm::ivec2> shotSize = { glm::ivec2(6, 6), glm::ivec2(6, 6), glm::ivec2(1,1), glm::ivec2(6,6) };
 	glm::ivec2 shotvelocity = glm::ivec2(-4, 0);
-	vector<string> spriteShot = { "images/enemies/basic1/shot.png", "", "", "" };
+	vector<string> spriteShot = { "images/enemies/basic1/shot.png", "images/enemies/basic1/shot.png", "", "images/enemies/basic1/shot.png" };
 	glm::vec2 shotSizeInSpriteSheet = glm::vec2(1, 1);
 
 	int timesWithoutAttacking = 50;
 	
-	//Jump?
+	//Jump
 	bool bJumping = false;
+	bool stopJumping = false;
+	int startY = 0;
+	int timesToNextY = 0;
+	int timesWithoutJumping = 0;
 
 	//Type of enemy
 	Enemies myType;
@@ -70,8 +80,6 @@ private:
 
 	//Coords
 	glm::ivec2 tileMapDispl, posEnemy;
-
-	int jumpAngle, startY;
 
 	/*
 	Enemies sprites
@@ -85,13 +93,16 @@ private:
 	TileMap* map;
 
 	//Sprites + sizes
-	vector<string> spriteFiles{ "images/enemies/basic1/basic1.png", "images/enemies/basic2/basic2.png", "", "" };
-	vector<glm::ivec2> enemySizes{ glm::ivec2(23, 24), glm::ivec2(30, 28), glm::ivec2(0, 0), glm::ivec2(0, 0) };
-	vector<glm::vec2> spriteSheetSize{ glm::vec2(0.25f, 0.5f), glm::vec2(0.2f, 0.5f), glm::vec2(0., 0.), glm::vec2(0., 0.) };
+	vector<string> spriteFiles{ "images/enemies/basic1/basic1.png", "images/enemies/basic2/basic2.png", "images/enemies/basic3/basic3.png", "images/enemies/basic4/basic4.png" };
+	vector<glm::ivec2> enemySizes{ glm::ivec2(23, 24), glm::ivec2(30, 28), glm::ivec2(27, 33), glm::ivec2(16, 16) };
+	vector<glm::vec2> spriteSheetSize{ glm::vec2(0.25f, 0.5f), glm::vec2(0.2f, 0.5f), glm::vec2(0.25f, 0.5f), glm::vec2(0.2f, 0.25f) };
 
 	//Animation helpers
 	int lastRotationAnim = 0;
 	int actualAnimation = 0;
+
+		//BASIC2 helper
+	bool startWalking = false;
 
 	int actualAttackAnimation = -1;
 	int previousAttackAnimation = 0;
@@ -114,6 +125,7 @@ private:
 	//Movement
 	void moveEnemyHorizontally(int length, bool right);
 	void moveEnemyVertically(int length, bool up);
+	void restartWalking();
 
 	//Attack player
 	bool attack(int probability);
@@ -121,6 +133,10 @@ private:
 
 	//Animations
 	void changeAnimation();
+
+	//Jump
+	void jumpEnemy();
+	bool startJumping();
 
 };
 
