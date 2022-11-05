@@ -284,10 +284,11 @@ void Force::nextPositionPushed(const int screenPosX)
 
 void Force::addShot(int& nbShots, glm::ivec2& posShot, glm::ivec2* velocities, bool& front)
 {
+	posShot = posForce;
+	posShot.x += sizeForce.x;
+	posShot.y += sizeForce.y / 2;
+
 	if (!attached) {
-		posShot = posForce;
-		posShot.x += sizeForce.x;
-		posShot.y += sizeForce.y / 2;
 		if (type == 0) {
 			nbShots = 1;
 		}
@@ -304,5 +305,17 @@ void Force::addShot(int& nbShots, glm::ivec2& posShot, glm::ivec2* velocities, b
 			velocities[3] = glm::ivec2(vel.x, 4);
 		}
 	}
+	else {
+		nbShots = -1;
+		if (type == 1 || type == 3) {
+			//upgrade 1 shot
+			nbShots = 5;
+		}
+		else if (type == 2) {
+			//upgrade 2 shot
+			nbShots = 6;
+		}
+	}
+
 	front = attached == FRONT;
 }

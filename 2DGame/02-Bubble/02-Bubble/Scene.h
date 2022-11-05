@@ -75,7 +75,7 @@ private:
 	void restartGame();
 	void addPlayerShot();
 	void addForceShot();
-	void addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2& pos, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage, bool fromPlayer);
+	void addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2& pos, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage, bool fromPlayer, int upgrade);
 
 	//Collisions
 	void checkCollisions();
@@ -99,7 +99,7 @@ private:
 
 
 	/* GAME ATTRIBUTES */
-
+	int count;
 	float currentTime;
 	TileMap *map;
 	glm::mat4 gameProjection;
@@ -122,6 +122,7 @@ private:
 
 	//Shots
 	std::set<Shot*> playerShots, enemyShots;
+	int lastUpgrade2Shot = 0;
 
 	//Lifes (hearts)
 	int lifes = 3;

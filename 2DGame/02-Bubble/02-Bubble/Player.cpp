@@ -17,7 +17,7 @@ enum PlayerAnims { NORMAL, MOVE_UP, MOVE_DOWN };
 void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 {
 	bJumping = false;
-	invulnerable = true;
+	invulnerable = false;
 	tileMapDispl = tileMapPos;
 	sizePlayer = glm::ivec2(24, 11);
 
