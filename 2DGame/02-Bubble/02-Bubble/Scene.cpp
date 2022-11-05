@@ -94,6 +94,8 @@ void Scene::initMenu()
 
 void Scene::initGame()
 {
+	count = 0;
+	
 	//background
 	glm::vec2 texCoords[2];
 	glm::vec2 geomBack[2] = { glm::vec2(0.f, 0.f), glm::vec2(3840.f, 256.f) };
@@ -295,6 +297,7 @@ void Scene::updateMenu(int deltaTime) {
 
 void Scene::updateGame(int deltaTime)
 {
+	count++;
 	currentTime += deltaTime;
 
 	if (!player->died()) {
@@ -384,7 +387,7 @@ void Scene::updateGameEnemies(int deltaTime) {
 		enemy->update(deltaTime);
 		if (enemy->isShooting()) {
 			//Shot
-			addShot(enemy->getShotSprite(), enemy->getShotVelocity(player->getPosition()), enemy->getPosition(), enemy->getShotSize(), enemy->getShotSizeInSpriteSheet(), 1, false);
+			addShot(enemy->getShotSprite(), enemy->getShotVelocity(player->getPosition()), enemy->getPosition(), enemy->getShotSize(), enemy->getShotSizeInSpriteSheet(), 1, false, 0);
 			enemy->enemyAlreadyAttacked();
 		}
 	}
@@ -414,8 +417,8 @@ void Scene::updateGameForce(int deltaTime)
 	//Tokens TODO: que apareguin quan mor enemic
 	//for (int i = 0; i < sizeof(showTokens); i++) showTokens[i] = true;
 	tokenPositions[0] = glm::vec3(200.f, 50.f, 0.f);
-	tokenPositions[1] = glm::vec3(400.f, 120.f, 0.f);
-	tokenPositions[2] = glm::vec3(600.f, 200.f, 0.f);
+	tokenPositions[1] = glm::vec3(400.f, 10.f, 0.f);
+	tokenPositions[2] = glm::vec3(400.f, 200.f, 0.f);
 	
 	//Force update
 	force->update(currentTime, player->getPosition(), screenExtraPosition);
@@ -424,11 +427,13 @@ void Scene::updateGameForce(int deltaTime)
 void Scene::updateGameShots(int deltaTime) 
 {
 	vector<Shot*> erase;
+	glm::ivec2 forcePos = force->getPosition();
+	glm::ivec2 forceSize = force->getSize();
 	//Player shots
 	for (Shot* shot : playerShots) {
 		
 		//Update shots
-		shot->update(deltaTime);
+		shot->update(deltaTime, forcePos, forceSize, texProgramGame);
 		
 		//Check shots that are out of the screen
 		if (!inScreen(shot->getPosition(), shot->getSize())) erase.push_back(shot);
@@ -439,7 +444,7 @@ void Scene::updateGameShots(int deltaTime)
 
 	//enemies shots
 	for (Shot* shot : enemyShots) {
-		shot->update(deltaTime);
+		shot->update(deltaTime, forcePos, forceSize, texProgramGame);
 		if (!inScreen(shot->getPosition(), shot->getSize())) erase.push_back(shot);
 	}
 	for (Shot* shot : erase) enemyShots.erase(shot);
@@ -476,6 +481,8 @@ void Scene::restartGame() {
 	screenMovement = 0;
 	screenExtraPosition = 0;
 	enemyGenerator = 0;
+	count = 0;
+	lastUpgrade2Shot = 0;
 	for (int i = 0; i < sizeof(showTokens); i++) showTokens[i] = true; //TODO: set to false
 	
 	initEnemies();
@@ -535,13 +542,13 @@ void Scene::addPlayerShot()
 	}
 	
 	//Add shot
-	addShot(spriteFolder, velocity, posShot, size, sizeInSpriteSheet, damage, true);
+	addShot(spriteFolder, velocity, posShot, size, sizeInSpriteSheet, damage, true, 0);
 
 	//Reset shot charge
 	player->setShotCharge(1);
 
 	//Add Force shot
-	if(force->isActive() && !force->isAttached() && Game::instance().getKey('s') == PRESS) addForceShot();
+	if(force->isActive() && Game::instance().getKey('s') == PRESS) addForceShot();
 }
 
 void Scene::addForceShot() {
@@ -560,7 +567,7 @@ void Scene::addForceShot() {
 		spriteFolder = "images/ship/shot.png";
 		velocity = glm::ivec2(6.f, 0.f);
 		size = glm::ivec2(8, 4);
-		addShot(spriteFolder, velocity, posShot, size, sizeInSpriteSheet, damage, true);
+		addShot(spriteFolder, velocity, posShot, size, sizeInSpriteSheet, damage, true, 0);
 	}
 	if (nbShots == 2 || nbShots == 4) {
 		//Diagonal shots
@@ -568,11 +575,11 @@ void Scene::addForceShot() {
 
 		spriteFolder = "images/force/diagonal_front_up.png";
 		velocity = velocities[0];
-		addShot(spriteFolder, velocity, posShot, size, sizeInSpriteSheet, damage, true);
+		addShot(spriteFolder, velocity, posShot, size, sizeInSpriteSheet, damage, true, 0);
 
 		spriteFolder = "images/force/diagonal_front_down.png";
 		velocity = velocities[1];
-		addShot(spriteFolder, velocity, posShot, size, sizeInSpriteSheet, damage, true);
+		addShot(spriteFolder, velocity, posShot, size, sizeInSpriteSheet, damage, true, 0);
 	}
 	if (nbShots == 4) {
 		size = glm::ivec2(3, 8);
@@ -582,22 +589,32 @@ void Scene::addForceShot() {
 		auxPos.y -= forceSize.y / 2;
 		spriteFolder = "images/force/up_shot.png";
 		velocity = velocities[2];
-		addShot(spriteFolder, velocity, auxPos, size, sizeInSpriteSheet, damage, true);
+		addShot(spriteFolder, velocity, auxPos, size, sizeInSpriteSheet, damage, true, 0);
 
 		auxPos = posShot;
 		auxPos.x -= forceSize.x / 2;
 		auxPos.y += forceSize.y / 2;
 		spriteFolder = "images/force/down_shot.png";
 		velocity = velocities[3];
-		addShot(spriteFolder, velocity, auxPos, size, sizeInSpriteSheet, damage, true);
-	}	
+		addShot(spriteFolder, velocity, auxPos, size, sizeInSpriteSheet, damage, true, 0);
+	}
+	if (nbShots == 6) {
+		//Upgrade 2
+		if (count - lastUpgrade2Shot > 30) {
+			lastUpgrade2Shot = count;
+			auxPos = posShot;
+			auxPos.x -= forceSize.x + 3;
+			damage = 3;
+			addShot(spriteFolder, velocity, auxPos, size, sizeInSpriteSheet, damage, true, 2);
+		}
+	}
 }
 
 
-void Scene::addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2& pos, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage, bool fromPlayer)
+void Scene::addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2& pos, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage, bool fromPlayer, int upgrade)
 {
 	Shot* shot = new Shot();
-	shot->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame, spriteFolder, velocity, size, sizeInSpriteSheet, damage);
+	shot->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame, spriteFolder, velocity, size, sizeInSpriteSheet, damage, upgrade);
 	shot->setPosition(glm::vec2(pos.x, pos.y));
 	shot->setTileMap(map);
 
@@ -665,7 +682,9 @@ void Scene::renderGame()
 		if (force->isActive()) force->render();
 
 		//shots
-		for (Shot* shot : playerShots) shot->render();
+		for (Shot* shot : playerShots) {
+			shot->render();
+		}
 		for (Shot* shot : enemyShots) shot->render();
 
 		//enemies

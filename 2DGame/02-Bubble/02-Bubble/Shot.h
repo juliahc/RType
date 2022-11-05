@@ -7,17 +7,13 @@
 #include "Entity.h"
 
 
-// Player is basically a Sprite that represents the player. As such it has
-// all properties it needs to track its movement, jumping, and collisions.
-
-
 
 class Shot : public Entity
 {
 
 public:
-	void init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram, const string& spriteFolder, const glm::ivec2& shotVelocity, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage);
-	void update(int deltaTime);
+	void init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram, const string& spriteFolder, const glm::ivec2& shotVelocity, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage, const int upgrade);
+	void update(int deltaTime, glm::ivec2 forcePos, glm::ivec2 forceSize, ShaderProgram& shaderProgram);
 	void render();
 
 	void setTileMap(TileMap* tileMap);
@@ -31,11 +27,14 @@ private:
 	glm::ivec2 tileMapDispl, velocity, posShot, sizeShot;
 	int jumpAngle, startY;
 	int shotDamage;
+	int state = 0;
+	bool upgrade1 = false, upgrade2 = false, initState;
 	Sprite* sprite;
 	TileMap* map;
 	Texture spritesheet;
-
+	ShaderProgram shaderProgramShot;
+	int count;
 };
 
 
-#endif // _PLAYER_INCLUDE
+#endif
