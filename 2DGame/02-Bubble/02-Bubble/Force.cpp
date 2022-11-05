@@ -12,13 +12,16 @@
 
 void Force::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram)
 {
+	int starterType = 0;
+	
 	tileMapDispl = tileMapPos;
 
 	sizeForces[0] = glm::ivec2(12, 12);
 	sizeForces[1] = glm::ivec2(15, 12);
 	sizeForces[2] = glm::ivec2(16, 16);
 
-	sizeForce = sizeForces[0];
+	sizeForce = sizeForces[starterType];
+	type = starterType;
 
 	spritesheets[0].loadFromFile("images/force/force.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	spritesheets[1].loadFromFile("images/force/force1.png", TEXTURE_PIXEL_FORMAT_RGBA);
@@ -41,9 +44,7 @@ void Force::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram)
 
 	active = false;
 	
-	
 	state = INACTIVE;
-	type = 0;
 
 	attached = NOATTACHED;
 
@@ -64,6 +65,12 @@ void Force::update(int deltaTime, const glm::ivec2& posPlayer, const int screenP
 	sprites[1]->update(deltaTime);
 	sprites[2]->update(deltaTime);
 
+	if (Game::instance().getKey('f') == PRESS) {
+		active = true;
+		state = ACTIVE;
+		attached = FRONT;
+	}
+
 	if (state == INACTIVE) {
 		posForce.x = screenPosX;
 		posForce.y = (SCREEN_HEIGHT / 2) - (sizeForce.y / 2);
@@ -71,15 +78,28 @@ void Force::update(int deltaTime, const glm::ivec2& posPlayer, const int screenP
 	else if (state == INIT) {
 		posForce.x += 2;
 		if (posForce.x >= ((SCREEN_WIDTH / 2) + screenPosX - (sizeForce.x / 2)) ) {
-			state = UP;
+			state = ACTIVE;
 		}
+	}
+	else if (state == PUSHED_LEFT || state == PUSHED_RIGHT) {
+		nextPositionPushed(screenPosX);
+	}
+	else if (Game::instance().getKey('z') == PRESS && (attached == FRONT || attached == BOTTOM)) {
+		if (attached == FRONT) state = PUSHED_RIGHT;
+		else state = PUSHED_LEFT;
+		attached = NOATTACHED;
+		int a = 0;
 	}
 	else if (attached == FRONT) {
 		//Position to be in front of player
 		posForce = posPlayer;
 		posForce.x += 24;
 		posForce.y += 1;
-		if (type == 2) posForce.x -= 3;
+		if (type == 1) posForce.y -= 2;
+		if (type == 2) {
+			posForce.x -= 3;
+			posForce.y -= 2;
+		}
 	}
 	else if (attached == BOTTOM) {
 		//Position to be in the bottom of player
@@ -146,13 +166,18 @@ void Force::setActive(bool newActive)
 
 void Force::setAttached(string newAttached)
 {
-	if (newAttached == "bottom") attached = BOTTOM;
-	else if (newAttached == "front") attached = FRONT;
+	if (state != PUSHED_LEFT && state != PUSHED_RIGHT) {
+		if (newAttached == "bottom") attached = BOTTOM;
+		else if (newAttached == "front") attached = FRONT;
+	}
 }
 
 void Force::setType(int newType)
 {
-	if (newType == 0 || newType == 1 || newType == 2) type = newType;
+	if (newType == 0 || newType == 1 || newType == 2) {
+		type = newType;
+		sizeForce = sizeForces[type];
+	}
 }
 
 int Force::getWidth()
@@ -179,18 +204,23 @@ void Force::nextPosition(const int screenPosX)
 	glm::ivec2 posPlayer = lastPlayerPos.front();
 	bool playerLeft = posPlayer.x <= (screenPosX + (SCREEN_WIDTH / 2));
 	bool forceLeft = posForce.x <= (screenPosX + (SCREEN_WIDTH / 2));
-	
+	if (Game::instance().getKey('a') == PRESS) {
+		int a = 0;
+	}
 	if (playerLeft) { //Player left
 		if (forceLeft) { //Force left
 			//Anar cap a la dreta
 			posForce.x += vel.x;
 		}
 		else { //Force right
-			if (posForce.x >= rightLine) { //Force in leftLine
+			if (posForce.x == rightLine) { //Force in rightLine
 				//mirar y
 				if (posPlayer.y > posForce.y) posForce.y += vel.y;
 				else if (posPlayer.y < posForce.y) posForce.y -= vel.y;
 			} 
+			else if (posForce.x > rightLine) { //Force passed the rightLine
+				posForce.x -= vel.x;
+			}
 			else { //Force not in leftLine
 				posForce.x += vel.x;
 			}
@@ -198,10 +228,13 @@ void Force::nextPosition(const int screenPosX)
 	}
 	else { //Player right
 		if (forceLeft) { //Force left
-			if (posForce.x <= leftLine) { //Force in leftLine
+			if (posForce.x == leftLine) { //Force in leftLine
 				//mirar y
 				if (posPlayer.y > posForce.y) posForce.y += vel.y;
 				else if (posPlayer.y < posForce.y) posForce.y -= vel.y;
+			}
+			else if (posForce.x < leftLine) {
+				posForce.x += vel.x;
 			}
 			else { //Force not in leftLine
 				posForce.x -= vel.x;
@@ -211,5 +244,23 @@ void Force::nextPosition(const int screenPosX)
 			//Anar cap a l'a dreta'esquerra
 			posForce.x -= vel.x;
 		}
+	}
+}
+
+void Force::nextPositionPushed(const int screenPosX)
+{
+	if (state == PUSHED_RIGHT) {
+		int maxX = SCREEN_WIDTH + screenPosX - sizeForce.x - 1;
+		int space = maxX - posForce.x;
+		if (space < 6 && space > 0) posForce.x += space;
+		else if (posForce.x < maxX) posForce.x += 6;
+		else state = ACTIVE;
+	} 
+	else {
+		int minX = screenPosX;
+		int space = posForce.x - minX;
+		if (space < 6 && space > 0) posForce.x -= space;
+		else if (posForce.x > minX) posForce.x -= 6;
+		else state = ACTIVE;
 	}
 }

@@ -11,7 +11,7 @@
 // Player is basically a Sprite that represents the player. As such it has
 // all properties it needs to track its movement, jumping, and collisions.
 
-enum forceState { INACTIVE, INIT, LEFT, RIGHT, UP, DOWN };
+enum forceState { INACTIVE, INIT, ACTIVE, PUSHED_LEFT, PUSHED_RIGHT };
 enum forceAttached { NOATTACHED, FRONT, BOTTOM };
 
 class Force : public Entity
@@ -36,6 +36,7 @@ public:
 private:
 
 	void nextPosition(const int screenPosX);
+	void nextPositionPushed(const int screenPosX);
 
 	glm::ivec2 tileMapDispl, posForce, sizeForces[3], sizeForce, vel;
 	Sprite* sprites[3];

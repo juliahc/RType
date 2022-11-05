@@ -24,6 +24,7 @@ public:
 	
 	void collision();
 	glm::ivec2 getPosition();
+	glm::ivec2 getSize();
 
 	void setShotCharge(int charge);
 	int getShotCharge();
@@ -40,7 +41,7 @@ private:
 	int chargeAnimation;
 	int shotCharge = 1;
 	int chargeAnimationChangeTime;
-	glm::ivec2 tileMapDispl, posPlayer;
+	glm::ivec2 tileMapDispl, posPlayer, sizePlayer;
 	int jumpAngle, startY;
 	Texture spritesheet, spritesheetBoom, spritesheetCharge;
 	Sprite	*sprite, *spriteBoom, *spriteCharge;

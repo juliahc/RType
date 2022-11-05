@@ -113,7 +113,7 @@ void Scene::initGame()
 	//force
 	force = new Force();
 	force->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame);
-	force->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize() + 24, INIT_PLAYER_Y_TILES * map->getTileSize() + 1));
+	force->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize() + player->getSize().x, INIT_PLAYER_Y_TILES * map->getTileSize() + 1));
 	force->setTileMap(map);
 	
 	//enemies
@@ -465,7 +465,7 @@ void Scene::restartGame() {
 	//restart force
 	force = new Force();
 	force->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame);
-	force->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize() + 24, INIT_PLAYER_Y_TILES * map->getTileSize() + 1));
+	force->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize() + player->getSize().x, INIT_PLAYER_Y_TILES * map->getTileSize() + 1));
 	force->setTileMap(map);
 
 	playerShots.clear();
@@ -772,7 +772,7 @@ void Scene::checkCollisions()
 {
 	glm::ivec2 playerPos, playerSize, enemyPos, enemySize, shotPos, shotSize, tokenPos, tokenSize, forcePos, forceSize;
 	playerPos = player->getPosition();
-	playerSize = glm::ivec2(24, 15);
+	playerSize = player->getSize();
 	
 	//Player & enemies
 	for (Enemy* enemy : activeEnemies) {

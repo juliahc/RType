@@ -18,17 +18,18 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 {
 	bJumping = false;
 	tileMapDispl = tileMapPos;
+	sizePlayer = glm::ivec2(24, 11);
 
 	//Ship
-	spritesheet.loadFromFile("images/spritesheet.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	sprite = Sprite::createSprite(glm::ivec2(24, 15), glm::vec2(0.25, 0.5), &spritesheet, &shaderProgram);
+	spritesheet.loadFromFile("images/ship/ships.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	sprite = Sprite::createSprite(sizePlayer, glm::vec2(0.20, 1.f), &spritesheet, &shaderProgram);
 	sprite->setNumberAnimations(4);	
 		sprite->setAnimationSpeed(NORMAL, 8);
-		sprite->addKeyframe(NORMAL, glm::vec2(0.f, 0.f));				
+		sprite->addKeyframe(NORMAL, glm::vec2(0.4f, 0.f));				
 		sprite->setAnimationSpeed(MOVE_UP, 8);
-		sprite->addKeyframe(MOVE_UP, glm::vec2(0.75f, 0.f));		
+		sprite->addKeyframe(MOVE_UP, glm::vec2(0.8f, 0.f));		
 		sprite->setAnimationSpeed(MOVE_DOWN, 8);
-		sprite->addKeyframe(MOVE_DOWN, glm::vec2(0.75f, 0.5f));		
+		sprite->addKeyframe(MOVE_DOWN, glm::vec2(0.f, 0.f));		
 	sprite->changeAnimation(0);
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
 
@@ -79,7 +80,7 @@ void Player::update(int deltaTime, int screenPosX, int forceWidth)
 		{
 			if (sprite->animation() != MOVE_UP) sprite->changeAnimation(MOVE_UP);
 			posPlayer.y -= 2;
-			if (map->collisionMoveUp(posPlayer, glm::ivec2(24, 15), &posPlayer.y))
+			if (map->collisionMoveUp(posPlayer, sizePlayer, &posPlayer.y))
 			{
 				//posPlayer.y += 2;
 				//sprite->changeAnimation(NORMAL);
@@ -90,7 +91,7 @@ void Player::update(int deltaTime, int screenPosX, int forceWidth)
 		{
 			if (sprite->animation() != MOVE_DOWN) sprite->changeAnimation(MOVE_DOWN);
 			posPlayer.y += 2;
-			if (map->collisionMoveDown(posPlayer, glm::ivec2(24, 15), &posPlayer.y))
+			if (map->collisionMoveDown(posPlayer, sizePlayer, &posPlayer.y))
 			{
 				//posPlayer.y -= 2;
 				sprite->changeAnimation(NORMAL);
@@ -101,7 +102,7 @@ void Player::update(int deltaTime, int screenPosX, int forceWidth)
 		{
 			if (sprite->animation() != NORMAL) sprite->changeAnimation(NORMAL);
 			posPlayer.x -= 2;
-			if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 15))) {
+			if (map->collisionMoveLeft(posPlayer, sizePlayer)) {
 				posPlayer.x += 2;
 				collision();
 			}
@@ -111,11 +112,11 @@ void Player::update(int deltaTime, int screenPosX, int forceWidth)
 		{
 			if (sprite->animation() != NORMAL) sprite->changeAnimation(NORMAL);
 			posPlayer.x += 2;
-			if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 15))) {
+			if (map->collisionMoveRight(posPlayer, sizePlayer)) {
 				posPlayer.x -= 2;
 				collision();
 			}
-			else if ((posPlayer.x + 24 - 1) > (screenPosX + SCREEN_WIDTH - 1)) posPlayer.x = screenPosX + (SCREEN_WIDTH - 1) - 24;
+			else if ((posPlayer.x + sizePlayer.x - 1) > (screenPosX + SCREEN_WIDTH - 1)) posPlayer.x = screenPosX + (SCREEN_WIDTH - 1) - sizePlayer.x;
 		}
 
 
@@ -125,7 +126,7 @@ void Player::update(int deltaTime, int screenPosX, int forceWidth)
 		//Charge animation
 		if (Game::instance().getKey('s') == REPEAT)
 		{
-			spriteCharge->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x + 24 + forceWidth), float(tileMapDispl.y + posPlayer.y)));
+			spriteCharge->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x + sizePlayer.x + forceWidth), float(tileMapDispl.y + posPlayer.y)));
 			if (!charging) {
 				charging = true;
 				chargeAnimationChangeTime = 0;
@@ -196,6 +197,11 @@ void Player::collision()
 glm::ivec2 Player::getPosition()
 {
 	return posPlayer;
+}
+
+glm::ivec2 Player::getSize()
+{
+	return sizePlayer;
 }
 
 void Player::setShotCharge(int charge)
