@@ -7,11 +7,10 @@ void Game::init()
 	bPlay = true;
 	previousState = NONE;
 	state = TRANSITION;
-	nextState = GAME;
+	nextState = MENU;
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 	scene.init();
 	for (int key : keysInt) key = 0;
-	for (int key : specialKeysInt) key = 0;
 }
 
 bool Game::update(int deltaTime)
@@ -147,12 +146,13 @@ void Game::processInput()
 	//Process keys
 	for (int i = 0; i < sizeof(keysBool); ++i) {
 		if (keysBool[i]) { //i key is pressed
+			if ((keys[i] == IDLE && keysInt[i] == 0) || keys[i] == RELEASE) keys[i] = PRESS;
+			else if (keys[i] == PRESS) keys[i] = IDLE;
+			else if (keys[i] == IDLE && keysInt[i] > nbFramesRepeat) keys[i] = REPEAT;
 			keysInt[i]++;
-			if (keys[i] == IDLE || keys[i] == RELEASE) keys[i] = PRESS;
-			else if (keys[i] == PRESS && keysInt[i] > nbFramesRepeat) keys[i] = REPEAT;
 		}
 		else { //i key is not pressed
-			if (keys[i] == PRESS || keys[i] == REPEAT) {
+			if (keys[i] == PRESS || keys[i] == REPEAT || (keys[i] == IDLE && keysInt[i] > 0)) {
 				keysInt[i] = 0;
 				keys[i] = RELEASE;
 			}
@@ -163,17 +163,14 @@ void Game::processInput()
 	//Process special keys
 	for (int i = 0; i < sizeof(specialKeysBool); ++i) {
 		if (specialKeysBool[i]) { //i key is pressed
-			specialKeysInt[i]++;
 			if (specialKeys[i] == IDLE || specialKeys[i] == RELEASE) specialKeys[i] = PRESS;
-			else if (specialKeys[i] == PRESS && specialKeysInt[i] > nbFramesRepeat) specialKeys[i] = REPEAT;
+			else if (specialKeys[i] == PRESS) specialKeys[i] = REPEAT;
 		}
 		else { //i key is not pressed
-			if (specialKeys[i] == PRESS || specialKeys[i] == REPEAT) {
-				specialKeysInt[i] = 0;
-				specialKeys[i] = RELEASE;
-			}
+			if (specialKeys[i] == PRESS || specialKeys[i] == REPEAT) specialKeys[i] = RELEASE;
 			else if (specialKeys[i] == RELEASE) specialKeys[i] = IDLE;
 		}
 	}
+
 }
 

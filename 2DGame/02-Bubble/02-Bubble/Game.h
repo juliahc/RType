@@ -54,10 +54,10 @@ private:
 	bool bPlay;                       // Continue to play game?
 	Scene scene;                      // Scene to render
 	bool keysBool[256], specialKeysBool[256];
-	int keysInt[256], specialKeysInt[256];
+	int keysInt[256];
 	keyState keys[256], specialKeys[256]; // Store key states so that 
 	GameState state, previousState, nextState;
-	int nbFramesRepeat = 10;
+	int nbFramesRepeat = 8;
 };
 
 

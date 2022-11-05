@@ -11,10 +11,7 @@
 #define FALL_STEP 4
 
 
-enum PlayerAnims
-{
-	NORMAL, MOVE_UP, MOVE_DOWN
-};
+enum PlayerAnims { NORMAL, MOVE_UP, MOVE_DOWN };
 
 
 void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
@@ -69,36 +66,38 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 		spriteCharge->changeAnimation(0);
 }
 
-void Player::update(int deltaTime, int screenPosX)
+void Player::update(int deltaTime, int screenPosX, int forceWidth)
 {
 	if (!boom) {
 
 		sprite->update(deltaTime);
 
+		if (sprite->animation() == MOVE_UP || sprite->animation() == MOVE_DOWN) sprite->changeAnimation(NORMAL);
+
+		//check UP, DOWN, LEFT, RIGHT keys
 		if ((Game::instance().getSpecialKey(GLUT_KEY_UP) == PRESS) || (Game::instance().getSpecialKey(GLUT_KEY_UP) == REPEAT))
 		{
-			if (sprite->animation() != MOVE_UP)
-				sprite->changeAnimation(MOVE_UP);
+			if (sprite->animation() != MOVE_UP) sprite->changeAnimation(MOVE_UP);
 			posPlayer.y -= 2;
 			if (map->collisionMoveUp(posPlayer, glm::ivec2(24, 15), &posPlayer.y))
 			{
-				posPlayer.y += 2;
+				//posPlayer.y += 2;
 				//sprite->changeAnimation(NORMAL);
 				collision();
 			}
 		}
-		else if ((Game::instance().getSpecialKey(GLUT_KEY_DOWN) == PRESS) || (Game::instance().getSpecialKey(GLUT_KEY_DOWN) == REPEAT))
+		if ((Game::instance().getSpecialKey(GLUT_KEY_DOWN) == PRESS) || (Game::instance().getSpecialKey(GLUT_KEY_DOWN) == REPEAT))
 		{
 			if (sprite->animation() != MOVE_DOWN) sprite->changeAnimation(MOVE_DOWN);
 			posPlayer.y += 2;
 			if (map->collisionMoveDown(posPlayer, glm::ivec2(24, 15), &posPlayer.y))
 			{
-				posPlayer.y -= 2;
-				//sprite->changeAnimation(NORMAL);
+				//posPlayer.y -= 2;
+				sprite->changeAnimation(NORMAL);
 				collision();
 			}
 		}
-		else if ((Game::instance().getSpecialKey(GLUT_KEY_LEFT) == PRESS) || (Game::instance().getSpecialKey(GLUT_KEY_LEFT) == REPEAT))
+		if ((Game::instance().getSpecialKey(GLUT_KEY_LEFT) == PRESS) || (Game::instance().getSpecialKey(GLUT_KEY_LEFT) == REPEAT))
 		{
 			if (sprite->animation() != NORMAL) sprite->changeAnimation(NORMAL);
 			posPlayer.x -= 2;
@@ -108,7 +107,7 @@ void Player::update(int deltaTime, int screenPosX)
 			}
 			else if (posPlayer.x < screenPosX) posPlayer.x = screenPosX;
 		}
-		else if ((Game::instance().getSpecialKey(GLUT_KEY_RIGHT) == PRESS) || (Game::instance().getSpecialKey(GLUT_KEY_RIGHT) == REPEAT))
+		if ((Game::instance().getSpecialKey(GLUT_KEY_RIGHT) == PRESS) || (Game::instance().getSpecialKey(GLUT_KEY_RIGHT) == REPEAT))
 		{
 			if (sprite->animation() != NORMAL) sprite->changeAnimation(NORMAL);
 			posPlayer.x += 2;
@@ -118,18 +117,15 @@ void Player::update(int deltaTime, int screenPosX)
 			}
 			else if ((posPlayer.x + 24 - 1) > (screenPosX + SCREEN_WIDTH - 1)) posPlayer.x = screenPosX + (SCREEN_WIDTH - 1) - 24;
 		}
-		else
-		{
-			if (sprite->animation() == MOVE_UP || sprite->animation() == MOVE_DOWN)
-				sprite->changeAnimation(NORMAL);
-		}
 
+
+		//set position
 		sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
 
-
+		//Charge animation
 		if (Game::instance().getKey('s') == REPEAT)
 		{
-			spriteCharge->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x + 24), float(tileMapDispl.y + posPlayer.y)));
+			spriteCharge->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x + 24 + forceWidth), float(tileMapDispl.y + posPlayer.y)));
 			if (!charging) {
 				charging = true;
 				chargeAnimationChangeTime = 0;
@@ -137,10 +133,11 @@ void Player::update(int deltaTime, int screenPosX)
 				spriteCharge->changeAnimation(0);
 			}
 			else {
-				if (chargeAnimationChangeTime % 5 == 0) {
+				if (chargeAnimationChangeTime % 20 == 0 && shotCharge < 5) shotCharge++;
+				if (chargeAnimationChangeTime % 7 == 0) {
 					if (chargeAnimation < 4) chargeAnimation++;
 					else {
-						if (shotCharge < 5) shotCharge++;
+						
 						chargeAnimation = 0;
 					}
 					spriteCharge->changeAnimation(chargeAnimation);
@@ -150,6 +147,10 @@ void Player::update(int deltaTime, int screenPosX)
 		}
 		else if (charging) charging = false;
 
+		//If "g" key pressed --> invulnerability
+		if (Game::instance().getKey('g') == PRESS) {
+			invulnerable = !invulnerable;
+		}
 	}
 	else {
 		spriteBoom->update(deltaTime);
@@ -186,8 +187,10 @@ void Player::setTileMap(TileMap* tileMap)
 
 void Player::collision()
 {
-	spriteBoom->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
-	boom = true;
+	if (!invulnerable) {
+		spriteBoom->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
+		boom = true;
+	}
 }
 
 glm::ivec2 Player::getPosition()
