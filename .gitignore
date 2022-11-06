@@ -1,4 +1,8 @@
 ./.vs/*
+/Debug/*
+2DGame/Debug
+2DGame/02-Bubble/Debug
+2DGame/02-Bubble/02-Bubble/Debug
 2DGame/02-Bubble/02-Bubble/Debug/*
 2DGame/02-Bubble/02-Bubble/Release/*
 2DGame/02-Bubble/.vs/*
