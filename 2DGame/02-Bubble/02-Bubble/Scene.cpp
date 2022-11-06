@@ -246,9 +246,19 @@ void Scene::initShaders()
 
 void Scene::initEnemies() {
 	vector<pair<Enemies, glm::ivec2>> enemyPositions = { 
-        {make_pair(BASIC2, glm::ivec2 {402, 220})},
-        {make_pair(BASIC1, glm::ivec2 {403, 150})},
-  };
+		{make_pair(BASIC1, glm::ivec2 {402, 150})},
+		{make_pair(BASIC2, glm::ivec2 {403, 220})},
+		{make_pair(BASIC1, glm::ivec2 {408, 150})},
+		{make_pair(BASIC1, glm::ivec2 {413, 150})},
+		{make_pair(BASIC1, glm::ivec2 {418, 150})},
+		{make_pair(BASIC3, glm::ivec2 {404, 8 * 27})},
+		{make_pair(BASIC4, glm::ivec2 {420, 8 * 27})},
+		{make_pair(BASIC4, glm::ivec2 {436, 8 * 27})},
+		{make_pair(BASIC4, glm::ivec2 {452, 8 * 27})},
+		{make_pair(BASIC4, glm::ivec2 {468, 8 * 5})},
+		{make_pair(BASIC4, glm::ivec2 {484, 8 * 5})},
+		{make_pair(BASIC4, glm::ivec2 {500, 8 * 5})},
+	};
 	for (auto pos : enemyPositions) {
 		Enemy* enemy = new Enemy();
 		enemy->init(glm::ivec2(SCREEN_X, SCREEN_Y), pos.first, texProgramGame);
@@ -384,10 +394,10 @@ void Scene::updateGameEnemies(int deltaTime) {
 	//Enemies
 	createEnemies();
 	for (Enemy* enemy : activeEnemies) {
-		enemy->update(deltaTime);
+		enemy->update(deltaTime, player->getPosition());
 		if (enemy->isShooting()) {
 			//Shot
-			addShot(enemy->getShotSprite(), enemy->getShotVelocity(player->getPosition()), enemy->getPosition(), enemy->getShotSize(), enemy->getShotSizeInSpriteSheet(), 1, false, 0);
+			addShot(enemy->getShotSprite(), enemy->getShotVelocity(), enemy->getPosition(), enemy->getShotSize(), enemy->getShotSizeInSpriteSheet(), 1, false);
 			enemy->enemyAlreadyAttacked();
 		}
 	}
@@ -395,7 +405,7 @@ void Scene::updateGameEnemies(int deltaTime) {
 	//Booming enemies
 	vector<Enemy*> enemyErase;
 	for (Enemy* enemy : boomEnemies) {
-		enemy->update(deltaTime);
+		enemy->update(deltaTime, player->getPosition());
 		if (enemy->boomFinished()) enemyErase.push_back(enemy);
 	}
 	for (Enemy* enemy : enemyErase) boomEnemies.erase(enemy);
