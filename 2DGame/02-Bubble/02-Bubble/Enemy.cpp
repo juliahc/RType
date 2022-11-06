@@ -28,6 +28,11 @@ enum BASIC4Anims
 	BASIC4_DOWN_RIGHT1, BASIC4_DOWN_RIGHT2, BASIC4_DOWN_RIGHT3, BASIC4_DOWN_RIGHT4, BASIC4_DOWN_RIGHT5
 };
 
+enum BOSSAnims
+{
+	BASIC, EGG1, EGG2, EGG3, ANGRY
+};
+
 void Enemy::init(const glm::ivec2& tileMapPos, Enemies enemy, ShaderProgram& shaderProgram)
 {
 	myType = enemy;
@@ -177,6 +182,25 @@ void Enemy::init(const glm::ivec2& tileMapPos, Enemies enemy, ShaderProgram& sha
 			sprite->addKeyframe(BASIC4_DOWN_RIGHT5, glm::vec2(0.8f, 0.75f));
 
 			break;
+		case BOSS:
+			sprite->setNumberAnimations(5);
+			//BASIC, EGG1, EGG2, EGG3, ANGRY
+			
+			sprite->setAnimationSpeed(BASIC, 8);
+			sprite->addKeyframe(BASIC, glm::vec2(0.0f, 0.0f));
+
+			sprite->setAnimationSpeed(EGG1, 8);
+			sprite->addKeyframe(EGG1, glm::vec2(0.2f, 0.0f));
+
+			sprite->setAnimationSpeed(EGG2, 8);
+			sprite->addKeyframe(EGG2, glm::vec2(0.4f, 0.0f));
+
+			sprite->setAnimationSpeed(EGG3, 8);
+			sprite->addKeyframe(EGG3, glm::vec2(0.6f, 0.0f));
+
+			sprite->setAnimationSpeed(ANGRY, 8);
+			sprite->addKeyframe(ANGRY, glm::vec2(0.8f, 0.0f));
+			break;
 	}
 
 	//Enemy boom
@@ -295,6 +319,11 @@ void Enemy::update(int deltaTime, glm::ivec2 posPlayer)
 			//Check if the enemy have to attack
 			attacking = attack(4);
 			if (attacking) attackPlayer();
+			break;
+
+		case BOSS:
+			//Change the animation of the boss
+			changeAnimation();
 			break;
 		}
 		sprite->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
@@ -540,12 +569,17 @@ void Enemy::attackPlayer() {
 			break;
 
 		case BASIC4:
-			shooting = true;
+			if (electricShots && numberElectricShots < 6) {
+				newShotType = ELECTRIC;
+				shooting = true;
+				numberElectricShots++;
+			}
 			break;
 	}
 }
 
 void Enemy::changeAnimation() {
+	int cannonDirection;
 	switch (myType) {
 		case BASIC1:
 			if (lastRotationAnim <= 5 && timeLastRotationAnim > 5) {
@@ -556,7 +590,7 @@ void Enemy::changeAnimation() {
 			break;
 
 		case BASIC4:
-			int cannonDirection = (posPlayer.x - posEnemy.x) / 38;
+			cannonDirection = (posPlayer.x - posEnemy.x) / 38;
 			if (lookingTop) {
 				//Top
 				if (cannonDirection < 0) {
@@ -583,6 +617,16 @@ void Enemy::changeAnimation() {
 					sprite->changeAnimation(10 + cannonDirection);
 				}
 			}
+			break;
+			
+		case BOSS:
+			if (timeLastRotationAnim > 30) {
+				lastRotationAnim++;
+				if (lastRotationAnim == 4) lastRotationAnim = 0;
+				sprite->changeAnimation(lastRotationAnim);
+				timeLastRotationAnim = 0;
+			}
+			timeLastRotationAnim++;
 			break;
 	}
 }
@@ -742,4 +786,18 @@ bool Enemy::startJumping() {
 		return true;
 	}
 	return false;
+}
+
+Enemies Enemy::getType() {
+	return myType;
+}
+
+bool Enemy::reduceHP() {
+	--health;
+	if (health <= 0) return true;
+	return false;
+}
+
+shotTypes Enemy::getNewShotType() {
+	return this->newShotType;
 }

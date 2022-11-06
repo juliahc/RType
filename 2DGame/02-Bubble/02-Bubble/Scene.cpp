@@ -246,6 +246,7 @@ void Scene::initShaders()
 
 void Scene::initEnemies() {
 	vector<pair<Enemies, glm::ivec2>> enemyPositions = { 
+		{make_pair(BOSS, glm::ivec2 {385/*8 * 388*/, 8 * 4})},
 		{make_pair(BASIC1, glm::ivec2 {402, 150})},
 		{make_pair(BASIC2, glm::ivec2 {403, 220})},
 		{make_pair(BASIC1, glm::ivec2 {408, 150})},
@@ -397,7 +398,8 @@ void Scene::updateGameEnemies(int deltaTime) {
 		enemy->update(deltaTime, player->getPosition());
 		if (enemy->isShooting()) {
 			//Shot
-			addShot(enemy->getShotSprite(), enemy->getShotVelocity(), enemy->getPosition(), enemy->getShotSize(), enemy->getShotSizeInSpriteSheet(), 1, false);
+			if (enemy->getType() == BOSS) addShot(enemy->getShotSprite(), enemy->getShotVelocity(), enemy->getPosition(), enemy->getShotSize(), enemy->getShotSizeInSpriteSheet(), 1, false, (3 + enemy->getNewShotType()));
+			addShot(enemy->getShotSprite(), enemy->getShotVelocity(), enemy->getPosition(), enemy->getShotSize(), enemy->getShotSizeInSpriteSheet(), 1, false, -1);
 			enemy->enemyAlreadyAttacked();
 		}
 	}
@@ -885,7 +887,13 @@ void Scene::checkCollisions()
 			shotPos = shot->getPosition();
 			shotSize = shot->getSize();
 			if (isCollision(enemyPos, enemySize, shotPos, shotSize)) {
-				enemyErase.push_back(enemy);
+				bool isDead = true;
+				if (enemy->getType() == BOSS) {
+					isDead = enemy->reduceHP();
+				}
+				if (isDead) {
+					enemyErase.push_back(enemy);
+				}
 				if (shot->getDamage() == 1) shotErase.push_back(shot);
 			}
 		}

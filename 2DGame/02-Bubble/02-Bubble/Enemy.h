@@ -38,7 +38,29 @@ public:
 
 	void enemyAlreadyAttacked();
 
+	/*
+	BOSS FUNCTIONS
+	*/
+	Enemies getType();
+	bool reduceHP();
+	shotTypes getNewShotType();
+
 private:
+
+	/*
+	Attributes for the Boss
+	*/
+
+	shotTypes newShotType;
+
+	int health = 10;
+	bool electricShots = true;
+	int numberElectricShots = 0;
+
+	vector<glm::ivec2> bossShotSize = { glm::ivec2(15, 14), glm::ivec2(6, 6), glm::ivec2(1,1), glm::ivec2(6,6) };
+	vector<string> bossSpriteShot = { "images/enemies/boss/shots/electric.png", "images/enemies/boss/shots/egg.png", "images/enemies/boss/shots/beam.png" };
+
+	
 	/*
 	Attributes for the IA
 	*/
@@ -93,9 +115,9 @@ private:
 	TileMap* map;
 
 	//Sprites + sizes
-	vector<string> spriteFiles{ "images/enemies/basic1/basic1.png", "images/enemies/basic2/basic2.png", "images/enemies/basic3/basic3.png", "images/enemies/basic4/basic4.png" };
-	vector<glm::ivec2> enemySizes{ glm::ivec2(23, 24), glm::ivec2(30, 28), glm::ivec2(27, 33), glm::ivec2(16, 16) };
-	vector<glm::vec2> spriteSheetSize{ glm::vec2(0.25f, 0.5f), glm::vec2(0.2f, 0.5f), glm::vec2(0.25f, 0.5f), glm::vec2(0.2f, 0.25f) };
+	vector<string> spriteFiles{ "images/enemies/basic1/basic1.png", "images/enemies/basic2/basic2.png", "images/enemies/basic3/basic3.png", "images/enemies/basic4/basic4.png", "images/enemies/boss/boss.png"};
+	vector<glm::ivec2> enemySizes{ glm::ivec2(23, 24), glm::ivec2(30, 28), glm::ivec2(27, 33), glm::ivec2(16, 16), glm::ivec2(113, 207) };
+	vector<glm::vec2> spriteSheetSize{ glm::vec2(0.25f, 0.5f), glm::vec2(0.2f, 0.5f), glm::vec2(0.25f, 0.5f), glm::vec2(0.2f, 0.25f), glm::vec2(0.2f, 1.f) };
 
 	//Animation helpers
 	int lastRotationAnim = 0;

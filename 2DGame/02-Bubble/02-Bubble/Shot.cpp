@@ -17,6 +17,25 @@ void Shot::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram, cons
 	if (upgrade == 1) upgrade1 = true;
 	else if (upgrade == 2) upgrade2 = true;
 
+	if (upgrade >= 3) {
+		//Boss is shooting
+		switch (upgrade) {
+		case 3:
+			//Electric shot
+			spritesheet.loadFromFile(spriteFolder, TEXTURE_PIXEL_FORMAT_RGBA);
+			sprite = Sprite::createSprite(sizeShot, sizeInSpriteSheet, &spritesheet, &shaderProgram);
+			break;
+
+		case 4:
+			//Egg shot
+			break;
+			
+		case 5:
+			//Beam shot
+			break;
+		}
+	}
+
 	shaderProgramShot = shaderProgram;
 
 	if (!upgrade1 && !upgrade2) {
