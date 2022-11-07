@@ -499,7 +499,7 @@ void Enemy::moveEnemyVertically(int length, bool up) {
 }
 
 void Enemy::restartWalking() {
-	if (timeLastRotationAnim > 30) {
+	if (timeLastRotationAnim > 15/*30*/) {
 		--lastRotationAnim;
 		if (!right && lastRotationAnim == BASIC2_RIGHT_UP3) {
 			lastRotationAnim = BASIC2_LEFT_UP3;
@@ -509,7 +509,7 @@ void Enemy::restartWalking() {
 		actualAttackAnimation = lastRotationAnim;
 		timeLastRotationAnim = 0;
 	}
-	else ++timeLastRotationAnim;
+	//else ++timeLastRotationAnim;
 }
 
 bool Enemy::attack(int probability) {
@@ -567,15 +567,15 @@ void Enemy::attackPlayer() {
 				actualAttackAnimation = lastRotationAnim;
 			}
 			else if (lastRotationAnim == BASIC2_UP) {
-				if (timeLastRotationAnim > 30) {
+				if (timeLastRotationAnim > 15/*30*/) {
 					shooting = true;
 					timeLastRotationAnim = 0;
 				}
-				else ++timeLastRotationAnim;
+				//else ++timeLastRotationAnim;
 				return;
 			}
 			else {
-				if (timeLastRotationAnim > 30) {
+				if (timeLastRotationAnim > 15/*30*/) {
 					++lastRotationAnim;
 					if (!right && lastRotationAnim == BASIC2_STAYRIGHT) {
 						lastRotationAnim = BASIC2_UP;
@@ -591,7 +591,13 @@ void Enemy::attackPlayer() {
 
 		case BOSS:
 			if (beam) {
-				if (beamShots < 50) {
+				if (startingBeam) {
+					if (timeLastRotationAnim > 30) {
+						startingBeam = false;
+						timeLastRotationAnim = true;
+					}
+				}
+				else if (beamShots < 35) {
 					newShotType = BEAM;
 					shooting = true;
 					beamShots++;
@@ -608,12 +614,11 @@ void Enemy::attackPlayer() {
 					beamShots = 0;
 					delayFirstAnimation = 150;
 					//Change the sprite animation to the default one
-					sprite->changeAnimation(0);
-					lastRotationAnim = 0;
+					restartSprite = true;
 				}
 			}
 			else if (electricShots) {
-				if (numberElectricShots < 6) {
+				if (numberElectricShots < 10) {
 					if (numberElectricShots) newShotType = ELECTRIC2;
 					else newShotType = ELECTRIC1;
 					shooting = true;
@@ -675,21 +680,32 @@ void Enemy::changeAnimation() {
 			break;
 			
 		case BOSS:
-			if (!beam) {
+			if (restartSprite) {
+				if (timeLastRotationAnim > 50) {
+					--lastRotationAnim;
+					if (lastRotationAnim == 0) {
+						restartSprite = false;
+					}
+					sprite->changeAnimation(lastRotationAnim);
+					timeLastRotationAnim = 0;
+				}
+			}
+			else if (!beam) {
 				if (electricShots) {
 					pendingBeam = true;
 				}
 				if (delayFirstAnimation < 500) delayFirstAnimation++;
 				else {
-					if (timeLastRotationAnim > 50) {
+					if (timeLastRotationAnim > 75/*150*/) {
 						lastRotationAnim++;
 						if (lastRotationAnim == 3) {
+							startingBeam = true;
 							beam = true;
 						}
 						sprite->changeAnimation(lastRotationAnim);
 						timeLastRotationAnim = 0;
 					}
-					timeLastRotationAnim++;
+					//timeLastRotationAnim++;
 				}
 			}
 			break;

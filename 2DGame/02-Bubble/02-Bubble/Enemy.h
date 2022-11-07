@@ -69,7 +69,8 @@ private:
 	//Beam shot helper
 	int beamShots = 0;
 	bool pendingBeam = false;
-
+	bool restartSprite = false;
+	bool startingBeam = false;
 	//Egg shot
 	bool eggShotDone = false;
 
