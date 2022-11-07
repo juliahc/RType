@@ -10,3 +10,47 @@ Iván Jimeno Ramírez
 
 
 ---- INSTRUCCIONS ----
+Un cop iniciat el joc, apareix el menú principal. Aquest disposa de 3 navegabilitats:
+	- Start playing
+	- Instructions
+	- Credits
+Tal com s'indica a la part inferior esquerra de la pantalla del menú, per tal de navegar entre les diferents opcions s'han d'utilitzar les fletxes del teclat (up, bottom, right, left), i prémer enter a l'opció desitjada.
+
+Veiem doncs el contingut de cada apartat:
+
+- Start Playing:
+
+La part superior de la pantalla té un espai extra per tal de poder visualitzar amb claredat les vides de la nau (inicialment són 3).
+
+En primer lloc, apareix l'animació d'entrada de la nau. 
+
+Per poder moure la nau s'usen les fletxes de direccionament (up, bottom, right, left).
+
+Per disparar bales s'utilitza la tecla 's'. Es pot mantenir polsada per tal de generar una bala que infligeix més mal i pugui travessar els enemics.
+
+Al llarg del nivell apareixen diversos enemics. Entre ells un és extremadament important, ja que al matar-lo apareix un ítem que et permet obtenir el dispositiu "force" (o en cas de ja disposar-ne d'un, una millora del "force").
+
+En cas que la nau sigui impactada per una bala enemiga o bé col·lisioni amb obstacles o fora del mapa es redueix una vida al jugador i la nau apareix al checkpoint més proper. En cas de perdre totes les vides s'ha de començar el joc des del principi, sense disposar dels checkpoints anteriors.
+
+
+En cas de voler afegir el dispositiu "force" automàticament i sense necessitat de matar cap enemic, s'ha de prémer la tecla 'f'.
+
+També es pot tornar la nau invulnerable mitjançant la tecla 'g'.
+
+Per avançar el nivell de forma més ràpida, es disposen dels checkpoints, configurats a les tecles '1', '2', '3', '4', '5' i '6'. En prémer un d'aquests botons, la nau apareix directament a una nova posició, sense generar els enemics d'aquella zona (per disposar de temps de reacció).
+
+En cas d'arribar a la part final del nivell, apareix el boss final. Aquest no mor d'una bala com els altres enemics. A més a més, només li pot baixar la vida quan es dispara exactament a un dels seus punts dèbils (quan rep mal, el boss comença una animació de parpelleig representant-ho).
+
+Quan es mata a l'enemic final apareix l'animació de victòria i es torna al menú principal.
+
+- Instructions:
+
+Pantalla que conté totes les instruccions necessàries per saber com jugar al joc.
+
+Es pot tornar al menú principal prement la tela 'enter'.
+
+- Credits
+
+Pantalla que conté els crèdits del joc.
+
+Es pot tornar al menú principal prement la tecla 'enter'.
