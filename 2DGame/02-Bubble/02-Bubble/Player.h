@@ -32,7 +32,9 @@ public:
 	bool boomFinished();
 
 private:
+	int count, initAnimationId;
 	bool bJumping;
+	bool initAnimation, right;
 	bool boom = false;
 	bool boomFinish = false;
 	bool charging = false;
@@ -43,10 +45,9 @@ private:
 	int chargeAnimationChangeTime;
 	glm::ivec2 tileMapDispl, posPlayer, sizePlayer;
 	int jumpAngle, startY;
-	Texture spritesheet, spritesheetBoom, spritesheetCharge;
-	Sprite	*sprite, *spriteBoom, *spriteCharge;
+	Texture spritesheet, spritesheetFire, spritesheetBoom, spritesheetCharge;
+	Sprite	*sprite, * spriteFire, *spriteBoom, *spriteCharge;
 	TileMap *map;
-
 };
 
 

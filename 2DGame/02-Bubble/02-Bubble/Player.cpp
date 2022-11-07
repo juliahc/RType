@@ -20,6 +20,8 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 	invulnerable =false;
 	tileMapDispl = tileMapPos;
 	sizePlayer = glm::ivec2(24, 11);
+	initAnimation = true;
+	right = true;
 
 	//Ship
 	spritesheet.loadFromFile("images/ship/ships.png", TEXTURE_PIXEL_FORMAT_RGBA);
@@ -33,6 +35,20 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 		sprite->addKeyframe(MOVE_DOWN, glm::vec2(0.f, 0.f));		
 	sprite->changeAnimation(0);
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
+
+	//Ship fire
+	initAnimationId = 0;
+	spritesheetFire.loadFromFile("images/ship/shipFire.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	spriteFire = Sprite::createSprite(glm::ivec2(17, 16), glm::vec2(0.5f, 0.5f), &spritesheetFire, &shaderProgram);
+	spriteFire->setNumberAnimations(3);
+		spriteFire->setAnimationSpeed(0, 8);
+		spriteFire->addKeyframe(0, glm::vec2(0.f, 0.f));
+		spriteFire->setAnimationSpeed(1, 8);
+		spriteFire->addKeyframe(1, glm::vec2(0.5f, 0.f));
+		spriteFire->setAnimationSpeed(2, 8);
+		spriteFire->addKeyframe(2, glm::vec2(0.f, 0.5f));
+	spriteFire->changeAnimation(0);
+	spriteFire->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
 
 	//Ship boom
 	spritesheetBoom.loadFromFile("images/shipBoom.png", TEXTURE_PIXEL_FORMAT_RGBA);
@@ -70,7 +86,33 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 
 void Player::update(int deltaTime, int screenPosX, int forceWidth)
 {
-	if (!boom) {
+	count++;
+
+	if (initAnimation) {
+		glm::ivec2 posFire;
+		//player
+		if (right) {
+			if (posPlayer.x + sizePlayer.x + 4 <= 383 + screenPosX) posPlayer += glm::ivec2(4, 0);
+			else {
+				posPlayer.x = 383 + screenPosX - sizePlayer.x;
+				right = false;
+			}
+		}
+		else {
+			if (posPlayer.x - 3 > (SCREEN_WIDTH / 3)) posPlayer += glm::ivec2(-3, 0);
+			else initAnimation = false;
+		}
+		if (count % 4 == 0) {
+			if (initAnimationId == 2) initAnimationId = 0;
+			else ++initAnimationId;
+			spriteFire->changeAnimation(initAnimationId);
+		}
+		posFire = posPlayer + glm::ivec2(-17, -2);
+		spriteFire->setPosition(glm::vec2(float(tileMapDispl.x + posFire.x), float(tileMapDispl.y + posFire.y)));
+		sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
+
+	}
+	else if (!boom) {
 
 		sprite->update(deltaTime);
 
@@ -168,6 +210,7 @@ void Player::render()
 {
 	if (!boom) {
 		sprite->render();
+		if (initAnimation) spriteFire->render();
 		if (charging) spriteCharge->render();
 	}
 	else spriteBoom->render();
