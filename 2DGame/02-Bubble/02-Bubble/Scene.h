@@ -120,6 +120,10 @@ private:
 	set<Enemy*> activeEnemies;
 	set<Enemy*> boomEnemies;
 
+	void createEggs(Enemy*);
+
+	int bossfight = -1;
+
 	//Shots
 	std::set<Shot*> playerShots, enemyShots;
 	int lastUpgrade1Shot = 0, lastUpgrade2Shot = 0;

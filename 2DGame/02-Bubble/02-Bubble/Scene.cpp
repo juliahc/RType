@@ -258,7 +258,8 @@ void Scene::initShaders()
 
 void Scene::initEnemies() {
 	vector<pair<Enemies, glm::ivec2>> enemyPositions = { 
-		{make_pair(BASIC1, glm::ivec2 {402, 150})},
+		{make_pair(BOSS, glm::ivec2 {385/*8 * 388*/, 8 * 4})},
+		/*{make_pair(BASIC1, glm::ivec2 {402, 150})},
 		{make_pair(BASIC2, glm::ivec2 {403, 220})},
 		{make_pair(BASIC1, glm::ivec2 {408, 150})},
 		{make_pair(BASIC1, glm::ivec2 {413, 150})},
@@ -269,7 +270,7 @@ void Scene::initEnemies() {
 		{make_pair(BASIC4, glm::ivec2 {452, 8 * 27})},
 		{make_pair(BASIC4, glm::ivec2 {468, 8 * 5})},
 		{make_pair(BASIC4, glm::ivec2 {484, 8 * 5})},
-		{make_pair(BASIC4, glm::ivec2 {500, 8 * 5})},
+		{make_pair(BASIC4, glm::ivec2 {500, 8 * 5})},*/
 	};
 	for (auto pos : enemyPositions) {
 		Enemy* enemy = new Enemy();
@@ -321,6 +322,8 @@ void Scene::updateGame(int deltaTime)
 {
 	count++;
 	currentTime += deltaTime;
+
+	if (bossfight != 0) --bossfight;
 
 	if (!player->died()) {
 		updateGameBackground(deltaTime);
@@ -418,9 +421,11 @@ void Scene::updateGameBackground(int deltaTime)
 		}
 
 		//update background position
-		screenExtraPosition += 1;
-		gameProjection = glm::ortho(0.f + screenExtraPosition, float(SCREEN_WIDTH - 1) + screenExtraPosition, float(SCREEN_HEIGHT - 1), 0.f);
-		screenMovement = -1;
+		if (bossfight != 0) {
+			screenExtraPosition += 1;
+			gameProjection = glm::ortho(0.f + screenExtraPosition, float(SCREEN_WIDTH - 1) + screenExtraPosition, float(SCREEN_HEIGHT - 1), 0.f);
+			screenMovement = -1;
+		}
 	}
 	++screenMovement;
 }
@@ -432,15 +437,13 @@ void Scene::updateGameEnemies(int deltaTime) {
 		enemy->update(deltaTime, player->getPosition());
 		if (enemy->isShooting()) {
 			//Shot
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-			addShot(enemy->getShotSprite(), enemy->getShotVelocity(player->getPosition()), enemy->getPosition(), enemy->getShotSize(), enemy->getShotSizeInSpriteSheet(), 1, false, 0);
-=======
-			addShot(enemy->getShotSprite(), enemy->getShotVelocity(), enemy->getPosition(), enemy->getShotSize(), enemy->getShotSizeInSpriteSheet(), 1, false, 0, 0);
->>>>>>> Stashed changes
-=======
-			addShot(enemy->getShotSprite(), enemy->getShotVelocity(), enemy->getPosition(), enemy->getShotSize(), enemy->getShotSizeInSpriteSheet(), 1, false);
->>>>>>> main
+			if (enemy->getType() == BOSS) {
+				if (enemy->getNewShotType() == EGG) {
+					createEggs(enemy);
+				}
+			}
+			if (enemy->getType() == BOSS) addShot(enemy->getShotSprite(), enemy->getShotVelocity(), enemy->getShotPosition(), enemy->getShotSize(), enemy->getShotSizeInSpriteSheet(), enemy->getShotDamage(), false, (3 + enemy->getNewShotType()),	 0);
+			else addShot(enemy->getShotSprite(), enemy->getShotVelocity(), enemy->getPosition(), enemy->getShotSize(), enemy->getShotSizeInSpriteSheet(), 1, false, -1, 0);
 			enemy->enemyAlreadyAttacked();
 		}
 	}
@@ -508,7 +511,7 @@ void Scene::updateGameShots(int deltaTime)
 	//enemies shots
 	for (Shot* shot : enemyShots) {
 		shot->update(deltaTime, forcePos, forceSize, texProgramGame);
-		if (!inScreen(shot->getPosition(), shot->getSize())) erase.push_back(shot);
+		if (shot->getCategory() != 5 && !inScreen(shot->getPosition(), shot->getSize())) erase.push_back(shot);
 	}
 	for (Shot* shot : erase) enemyShots.erase(shot);
 }
@@ -520,6 +523,7 @@ void Scene::createEnemies() {
 	auto it = enemies.find(acutalPosition);
 	if (it != enemies.end()) {
 		activeEnemies.insert(&it->second);
+		if (it->second.getType() == BOSS) bossfight = 280;
 	}
 }
 
@@ -661,7 +665,7 @@ void Scene::addForceShot() {
 		spriteFolder = "images/force/down_shot.png";
 		velocity = velocities[3];
 		addShot(spriteFolder, velocity, auxPos, size, sizeInSpriteSheet, damage, true, 0, 0);
-	}
+  }
 	if (nbShots == 5) {
 		//Upgrade 1
 		if (count - lastUpgrade1Shot > 30) {
@@ -977,6 +981,19 @@ void Scene::checkCollisions()
 		for (Shot* shot : playerShots) {
 			shotPos = shot->getPosition();
 			shotSize = shot->getSize();
+/*
+Merged, mirar que canviar
+
+			if (isCollision(enemyPos, enemySize, shotPos, shotSize)) {
+				bool isDead = true;
+				if (enemy->getType() == BOSS) {
+					isDead = enemy->reduceHP();
+				}
+				if (isDead) {
+					enemyErase.push_back(enemy);
+				}
+				if (shot->getDamage() == 1) shotErase.push_back(shot);
+        */
 			if (shot->getType() != 1) {
 				if (isCollision(enemyPos, enemySize, shotPos, shotSize)) {
 					enemyErase.push_back(enemy);
@@ -992,7 +1009,6 @@ void Scene::checkCollisions()
 						if (shot->getDamage() == 1) shotErase.push_back(shot);
 					}
 				}
-
 			}
 		}
 	}
@@ -1063,4 +1079,28 @@ bool Scene::isCollision(const glm::ivec2& pos1, const glm::ivec2& size1, const g
 
 	if (((minx1 < maxx2) && (minx2 < maxx1)) && ((miny1 < maxy2) && (miny2 < maxy1))) return true;
 	return false;
+}
+
+void Scene::createEggs(Enemy* boss) {
+	glm::ivec2 bossPosition = boss->getPosition();
+	vector<glm::ivec2> eggPositions = { 
+		glm::ivec2(bossPosition.x - 30, bossPosition.y + 2),
+		glm::ivec2(bossPosition.x - 60, bossPosition.y + 4),
+		glm::ivec2(bossPosition.x - 90, bossPosition.y + 6),
+		glm::ivec2(bossPosition.x - 120, bossPosition.y + 15),
+		glm::ivec2(bossPosition.x - 150, bossPosition.y + 24),
+		glm::ivec2(bossPosition.x - 165, bossPosition.y + 54),
+		glm::ivec2(bossPosition.x - 165, bossPosition.y + 88),
+		glm::ivec2(bossPosition.x - 165, bossPosition.y + 122),
+		glm::ivec2(bossPosition.x - 150, bossPosition.y + 152),
+		glm::ivec2(bossPosition.x - 120, bossPosition.y + 165),
+		glm::ivec2(bossPosition.x - 90, bossPosition.y + 170),
+		glm::ivec2(bossPosition.x - 60, bossPosition.y + 176),
+		glm::ivec2(bossPosition.x - 30, bossPosition.y + 178),
+		glm::ivec2(bossPosition.x, bossPosition.y + 180),
+	};
+ 	for (int i = 0; i < 14; ++i) {
+		int yheight = ((eggPositions[i]).y > 135) ? 1 : 0;
+		addShot(boss->getShotSprite(), boss->getShotVelocity(), eggPositions[i], boss->getShotSize(), boss->getShotSizeInSpriteSheet(), boss->getShotDamage(), false, (3 + boss->getNewShotType()), yheight);
+	}
 }

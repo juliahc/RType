@@ -23,6 +23,7 @@ public:
 	glm::ivec2 getPosition();
 	glm::ivec2 getSize();
 	int getDamage();
+	int getCategory();
 	int getType();
 	void collisionsUpgrade1(vector<glm::ivec2>& positions, vector<glm::ivec2>& sizes);
 
@@ -37,8 +38,25 @@ private:
 	Texture spritesheet;
 	ShaderProgram shaderProgramShot;
 	int count;
-	directionTypeX directionX;
+  directionTypeX directionX;
 	directionTypeY directionY;
+
+	/*
+	BOSS Helpers
+	*/
+	int category = 0;
+	bool bossShot = false, egg = false, beam = false;
+	//Elesctic shot helper
+	bool firstElectric = false;
+	bool electrics = false;
+	int pause = 0;
+	int speedDelay = 0;
+
+	//Egg shot
+	glm::ivec2 finalEggPosition;
+	glm::ivec2 calcVelocity();
+	int eggStartY; // 0 => top, 1 => bottom
+	bool horizontalMovement = false, right = true, up = false;
 };
 
 

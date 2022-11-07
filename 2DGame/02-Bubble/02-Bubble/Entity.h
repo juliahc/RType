@@ -13,6 +13,10 @@ enum Enemies {
 	BASIC1, BASIC2, BASIC3, BASIC4, BOSS
 };
 
+enum shotTypes {
+	ELECTRIC1, ELECTRIC2, EGG, BEAM
+};
+
 class Entity
 {
 

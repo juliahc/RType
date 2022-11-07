@@ -9,7 +9,7 @@
 >>>>>>> Stashed changes
 =======
   <PropertyGroup>
-    <ShowAllFiles>true</ShowAllFiles>
+    <ShowAllFiles>false</ShowAllFiles>
   </PropertyGroup>
 >>>>>>> main
 </Project>
