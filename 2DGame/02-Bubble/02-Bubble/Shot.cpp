@@ -201,7 +201,11 @@ void Shot::update(int deltaTime, glm::ivec2 forcePos, glm::ivec2 forceSize, Shad
 	count++;
 	sprite->update(deltaTime);
 
-	if (upgrade1) {
+	if (boom >= 0) {
+		if (boom < 3 && count % 5 == 0) ++boom;
+		sprite->changeAnimation(boom);
+	}
+	else if (upgrade1) {
 		glm::ivec2 auxPos;
 		bool up, down, left, right;
 		switch (state) {
@@ -663,4 +667,28 @@ void Shot::collisionsUpgrade1(vector<glm::ivec2>& positions, vector<glm::ivec2>&
 		default:
 			break;
 	}
+}
+
+void Shot::shotBoom(ShaderProgram& shaderProgram) {
+	//change position
+	posShot.x += sizeShot.x - 8;
+	
+	boom = 0;
+	sizeShot = glm::vec2(14, 16);
+	spritesheet.loadFromFile("images/shotBoom.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	sprite = Sprite::createSprite(glm::vec2(14, 16), glm::vec2(0.5f,0.5f), &spritesheet, &shaderProgram);
+	sprite->setNumberAnimations(3);
+		sprite->setAnimationSpeed(0, 8);
+		sprite->addKeyframe(0, glm::vec2(0.f, 0.5f));
+		sprite->setAnimationSpeed(1, 8);
+		sprite->addKeyframe(1, glm::vec2(0.5f, 0.f));
+		sprite->setAnimationSpeed(2, 8);
+		sprite->addKeyframe(2, glm::vec2(0.f, 0.f));
+	sprite->changeAnimation(0);
+
+	velocity = glm::ivec2(0,0);
+}
+
+bool Shot::boomFinished() {
+	return boom == 3;
 }
