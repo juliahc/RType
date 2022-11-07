@@ -104,6 +104,10 @@ void Scene::initGame()
 	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f);
 	gameBackground = TexturedQuad::createTexturedQuad(geomBack, texCoords, texProgram);
 	gameBackTex.loadFromFile("images/gameBackground.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	starsTex.loadFromFile("images/stars1x1.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	starsVel[0] = glm::vec2(-2, 0);
+	starsVel[1] = glm::vec2(-4, 0);
+
 	
 	//map
 	map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgramGame);
@@ -592,6 +596,49 @@ void Scene::updateGameBackground(int deltaTime)
 			gameProjection = glm::ortho(0.f + screenExtraPosition, float(SCREEN_WIDTH - 1) + screenExtraPosition, float(SCREEN_HEIGHT - 1), 0.f);
 			screenMovement = -1;
 		}
+
+		//Stars generation
+		if (count % 14 == 0 && screenExtraPosition < 133) {
+			vector<glm::ivec2> option1 = { glm::ivec2(3,40), glm::ivec2(5,65), glm::ivec2(0,100), glm::ivec2(8,200), glm::ivec2(12,240) };
+			vector<glm::ivec2> option2 = { glm::ivec2(5,46), glm::ivec2(9,85), glm::ivec2(8,160), glm::ivec2(6,120), glm::ivec2(11,200) };
+			vector<glm::ivec2> option3 = { glm::ivec2(15,50), glm::ivec2(5,25), glm::ivec2(4,98), glm::ivec2(5,150), glm::ivec2(5,210) };
+			starsOpt++;
+			if (starsOpt == 3) starsOpt = 0;
+			vector<glm::ivec2> generator;
+			if (starsOpt == 0) generator = option1;
+			else if (starsOpt == 1)generator = option2;
+			else generator = option3;
+
+			int b = 0;
+			for (glm::ivec2 pos : generator) {
+				if (b == 1) b = 0;
+				else b++;
+
+				glm::vec2 texCoords[2];
+				glm::vec2 geomStar[2] = { glm::vec2(0.f, 0.f), glm::vec2(1.f, 1.f) };
+				if (b == 0) {
+					texCoords[0] = glm::vec2(0.f, 0.f);
+					texCoords[1] = glm::vec2(0.5f, 1.f);
+				}
+				else {
+					texCoords[0] = glm::vec2(0.5f, 0.f);
+					texCoords[1] = glm::vec2(1.f, 1.f);
+				}
+				TexturedQuad* star = TexturedQuad::createTexturedQuad(geomStar, texCoords, texProgram);
+
+				stars.push_back(make_pair(star, b));
+				starsPos.push_back(pos);
+			}
+		}
+
+		//Stars update
+		for (int i = 0; i < stars.size(); i++) {
+			int vel = stars[i].second;
+			starsPos[i] += starsVel[vel];
+		}
+	
+
+		
 	}
 	++screenMovement;
 }
@@ -916,6 +963,16 @@ void Scene::renderGame()
 	texProgramGame.use();
 	texProgramGame.setUniformMatrix4f("projection", gameProjection);
 	texProgramGame.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
+
+	//stars
+	for (int i = 0; i < stars.size(); i++) {
+		glm::vec3 trans = glm::vec3(float(starsPos[i].x + SCREEN_WIDTH + screenExtraPosition), float(starsPos[i].y), 0.f);
+
+		modelview = glm::mat4(1.0f);
+		modelview = glm::translate(modelview, trans);
+		texProgram.setUniformMatrix4f("modelview", modelview);
+		stars[i].first->render(starsTex);
+	}
 
 	//map
 	modelview = glm::mat4(1.0f);
