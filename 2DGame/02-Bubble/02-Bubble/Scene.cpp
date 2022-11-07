@@ -9,7 +9,7 @@
 #define SCREEN_X 0
 #define SCREEN_Y 0
 
-#define INIT_PLAYER_X_TILES -3
+#define INIT_PLAYER_X_TILES 2
 #define INIT_PLAYER_Y_TILES 16
 
 #define INIT_BASIC_ENEMY_X_TILES 15
@@ -110,7 +110,7 @@ void Scene::initGame()
 	
 	//player
 	player = new Player();
-	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame);
+	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame, true);
 	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 	player->setTileMap(map);
 	
@@ -437,26 +437,30 @@ void Scene::updateGame(int deltaTime)
 	if (!player->died()) {
 		updateGameBackground(deltaTime);
 		updateGameEnemies(deltaTime);
+		glm::ivec2 p0 = player->getPosition();
 		updateGamePlayer(deltaTime);
+		glm::ivec2 p1 = player->getPosition();
 		updateGameForce(deltaTime);
 		updateGameShots(deltaTime);
 		checkCollisions();
 		//Check if player is out of screen
-		if (!inScreen(player->getPosition(), player->getSize())) {
+		if (!inScreen(player->getPosition(), player->getSize()) && !player->inInitAnimation()) {
 			player->collision();
 		}
 		if (Game::instance().getKey('m') == PRESS) Game::instance().setState(MENU);
-		for (int i = '1'; i <= '7'; ++i) {
+		for (int i = '1'; i <= '6'; ++i) {
 			if (Game::instance().getKey(i) == PRESS) {
 				// spawnEnemies(i);
+				player->setPosition(glm::vec2(breakpoints[(i - '0') - 1], player->getPosition().y));
+				screenExtraPosition = breakpoints[(i - '0') - 1];
+				/*
 				if (i == '6' && bossfight == 0) {
 					player->setPosition(glm::vec2(330 * 8, player->getPosition().y));
 					screenExtraPosition = 330 * 8;
 				} else{
 					if (bossfight == 0) bossfight = -1;
-					player->setPosition(glm::vec2(breakpoints[(i - '0') - 1], player->getPosition().y));
-					screenExtraPosition = breakpoints[(i - '0') - 1];
 				}
+				*/
 			}
 		}
 	}
@@ -466,12 +470,12 @@ void Scene::updateGame(int deltaTime)
 			lifes--;
 			if (lifes > 0) {
 				Game::instance().setState(READY);
-				restartGame(); //Play again with one less life
+				//restartGame(); //Play again with one less life
 			}
 			else {
 				//Game over, player lifes == 0
 				Game::instance().setState(GAMEOVER);
-				restartGame();
+				//restartGame();
 			}
 		}
 	}
@@ -499,8 +503,23 @@ void Scene::updateTransition(int deltaTime)
 
 	int middle = 80;
 	int max = 160;
+	if (transitionCount == 1) {
+		int a = 0;
+	}
+	if (transitionCount < middle) {
+		//Game before READY?
+		//if (Game::instance().getNextState() == READY && player->inInitAnimation()) updateGame(deltaTime);
 
-	if (transitionCount >= max) {
+	}
+	else if (transitionCount == middle) {
+		if (Game::instance().getNextState() == GAME && !player->inInitAnimation()) restartGame();
+	}
+	else if (transitionCount > middle && transitionCount < max) {
+		//Game init animation
+		if (Game::instance().getNextState() == GAME && player->inInitAnimation()) updateGame(deltaTime);
+		//Restart game after READY?
+	}
+	else if (transitionCount >= max) {
 		transitionCount = 0;
 		GameState nextState = Game::instance().getNextState();
 		Game::instance().setState(nextState);
@@ -610,7 +629,9 @@ void Scene::updateGameEnemies(int deltaTime) {
 void Scene::updateGamePlayer(int deltaTime)
 {
 	//If "s" released, add shot with damage > 1
-	if (Game::instance().getKey('s') == PRESS || (Game::instance().getKey('s') == RELEASE && player->getShotCharge() > 1)) addPlayerShot();
+	if (Game::instance().getKey('s') == PRESS || (Game::instance().getKey('s') == RELEASE && player->getShotCharge() > 1)) {
+		if (!player->inInitAnimation()) addPlayerShot();
+	}
 	
 	//Player update
 	player->update(deltaTime, screenExtraPosition, force->getWidth());
@@ -658,6 +679,14 @@ void Scene::updateGameShots(int deltaTime)
 		if (shot->getCategory() != 5 && !inScreen(shot->getPosition(), shot->getSize())) erase.push_back(shot);
 	}
 	for (Shot* shot : erase) enemyShots.erase(shot);
+
+
+	//Check if shots collision with map
+	for (Shot* shot : boomShots) {
+		shot->update(deltaTime, forcePos, forceSize, texProgramGame);
+		if (shot->boomFinished()) erase.push_back(shot);
+	}
+	for (Shot* shot : erase) boomShots.erase(shot);
 }
 
 //Other subupdate functions
@@ -672,19 +701,31 @@ void Scene::createEnemies() {
 }
 
 void Scene::restartGame() {
+	//player position (checkpoints)
+	int x = 0;
+	if (lifes < 3) {
+		glm::ivec2 posPlayer = player->getPosition();
+		x = posPlayer.x;
+		for (int i = 1; i < breakpoints.size(); i++) {
+			if (x >= breakpoints[i - 1] && x < breakpoints[i]) x = breakpoints[i - 1];
+		}
+	}
+
 	//restart player
 	player = new Player();
-	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame);
-	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
+	bool animation = lifes == 3;
+	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame, animation);
+	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize() + x, INIT_PLAYER_Y_TILES * map->getTileSize()));
 	player->setTileMap(map);
 
 	//restart force
 	force = new Force();
 	force->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame);
-	force->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize() + player->getSize().x, INIT_PLAYER_Y_TILES * map->getTileSize() + 1));
+	force->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize() + x + player->getSize().x, INIT_PLAYER_Y_TILES * map->getTileSize() + 1));
 	force->setTileMap(map);
 
 	for (int i = 0; i < 3; ++i) showTokens[i] = false;
+	bossfight = -1;
 
 	playerShots.clear();
 	enemyShots.clear();
@@ -692,7 +733,7 @@ void Scene::restartGame() {
 	activeEnemies.clear();
 	boomEnemies.clear();
 	screenMovement = 0;
-	screenExtraPosition = 0;
+	screenExtraPosition = 0 + x;
 	enemyGenerator = 0;
 	count = 0;
 	lastUpgrade1Shot = 0;
@@ -700,7 +741,7 @@ void Scene::restartGame() {
 	
 	initEnemies();
 
-	gameProjection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
+	gameProjection = glm::ortho(0.f, float(SCREEN_WIDTH - 1) + x, float(SCREEN_HEIGHT - 1), 0.f);
 	currentTime = 0.0f;
 }
 
@@ -865,64 +906,66 @@ void Scene::renderGame()
 	texProgram.setUniformMatrix4f("projection", projection);
 	texProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
 
-	if (!player->died()) {
 
-		//background
-		modelview = glm::mat4(1.0f);
-		modelview = glm::translate(modelview, glm::vec3(0.f - screenExtraPosition, 0.f, 0.f));
-		texProgram.setUniformMatrix4f("modelview", modelview);
-		gameBackground->render(gameBackTex);
+	//background
+	modelview = glm::mat4(1.0f);
+	modelview = glm::translate(modelview, glm::vec3(0.f - screenExtraPosition, 0.f, 0.f));
+	texProgram.setUniformMatrix4f("modelview", modelview);
+	gameBackground->render(gameBackTex);
 
-		texProgramGame.use();
-		texProgramGame.setUniformMatrix4f("projection", gameProjection);
-		texProgramGame.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
+	texProgramGame.use();
+	texProgramGame.setUniformMatrix4f("projection", gameProjection);
+	texProgramGame.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
 
-		//map
-		modelview = glm::mat4(1.0f);
-		texProgramGame.setUniformMatrix4f("modelview", modelview);
-		texProgramGame.setUniform2f("texCoordDispl", 0.f, 0.f);
-		map->render();
+	//map
+	modelview = glm::mat4(1.0f);
+	texProgramGame.setUniformMatrix4f("modelview", modelview);
+	texProgramGame.setUniform2f("texCoordDispl", 0.f, 0.f);
+	map->render();
 
-		//hearts
-		modelview = glm::translate(modelview, glm::vec3(2.f + screenExtraPosition, 2.f, 0.f));
+	//hearts
+	modelview = glm::translate(modelview, glm::vec3(2.f + screenExtraPosition, 2.f, 0.f));
+	texProgramGame.setUniformMatrix4f("modelview", modelview);
+	heart->render(heartTex);
+
+	if (lifes >= 2) {
+		modelview = glm::translate(modelview, glm::vec3(15.f, 0.f, 0.f));
 		texProgramGame.setUniformMatrix4f("modelview", modelview);
 		heart->render(heartTex);
-
-		if (lifes >= 2) {
-			modelview = glm::translate(modelview, glm::vec3(15.f, 0.f, 0.f));
-			texProgramGame.setUniformMatrix4f("modelview", modelview);
-			heart->render(heartTex);
-		}
-		if (lifes >= 3) {
-			modelview = glm::translate(modelview, glm::vec3(15.f, 0.f, 0.f));
-			texProgramGame.setUniformMatrix4f("modelview", modelview);
-			heart->render(heartTex);
-		}
-
-		//upgrade tokens
-		for (int i = 0; i < sizeof(showTokens); i++) {
-			if (showTokens[i]) {
-				modelview = glm::mat4(1.0f);
-				modelview = glm::translate(modelview, tokenPositions[i]);
-				texProgramGame.setUniformMatrix4f("modelview", modelview);
-				upgradeTokens[i]->render(upgradeTokensTex);
-			}
-		}
-
-		//player and force
-		player->render();
-		if (force->isActive()) force->render();
-
-		//shots
-		for (Shot* shot : playerShots) {
-			shot->render();
-		}
-		for (Shot* shot : enemyShots) shot->render();
-
-		//enemies
-		for (Enemy* enemy : activeEnemies) enemy->render();
-		for (Enemy* boomEnemy : boomEnemies) boomEnemy->render();
 	}
+	if (lifes >= 3) {
+		modelview = glm::translate(modelview, glm::vec3(15.f, 0.f, 0.f));
+		texProgramGame.setUniformMatrix4f("modelview", modelview);
+		heart->render(heartTex);
+	}
+
+	//upgrade tokens
+	for (int i = 0; i < sizeof(showTokens); i++) {
+		if (showTokens[i]) {
+			modelview = glm::mat4(1.0f);
+			modelview = glm::translate(modelview, tokenPositions[i]);
+			texProgramGame.setUniformMatrix4f("modelview", modelview);
+			upgradeTokens[i]->render(upgradeTokensTex);
+		}
+	}
+
+	//player and force
+	player->render();
+	if (force->isActive()) force->render();
+
+	//shots
+	for (Shot* shot : playerShots) {
+		shot->render();
+	}
+	for (Shot* shot : enemyShots) shot->render();
+	for (Shot* shot : boomShots) {
+		shot->render();
+	}
+
+
+	//enemies
+	for (Enemy* enemy : activeEnemies) enemy->render();
+	for (Enemy* boomEnemy : boomEnemies) boomEnemy->render();
 
 	if (Game::instance().getKey('m')) {
 		Game::instance().setState(MENU);
@@ -1019,12 +1062,13 @@ void Scene::renderTransition()
 	int max = 160;
 
 	float alpha;
-
+	if (transitionCount == 1) {
+		int a = 0;
+	}
 	if (transitionCount < middle) { //fadeOut
 		GameState previousState = Game::instance().getPreviousState();
 		if (previousState != NONE) Game::instance().renderState(previousState);
 		alpha = float(transitionCount) / float(middle);
-		int a = 0;
 	}
 	else if (transitionCount >= middle && transitionCount < max) { //fadeIn
 		GameState nextState = Game::instance().getNextState();
@@ -1195,6 +1239,8 @@ void Scene::checkCollisions()
 		if (isCollision(forcePos, forceSize, enemyPos, enemySize)) {
 			if (enemy->getType() != BOSS )eraseByForce.push_back(enemy);
 		}
+		if (isCollision(playerPos, playerSize, enemyPos, enemySize)) player->collision();
+		if (force->isActive() && isCollision(forcePos, forceSize, enemyPos, enemySize)) eraseByForce.push_back(enemy);
 	}
 	for (Enemy* enemy : eraseByForce) {
 		enemy->collision();
@@ -1324,14 +1370,38 @@ void Scene::checkCollisions()
 	}
 
 	//Player & force
-	if (Game::instance().getKey('a') == PRESS) {
-		int a = 0;
-	}
-
 	glm::ivec2 playerFrontPos, playerBottomPos, playerMidSize;
 	playerMidSize = glm::ivec2(playerSize.x / 2, playerSize.y / 2);
 	playerBottomPos = playerPos;
 	playerFrontPos = glm::ivec2(playerPos.x + playerMidSize.x - 1, playerPos.y);
+
+	//Shots with map
+	vector<Shot*> boomPlayer;
+	for (Shot* shot : playerShots) {
+		glm::ivec2 shotSize = shot->getSize(), shotPos = shot->getPosition();
+		if (map->collisionMoveLeft(shotPos, shotSize)) boomPlayer.push_back(shot);
+		else if (map->collisionMoveRight(shotPos, shotSize)) boomPlayer.push_back(shot);
+		else if (map->collisionMoveUp(shotPos, shotSize, 0)) boomPlayer.push_back(shot);
+		else if (map->collisionMoveDown(shotPos, shotSize, 0)) boomPlayer.push_back(shot);
+	}
+	for (Shot* shot : boomPlayer) {
+		shot->shotBoom(texProgramGame);
+		boomShots.insert(shot);
+		playerShots.erase(shot);
+	}
+	vector<Shot*> boomEnemies;
+	for (Shot* shot : enemyShots) {
+		glm::ivec2 shotSize = shot->getSize(), shotPos = shot->getPosition();
+		if (map->collisionMoveLeft(shotPos, shotSize)) boomEnemies.push_back(shot);
+		else if (map->collisionMoveRight(shotPos, shotSize)) boomEnemies.push_back(shot);
+		else if (map->collisionMoveUp(shotPos, shotSize, 0)) boomEnemies.push_back(shot);
+		else if (map->collisionMoveDown(shotPos, shotSize, 0)) boomEnemies.push_back(shot);
+	}
+	for (Shot* shot : boomEnemies) {
+		shot->shotBoom(texProgramGame);
+		boomShots.insert(shot);
+		enemyShots.erase(shot);
+	}
 	
 
 	forcePos = force->getPosition();
