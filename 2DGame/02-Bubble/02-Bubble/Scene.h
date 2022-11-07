@@ -75,7 +75,7 @@ private:
 	void restartGame();
 	void addPlayerShot();
 	void addForceShot();
-	void addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2& pos, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage, bool fromPlayer, int upgrade, int type);
+	void addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2& pos, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage, bool fromPlayer, int upgrade, int subtype);
 
 	//Collisions
 	void checkCollisions();
@@ -126,7 +126,7 @@ private:
 
 	//Shots
 	std::set<Shot*> playerShots, enemyShots;
-	int lastUpgrade2Shot = 0;
+	int lastUpgrade1Shot = 0, lastUpgrade2Shot = 0;
 
 	//Lifes (hearts)
 	int lifes = 3;
@@ -137,10 +137,12 @@ private:
 
 
 	/* INSTRUCTIONS ATTRIBUTES */
-
+	Texture instructionsTex;
+	TexturedQuad* instructionsBackground;
 
 	/* CREDITS ATTRIBUTES */
-
+	Texture creditsTex;
+	TexturedQuad* creditsBackground;
 
 	/* TRANSITION ATTRIBUTES */
 	
