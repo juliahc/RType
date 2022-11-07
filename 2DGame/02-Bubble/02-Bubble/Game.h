@@ -8,7 +8,7 @@
 #define SCREEN_HEIGHT 256
 
 enum keyState { IDLE, PRESS, REPEAT, RELEASE };
-enum GameState { MENU, GAME, INSTRUCTIONS, CREDITS, TRANSITION, GAMEOVER , NONE };
+enum GameState { MENU, GAME, INSTRUCTIONS, CREDITS, TRANSITION, GAMEOVER , READY, THEEND, NONE };
 
 // Game is a singleton (a class with a single instance) that represents our whole application
 

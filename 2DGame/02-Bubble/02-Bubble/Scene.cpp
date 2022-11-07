@@ -46,6 +46,8 @@ void Scene::init()
 	initCredits();
 	initTransition();
 	initGameover();
+	initReady();
+	initTheEnd();
 	
 	//Projections
 	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
@@ -173,6 +175,24 @@ void Scene::initGameover()
 	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f); //play
 	gameOver = TexturedQuad::createTexturedQuad(geomGameOver, texCoords, texProgram);
 	gameOverTex.loadFromFile("images/gameOver.png", TEXTURE_PIXEL_FORMAT_RGBA);
+}
+
+void Scene::initReady()
+{
+	glm::vec2 texCoords[2];
+	glm::vec2 geomReady[2] = { glm::vec2(0.f, 0.f), glm::vec2(92.f, 14.f) };
+	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f);
+	ready = TexturedQuad::createTexturedQuad(geomReady, texCoords, texProgram);
+	readyTex.loadFromFile("images/ready.png", TEXTURE_PIXEL_FORMAT_RGBA);
+}
+
+void Scene::initTheEnd()
+{
+	glm::vec2 texCoords[2];
+	glm::vec2 geomTheEnd[2] = { glm::vec2(0.f, 0.f), glm::vec2(111.f, 14.f) };
+	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f);
+	theEnd = TexturedQuad::createTexturedQuad(geomTheEnd, texCoords, texProgram);
+	theEndTex.loadFromFile("images/theEnd.png", TEXTURE_PIXEL_FORMAT_RGBA);
 }
 
 //Other subinit functions
@@ -444,7 +464,10 @@ void Scene::updateGame(int deltaTime)
 		if (!player->boomFinished()) player->update(deltaTime, screenExtraPosition, force->getWidth()); //Player explosion animation
 		else {
 			lifes--;
-			if (lifes > 0) restartGame(); //Play again with one less life
+			if (lifes > 0) {
+				Game::instance().setState(READY);
+				restartGame(); //Play again with one less life
+			}
 			else {
 				//Game over, player lifes == 0
 				Game::instance().setState(GAMEOVER);
@@ -490,6 +513,28 @@ void Scene::updateGameOver(int deltaTime)
 
 	if (gameOverCount >= 100) {
 		gameOverCount = 0;
+		Game::instance().setState(MENU);
+		menuType = INITIAL;
+		menuState = 1;
+		lifes = 3;
+	}
+}
+
+void Scene::updateReady(int deltaTime)
+{
+	readyCount++;
+
+	if (readyCount >= 100) {
+		readyCount = 0;
+		Game::instance().setState(GAME);
+	}
+}
+
+void Scene::updateTheEnd(int deltaTime) {
+	theEndCount++;
+
+	if (theEndCount >= 100) {
+		theEndCount = 0;
 		Game::instance().setState(MENU);
 		menuType = INITIAL;
 		menuState = 1;
@@ -1014,6 +1059,31 @@ void Scene::renderGameover()
 	gameOver->render(gameOverTex);
 }
 
+void Scene::renderReady()
+{
+	glm::mat4 modelview = glm::mat4(1.0f);
+	texProgram.use();
+	texProgram.setUniformMatrix4f("projection", projection);
+	texProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
+
+	//ready
+	modelview = glm::translate(modelview, glm::vec3(146.f, 121.f, 0.f));
+	texProgram.setUniformMatrix4f("modelview", modelview);
+	ready->render(readyTex);
+}
+
+void Scene::renderTheEnd()
+{
+	glm::mat4 modelview = glm::mat4(1.0f);
+	texProgram.use();
+	texProgram.setUniformMatrix4f("projection", projection);
+	texProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
+
+	//the end
+	modelview = glm::translate(modelview, glm::vec3(137.f, 121.f, 0.f));
+	texProgram.setUniformMatrix4f("modelview", modelview);
+	theEnd->render(theEndTex);
+}
 
 /* OTHERS */
 

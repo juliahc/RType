@@ -39,6 +39,8 @@ public:
 	void updateCredits(int deltaTime);
 	void updateTransition(int deltaTime);
 	void updateGameOver(int deltaTime);
+	void updateReady(int deltaTime);
+	void updateTheEnd(int deltaTime);
 
 	//Renders
 	void renderMenu();
@@ -47,6 +49,8 @@ public:
 	void renderCredits();
 	void renderTransition();
 	void renderGameover();
+	void renderReady();
+	void renderTheEnd();
 
 private:
 
@@ -59,6 +63,8 @@ private:
 	void initCredits();
 	void initTransition();
 	void initGameover();
+	void initReady();
+	void initTheEnd();
 
 	void initShaders();
 	void initEnemies();
@@ -155,6 +161,20 @@ private:
 	TexturedQuad* gameOver;
 	Texture gameOverTex;
 	int gameOverCount = 0;
+
+
+	/* READY ATTRIBUTES */
+
+	TexturedQuad* ready;
+	Texture readyTex;
+	int readyCount = 0;
+
+
+	/* THEEND ATTRIBUTES */
+
+	TexturedQuad* theEnd;
+	Texture theEndTex;
+	int theEndCount = 0;
 
 	/* BREAKPOINTS */
 	vector<int> breakpoints = { 0, 74 * 8, 141 * 8, 187 * 8, 239 * 8, 298 * 8, 55*8};

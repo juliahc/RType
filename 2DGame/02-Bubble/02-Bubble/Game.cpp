@@ -41,6 +41,12 @@ bool Game::update(int deltaTime)
 		case GAMEOVER:
 			scene.updateGameOver(deltaTime);
 			break;
+		case READY:
+			scene.updateReady(deltaTime);
+			break;
+		case THEEND:
+			scene.updateTheEnd(deltaTime);
+			break;
 	}
 
 	return bPlay;
@@ -65,6 +71,13 @@ void Game::renderState(GameState state) {
 			break;
 		case GAMEOVER:
 			scene.renderGameover();
+			break;
+		case READY:
+			scene.renderReady();
+			break;
+		case THEEND:
+			scene.renderTheEnd();
+			break;
 	}
 }
 
