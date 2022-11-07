@@ -9,17 +9,14 @@ enum BASIC1Anims
 {
 	BASIC1_STANDARD, BASIC1_ROTATE_UP_1, BASIC1_ROTATE_UP_2, BASIC1_ROTATE_DOWN_1, BASIC1_ROTATE_DOWN_2, BASIC1_FULL_ROTATION
 };
-
 enum BASIC2Anims
 {
 	BASIC2_STAYLEFT, BASIC2_LEFT_UP1, BASIC2_LEFT_UP2, BASIC2_LEFT_UP3, BASIC2_STAYRIGHT, BASIC2_RIGHT_UP1, BASIC2_RIGHT_UP2, BASIC2_RIGHT_UP3, BASIC2_UP
 };
-
 enum BASIC3Anims
 {
 	BASIC3_STAYLEFT, BASIC3_RIGHTFOOT, BASIC3_NEUTRAL, BASIC3_LEFTFOOT, BASIC3_JUMPING, BASIC3_AIR
 };
-
 enum BASIC4Anims
 {
 	BASIC4_UP_LEFT1, BASIC4_UP_LEFT2, BASIC4_UP_LEFT3, BASIC4_UP_LEFT4, BASIC4_UP_LEFT5,
@@ -27,7 +24,6 @@ enum BASIC4Anims
 	BASIC4_DOWN_LEFT5, BASIC4_DOWN_LEFT4, BASIC4_DOWN_LEFT3, BASIC4_DOWN_LEFT2, BASIC4_DOWN_LEFT1,
 	BASIC4_DOWN_RIGHT1, BASIC4_DOWN_RIGHT2, BASIC4_DOWN_RIGHT3, BASIC4_DOWN_RIGHT4, BASIC4_DOWN_RIGHT5
 };
-
 enum BOSSAnims
 {
 	BASIC, EGG1, EGG2, EGG3, ANGRY
@@ -205,34 +201,61 @@ void Enemy::init(const glm::ivec2& tileMapPos, Enemies enemy, ShaderProgram& sha
 
 	//Enemy boom
 	spritesheetBoom.loadFromFile("images/enemies/enemyBoom.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	spriteBoom = Sprite::createSprite(glm::ivec2(16, 16), glm::vec2(0.5, 0.5f), &spritesheetBoom, &shaderProgram);
-	spriteBoom->setNumberAnimations(8);
-	spriteBoom->setAnimationSpeed(0, 8);
-	spriteBoom->addKeyframe(0, glm::vec2(0.f, 0.f));
-	spriteBoom->setAnimationSpeed(1, 8);
-	spriteBoom->addKeyframe(1, glm::vec2(0.5f, 0.f));
-	spriteBoom->setAnimationSpeed(2, 8);
-	spriteBoom->addKeyframe(2, glm::vec2(0.f, 0.f));
-	spriteBoom->setAnimationSpeed(3, 8);
-	spriteBoom->addKeyframe(3, glm::vec2(0.5f, 0.f));
-	spriteBoom->setAnimationSpeed(4, 8);
-	spriteBoom->addKeyframe(4, glm::vec2(0.f, 0.5f));
-	spriteBoom->setAnimationSpeed(5, 8);
-	spriteBoom->addKeyframe(5, glm::vec2(0.5f, 0.f));
-	spriteBoom->setAnimationSpeed(6, 8);
-	spriteBoom->addKeyframe(6, glm::vec2(0.0f, 0.f));
-	spriteBoom->setAnimationSpeed(7, 8);
-	spriteBoom->addKeyframe(7, glm::vec2(0.5f, 0.5f));
+	tileMapDispl = tileMapPos;
 
-	
+	if (myType == BOSS) {
+		for (auto bossBP : bossBoomPositions) {
+			Sprite* auxiliar;
+			auxiliar = Sprite::createSprite(glm::ivec2(16, 16), glm::vec2(0.5, 0.5f), &spritesheetBoom, &shaderProgram);
+			auxiliar->setNumberAnimations(8);
+			auxiliar->setAnimationSpeed(0, 8);
+			auxiliar->addKeyframe(0, glm::vec2(0.f, 0.f));
+			auxiliar->setAnimationSpeed(1, 8);
+			auxiliar->addKeyframe(1, glm::vec2(0.5f, 0.f));
+			auxiliar->setAnimationSpeed(2, 8);
+			auxiliar->addKeyframe(2, glm::vec2(0.f, 0.f));
+			auxiliar->setAnimationSpeed(3, 8);
+			auxiliar->addKeyframe(3, glm::vec2(0.5f, 0.f));
+			auxiliar->setAnimationSpeed(4, 8);
+			auxiliar->addKeyframe(4, glm::vec2(0.f, 0.5f));
+			auxiliar->setAnimationSpeed(5, 8);
+			auxiliar->addKeyframe(5, glm::vec2(0.5f, 0.f));
+			auxiliar->setAnimationSpeed(6, 8);
+			auxiliar->addKeyframe(6, glm::vec2(0.0f, 0.f));
+			auxiliar->setAnimationSpeed(7, 8);
+			auxiliar->addKeyframe(7, glm::vec2(0.5f, 0.5f));
+
+			auxiliar->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x + bossBP.x), float(tileMapDispl.y + posEnemy.y + bossBP.y)));
+			boomBossSprites.push_back(auxiliar);
+		}
+	}
+	else {
+		spriteBoom = Sprite::createSprite(glm::ivec2(16, 16), glm::vec2(0.5, 0.5f), &spritesheetBoom, &shaderProgram);
+		spriteBoom->setNumberAnimations(8);
+		spriteBoom->setAnimationSpeed(0, 8);
+		spriteBoom->addKeyframe(0, glm::vec2(0.f, 0.f));
+		spriteBoom->setAnimationSpeed(1, 8);
+		spriteBoom->addKeyframe(1, glm::vec2(0.5f, 0.f));
+		spriteBoom->setAnimationSpeed(2, 8);
+		spriteBoom->addKeyframe(2, glm::vec2(0.f, 0.f));
+		spriteBoom->setAnimationSpeed(3, 8);
+		spriteBoom->addKeyframe(3, glm::vec2(0.5f, 0.f));
+		spriteBoom->setAnimationSpeed(4, 8);
+		spriteBoom->addKeyframe(4, glm::vec2(0.f, 0.5f));
+		spriteBoom->setAnimationSpeed(5, 8);
+		spriteBoom->addKeyframe(5, glm::vec2(0.5f, 0.f));
+		spriteBoom->setAnimationSpeed(6, 8);
+		spriteBoom->addKeyframe(6, glm::vec2(0.0f, 0.f));
+		spriteBoom->setAnimationSpeed(7, 8);
+		spriteBoom->addKeyframe(7, glm::vec2(0.5f, 0.5f));
+		
+		spriteBoom->changeAnimation(0);
+		spriteBoom->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
+	}
 	
 	sprite->changeAnimation(0);
-	spriteBoom->changeAnimation(0);
-	tileMapDispl = tileMapPos;
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
-	spriteBoom->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
 }
-
 void Enemy::update(int deltaTime, glm::ivec2 posPlayer)
 {
 	this->posPlayer = posPlayer;
@@ -331,10 +354,23 @@ void Enemy::update(int deltaTime, glm::ivec2 posPlayer)
 		sprite->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
 	}
 	else {
-		spriteBoom->update(deltaTime);
-		if (boomAnimation < 8) {
-			boomAnimation += 1;
-			spriteBoom->changeAnimation(boomAnimation);
+		if (myType != BOSS) {
+			spriteBoom->update(deltaTime);
+			if (boomAnimation < 8) {
+				boomAnimation += 1;
+				spriteBoom->changeAnimation(boomAnimation);
+			}
+		}
+		else {
+			if (extraBoomBossTime > 10) {
+				extraBoomBossTime = 0;
+				if (boomAnimation < 8) boomAnimation += 1;
+				for (auto bS : boomBossSprites) {
+					bS->update(deltaTime);
+					bS->changeAnimation(boomAnimation);
+				}
+			}
+			else extraBoomBossTime += rand() % 3;
 		}
 	}
 	sprite->update(deltaTime);
@@ -440,7 +476,6 @@ void Enemy::moveEnemyHorizontally(int length, bool right) {
 			break;
 	}
 }
-
 void Enemy::moveEnemyVertically(int length, bool up) {
 	switch (myType) {
 		case BASIC1:
@@ -484,7 +519,6 @@ void Enemy::moveEnemyVertically(int length, bool up) {
 			break;
 	}
 }
-
 void Enemy::restartWalking() {
 	if (timeLastRotationAnim > 15/*30*/) {
 		--lastRotationAnim;
@@ -498,133 +532,6 @@ void Enemy::restartWalking() {
 	}
 	//else ++timeLastRotationAnim;
 }
-
-bool Enemy::attack(int probability) {
-	// Random number to decide actions
-	int random_number = rand();
-	switch (myType) {
-		case BASIC1:
-		case BASIC2:
-		case BASIC4:
-			if ((random_number % 100) < (probability % 101) && (rand() % 100 < (probability * 2) && timesWithoutAttacking > 49)) {
-				timesWithoutAttacking = 0;
-				return true;
-			}
-			timesWithoutAttacking++;
-			return false;
-			break;
-		case BOSS:
-			if (beam) return true;
-			if (electricShots) {
-				if (!numberElectricShots) return true;
-				if (interval > 3) {
-					interval = 0;
-					return true;
-				}
-				else ++interval;
-			}
-			else {
-				++startElectric;
-				if (startElectric == 100) {
-					electricShots = true;
-					startElectric = 0;
-				}
-			}
-			break;
-	}
-	return false;
-}
-
-void Enemy::attackPlayer() {
-	switch (myType) {
-		case BASIC1:
-		case BASIC4:
-			shooting = true;
-			break;
-		case BASIC2:
-			if (actualAttackAnimation == -1) {
-				//First attack animation
-				if (right) {
-					sprite->changeAnimation(BASIC2_RIGHT_UP1);
-					lastRotationAnim = BASIC2_RIGHT_UP1;
-				}
-				else {
-					sprite->changeAnimation(++lastRotationAnim);
-				}
-				actualAttackAnimation = lastRotationAnim;
-			}
-			else if (lastRotationAnim == BASIC2_UP) {
-				if (timeLastRotationAnim > 15/*30*/) {
-					shooting = true;
-					timeLastRotationAnim = 0;
-				}
-				//else ++timeLastRotationAnim;
-				return;
-			}
-			else {
-				if (timeLastRotationAnim > 15/*30*/) {
-					++lastRotationAnim;
-					if (!right && lastRotationAnim == BASIC2_STAYRIGHT) {
-						lastRotationAnim = BASIC2_UP;
-					}
-					sprite->changeAnimation(lastRotationAnim);
-					timeLastRotationAnim = 0;
-					actualAttackAnimation = lastRotationAnim;
-					break;
-				}
-				else ++timeLastRotationAnim;
-			}
-			break;
-
-		case BOSS:
-			if (beam) {
-				if (startingBeam) {
-					if (timeLastRotationAnim > 30) {
-						startingBeam = false;
-						timeLastRotationAnim = true;
-					}
-				}
-				else if (beamShots < 1) {
-					newShotType = BEAM;
-					shooting = true;
-					beamShots++;
-				}
-				else {
-					beam = false;
-					// Initialize eggs
-					if (!eggShotDone) {
-						newShotType = EGG;
-						shooting = true;
-					}
-					else shooting = false;
-					//Restart beam attributes
-					beamShots = 0;
-					delayFirstAnimation = 150;
-					//Change the sprite animation to the default one
-					restartSprite = true;
-				}
-			}
-			else if (electricShots) {
-				if (numberElectricShots < 10) {
-					if (numberElectricShots) newShotType = ELECTRIC2;
-					else newShotType = ELECTRIC1;
-					shooting = true;
-					numberElectricShots++;
-				}
-				else {
-					if (numberElectricShots == 60) {
-						lastElectricPosition++;
-						if (lastElectricPosition == 3) lastElectricPosition = 0;
-						numberElectricShots = 0;
-						newShotType = ELECTRIC1;
-					}
-					else ++numberElectricShots;
-				}
-			}
-			break;
-	}
-}
-
 void Enemy::changeAnimation() {
 	int cannonDirection;
 	switch (myType) {
@@ -722,10 +629,143 @@ void Enemy::changeAnimation() {
 	}
 }
 
+bool Enemy::attack(int probability) {
+	// Random number to decide actions
+	int random_number = rand();
+	switch (myType) {
+		case BASIC1:
+		case BASIC2:
+		case BASIC4:
+			if ((random_number % 100) < (probability % 101) && (rand() % 100 < (probability * 2) && timesWithoutAttacking > 49)) {
+				timesWithoutAttacking = 0;
+				return true;
+			}
+			timesWithoutAttacking++;
+			return false;
+			break;
+		case BOSS:
+			if (beam) return true;
+			if (electricShots) {
+				if (!numberElectricShots) return true;
+				if (interval > 3) {
+					interval = 0;
+					return true;
+				}
+				else ++interval;
+			}
+			else {
+				++startElectric;
+				if (startElectric == 100) {
+					electricShots = true;
+					startElectric = 0;
+				}
+			}
+			break;
+	}
+	return false;
+}
+void Enemy::attackPlayer() {
+	switch (myType) {
+		case BASIC1:
+		case BASIC4:
+			shooting = true;
+			break;
+		case BASIC2:
+			if (actualAttackAnimation == -1) {
+				//First attack animation
+				if (right) {
+					sprite->changeAnimation(BASIC2_RIGHT_UP1);
+					lastRotationAnim = BASIC2_RIGHT_UP1;
+				}
+				else {
+					sprite->changeAnimation(++lastRotationAnim);
+				}
+				actualAttackAnimation = lastRotationAnim;
+			}
+			else if (lastRotationAnim == BASIC2_UP) {
+				if (timeLastRotationAnim > 15/*30*/) {
+					shooting = true;
+					timeLastRotationAnim = 0;
+				}
+				//else ++timeLastRotationAnim;
+				return;
+			}
+			else {
+				if (timeLastRotationAnim > 15/*30*/) {
+					++lastRotationAnim;
+					if (!right && lastRotationAnim == BASIC2_STAYRIGHT) {
+						lastRotationAnim = BASIC2_UP;
+					}
+					sprite->changeAnimation(lastRotationAnim);
+					timeLastRotationAnim = 0;
+					actualAttackAnimation = lastRotationAnim;
+					break;
+				}
+				else ++timeLastRotationAnim;
+			}
+			break;
+
+		case BOSS:
+			if (beam) {
+				if (startingBeam) {
+					if (timeLastRotationAnim > 30) {
+						startingBeam = false;
+						timeLastRotationAnim = true;
+					}
+				}
+				else if (beamShots < 1) {
+					newShotType = BEAM;
+					shooting = true;
+					beamShots++;
+				}
+				else {
+					beam = false;
+					// Initialize eggs
+					if (!eggShotDone) {
+						newShotType = EGG;
+						shooting = true;
+					}
+					else shooting = false;
+					//Restart beam attributes
+					beamShots = 0;
+					delayFirstAnimation = 150;
+					//Change the sprite animation to the default one
+					restartSprite = true;
+				}
+			}
+			else if (electricShots) {
+				if (numberElectricShots < 10) {
+					if (numberElectricShots) newShotType = ELECTRIC2;
+					else newShotType = ELECTRIC1;
+					shooting = true;
+					numberElectricShots++;
+				}
+				else {
+					if (numberElectricShots == 60) {
+						lastElectricPosition++;
+						if (lastElectricPosition == 3) lastElectricPosition = 0;
+						numberElectricShots = 0;
+						newShotType = ELECTRIC1;
+					}
+					else ++numberElectricShots;
+				}
+			}
+			break;
+	}
+}
+
+
 void Enemy::render()
 {
 	if (!boom) sprite->render();
-	else spriteBoom->render();
+	else {
+		if (myType == BOSS) {
+			for (Sprite* bS : boomBossSprites) {
+				bS->render();
+			}
+		}
+		else spriteBoom->render();
+	}
 }
 
 void Enemy::setTileMap(TileMap* tileMap)
@@ -752,7 +792,12 @@ glm::ivec2 Enemy::getSize()
 
 void Enemy::collision()
 {
-	spriteBoom->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
+	if (myType != BOSS) spriteBoom->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
+	else {
+		for (int i = 0; i < boomBossSprites.size(); ++i) {
+			boomBossSprites[i]->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x + bossBoomPositions[i].x), float(tileMapDispl.y + posEnemy.y + bossBoomPositions[i].y)));
+		}
+	}
 	boom = true;
 }
 
@@ -891,7 +936,6 @@ void Enemy::jumpEnemy() {
 		}
 	}
 }
-
 bool Enemy::startJumping() {
 	if (bJumping) return true;
 	else if (timesWithoutJumping > 150) {
@@ -907,9 +951,8 @@ bool Enemy::startJumping() {
 Enemies Enemy::getType() {
 	return myType;
 }
-
-bool Enemy::reduceHP() {
-	--health;
+bool Enemy::reduceHP(int damage) {
+	health -= damage;
 	if (health <= 0) return true;
 	return false;
 }
@@ -934,4 +977,32 @@ glm::ivec2 Enemy::getShotPosition() {
 int Enemy::getShotDamage() {
 	if (this->getNewShotType() == BEAM || this->getNewShotType() == EGG) return 2; //Force cannot avoid this damage
 	return 1;
+}
+
+glm::ivec2 Enemy::getCheckboxSizeBoss() {
+	switch (lastRotationAnim) {
+		case EGG1:
+			return glm::ivec2(23.f, 16.f);
+			break;
+		case EGG2:
+			return glm::ivec2(23.f, 29.f);
+			break;
+		case EGG3:
+			return glm::ivec2(24.f, 27.f);
+			break;
+		default: return glm::ivec2(1.f, 1.f);
+	}
+}
+
+glm::ivec2 Enemy::getCheckboxPosBoss() {
+	switch (lastRotationAnim) {
+	case EGG1:
+		return glm::ivec2(posEnemy.x + 7.f, posEnemy. y + 137.f);
+		break;
+	case EGG2:
+	case EGG3:
+		return glm::ivec2(posEnemy.x + 3.f, posEnemy.y +  122.f);
+		break;
+	default: return glm::ivec2(1.f, 1.f);
+	}
 }

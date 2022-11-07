@@ -27,6 +27,20 @@ public:
 	bool died();
 	bool boomFinished();
 
+	vector<glm::vec2> bossBoomPositions = {
+		glm::vec2(33, 60),
+		glm::vec2(54,26),
+		glm::vec2(84,21),
+		glm::vec2(82,67),
+		glm::vec2(61,122),
+		glm::vec2(30,119),
+		glm::vec2(93,129),
+		glm::vec2(37,151),
+		glm::vec2(76,153),
+	};
+	vector<Sprite*> boomBossSprites;
+	int extraBoomBossTime = 0;
+
 	/*
 	Attacking
 	*/
@@ -42,10 +56,12 @@ public:
 	BOSS FUNCTIONS
 	*/
 	Enemies getType();
-	bool reduceHP();
+	bool reduceHP(int damage);
 	shotTypes getNewShotType();
 	glm::ivec2 getShotPosition();
 	int getShotDamage();
+	glm::ivec2 getCheckboxSizeBoss();
+	glm::ivec2 getCheckboxPosBoss();
 
 private:
 
@@ -56,7 +72,7 @@ private:
 
 	shotTypes newShotType;
 
-	int health = 10;
+	int health = 60;
 	bool electricShots = false;
 	bool eggs = false;
 	bool beam = false;
@@ -77,7 +93,7 @@ private:
 	vector<glm::vec2> bossShotSize = { glm::vec2(15, 14), glm::vec2(28, 30), glm::vec2(82,26) };
 	vector<string> bossSpriteShot = { "images/enemies/boss/shots/electric.png", "images/enemies/boss/shots/eggs.png", "images/enemies/boss/shots/beam.png" };
 	vector<glm::vec2> bossShotsInSpriteSheet = { glm::vec2(0.2f, 0.5f), glm::vec2(0.5f, 1.f), glm::vec2(1.f, 1.f)};
-	
+
 	/*
 	Attributes for the IA
 	*/

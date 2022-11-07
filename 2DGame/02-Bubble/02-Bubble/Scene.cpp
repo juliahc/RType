@@ -130,7 +130,7 @@ void Scene::initGame()
 	heartTex.loadFromFile("images/heart_13x10.png", TEXTURE_PIXEL_FORMAT_RGBA);
 
 	//Tokens
-	for (int i = 0; i < sizeof(showTokens); i++) showTokens[i] = true; //TODO: set to false
+	for (int i = 0; i < sizeof(showTokens); i++) showTokens[i] = false; //TODO: set to false
 	glm::vec2 geomToken[2] = { glm::vec2(0.f, 0.f), glm::vec2(10.f, 10.f) };
 	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(0.5f, 0.5f);
 	upgradeTokens[0] = TexturedQuad::createTexturedQuad(geomToken, texCoords, texProgramGame); //Token force
@@ -618,6 +618,9 @@ void Scene::updateGameEnemies(int deltaTime) {
 	vector<Enemy*> enemyErase;
 	for (Enemy* enemy : boomEnemies) {
 		enemy->update(deltaTime, player->getPosition());
+		if (enemy->getType() == BOSS && enemy->boomFinished()) {
+			Game::instance().setState(THEEND);
+		}
 		if (enemy->boomFinished()) enemyErase.push_back(enemy);
 	}
 	for (Enemy* enemy : enemyErase) boomEnemies.erase(enemy);
@@ -637,12 +640,6 @@ void Scene::updateGamePlayer(int deltaTime)
 
 void Scene::updateGameForce(int deltaTime)
 {
-	//Tokens TODO: que apareguin quan mor enemic
-	//for (int i = 0; i < sizeof(showTokens); i++) showTokens[i] = true;
-	tokenPositions[0] = glm::vec3(200.f, 50.f, 0.f);
-	tokenPositions[1] = glm::vec3(400.f, 10.f, 0.f);
-	tokenPositions[2] = glm::vec3(400.f, 200.f, 0.f);
-	
 	//Force update
 	force->update(currentTime, player->getPosition(), screenExtraPosition);
 
@@ -727,7 +724,9 @@ void Scene::restartGame() {
 	force->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize() + x + player->getSize().x, INIT_PLAYER_Y_TILES * map->getTileSize() + 1));
 	force->setTileMap(map);
 
+	for (int i = 0; i < 3; ++i) showTokens[i] = false;
 	bossfight = -1;
+
 	playerShots.clear();
 	enemyShots.clear();
 	enemies.clear();
@@ -739,7 +738,6 @@ void Scene::restartGame() {
 	count = 0;
 	lastUpgrade1Shot = 0;
 	lastUpgrade2Shot = 0;
-	for (int i = 0; i < sizeof(showTokens); i++) showTokens[i] = true; //TODO: set to false
 	
 	initEnemies();
 
@@ -1169,6 +1167,78 @@ void Scene::checkCollisions()
 	for (Enemy* enemy : activeEnemies) {
 		enemyPos = enemy->getPosition();
 		enemySize = enemy->getSize();
+		if (isCollision(playerPos, playerSize, enemyPos, enemySize)) {
+			if (enemy->getType() == BOSS)
+			{
+				glm::ivec2 bossPosition = enemy->getPosition();
+				vector<glm::ivec2> bossColiders = {
+					glm::ivec2(bossPosition.x + 27, bossPosition.y + 0),
+					glm::ivec2(bossPosition.x + 28, bossPosition.y + 12),
+					glm::ivec2(bossPosition.x + 24, bossPosition.y + 31),
+					glm::ivec2(bossPosition.x + 23, bossPosition.y + 36),
+					glm::ivec2(bossPosition.x + 21, bossPosition.y + 37),
+					glm::ivec2(bossPosition.x + 17, bossPosition.y + 40),
+					glm::ivec2(bossPosition.x + 14, bossPosition.y + 47),
+					glm::ivec2(bossPosition.x + 9, bossPosition.y + 51),
+					glm::ivec2(bossPosition.x + 7, bossPosition.y + 58),
+					glm::ivec2(bossPosition.x + 9, bossPosition.y + 68),
+					glm::ivec2(bossPosition.x + 12, bossPosition.y + 74),
+					glm::ivec2(bossPosition.x + 16, bossPosition.y + 78),
+					glm::ivec2(bossPosition.x + 28, bossPosition.y + 82),
+					glm::ivec2(bossPosition.x + 37, bossPosition.y + 90),
+					glm::ivec2(bossPosition.x + 26, bossPosition.y + 95),
+					glm::ivec2(bossPosition.x + 22, bossPosition.y + 102),
+					glm::ivec2(bossPosition.x + 17, bossPosition.y + 106),
+					glm::ivec2(bossPosition.x + 10, bossPosition.y + 115),
+					glm::ivec2(bossPosition.x + 6, bossPosition.y + 127),
+					glm::ivec2(bossPosition.x + 7, bossPosition.y + 149),
+					glm::ivec2(bossPosition.x + 20, bossPosition.y + 158),
+					glm::ivec2(bossPosition.x + 24, bossPosition.y + 164),
+					glm::ivec2(bossPosition.x + 33, bossPosition.y + 171),
+					glm::ivec2(bossPosition.x + 29, bossPosition.y + 177),
+					glm::ivec2(bossPosition.x + 17, bossPosition.y + 200),
+					glm::ivec2(bossPosition.x + 19, bossPosition.y + 194),
+				};
+				vector<glm::ivec2> bossColidersSizes = { 
+					glm::ivec2(12,12),
+					glm::ivec2(12,20),
+					glm::ivec2(15,5),
+					glm::ivec2(5,5),
+					glm::ivec2(3,4),
+					glm::ivec2(5,7),
+					glm::ivec2(7,5),
+					glm::ivec2(7,7),
+					glm::ivec2(9,10),
+					glm::ivec2(7,6),
+					glm::ivec2(6,4),
+					glm::ivec2(7,6),
+					glm::ivec2(15,8),
+					glm::ivec2(6,7),
+					glm::ivec2(11,8),
+					glm::ivec2(5,5),
+					glm::ivec2(6,9),
+					glm::ivec2(9,12),
+					glm::ivec2(13,22),
+					glm::ivec2(14,9),
+					glm::ivec2(12,6),
+					glm::ivec2(10,7),
+					glm::ivec2(7,6),
+					glm::ivec2(6,18),
+					glm::ivec2(9,7),
+					glm::ivec2(12,6)
+				};
+				for (int i = 0; i < bossColiders.size(); ++i) {
+					if (isCollision(playerPos, playerSize, bossColiders[i], bossColidersSizes[i])) {
+						player->collision();
+						break;
+					}
+				}
+			}
+			else player->collision();
+		}
+		if (isCollision(forcePos, forceSize, enemyPos, enemySize)) {
+			if (enemy->getType() != BOSS )eraseByForce.push_back(enemy);
+		}
 		if (isCollision(playerPos, playerSize, enemyPos, enemySize)) player->collision();
 		if (force->isActive() && isCollision(forcePos, forceSize, enemyPos, enemySize)) eraseByForce.push_back(enemy);
 	}
@@ -1197,32 +1267,73 @@ void Scene::checkCollisions()
 		for (Shot* shot : playerShots) {
 			shotPos = shot->getPosition();
 			shotSize = shot->getSize();
-/*
-Merged, mirar que canviar
-
-			if (isCollision(enemyPos, enemySize, shotPos, shotSize)) {
-				bool isDead = true;
-				if (enemy->getType() == BOSS) {
-					isDead = enemy->reduceHP();
-				}
-				if (isDead) {
-					enemyErase.push_back(enemy);
-				}
-				if (shot->getDamage() == 1) shotErase.push_back(shot);
-        */
 			if (shot->getType() != 1) {
+				bool isDead = true;
+				bool isBoss = false;
+				if (enemy->getType() == BOSS) {
+					isBoss = true;
+					enemySize = enemy->getCheckboxSizeBoss();
+					enemyPos = enemy->getCheckboxPosBoss();
+				}
 				if (isCollision(enemyPos, enemySize, shotPos, shotSize)) {
-					enemyErase.push_back(enemy);
+					if (isBoss) isDead = enemy->reduceHP(shot->getDamage());
+					if (isDead) {
+						enemyErase.push_back(enemy);
+						if (enemy->getType() == BASIC3) {
+							//Show upgrades
+							int forceUpgrade;
+							if (!force->isActive() && !showTokens[0]) {
+								forceUpgrade = 0;
+							}
+							else if (force->isActive() && force->getType() == 0) {
+								forceUpgrade = 1;
+							}
+							else {
+								forceUpgrade = 2;
+							}
+							showTokens[forceUpgrade] = true;
+							tokenPositions[forceUpgrade] = glm::vec3(enemy->getPosition(), 0);
+						}
+						enemyErase.push_back(enemy);
+					}
 					if (shot->getDamage() == 1) shotErase.push_back(shot);
+					else if (isBoss) shotErase.push_back(shot);
 				}
 			}
 			else {
 				vector<glm::ivec2> positions, sizes;
 				shot->collisionsUpgrade1(positions, sizes);
+				bool isBoss = false;
+				bool isDead = true;
+				if (enemy->getType() == BOSS) {
+					isBoss = true;
+					enemySize = enemy->getCheckboxSizeBoss();
+					enemyPos = enemy->getCheckboxPosBoss();
+				}
 				for (int i = 0; i < positions.size(); i++) {
 					if (isCollision(enemyPos, enemySize, positions[i], sizes[i])) {
-						enemyErase.push_back(enemy);
+						if (isBoss) isDead = enemy->reduceHP(shot->getDamage());
+						if (isDead) {
+							enemyErase.push_back(enemy);
+							if (enemy->getType() == BASIC3) {
+								//Show upgrades
+								int forceUpgrade;
+								if (!force->isActive() && !showTokens[0]) {
+									forceUpgrade = 0;
+								}
+								else if (force->isActive() && force->getType() == 0) {
+									forceUpgrade = 1;
+								}
+								else {
+									forceUpgrade = 2;
+								}
+								showTokens[forceUpgrade] = true;
+								tokenPositions[forceUpgrade] = glm::vec3(enemy->getPosition(), 0);
+							}
+							enemyErase.push_back(enemy);
+						}
 						if (shot->getDamage() == 1) shotErase.push_back(shot);
+						else if (isBoss) shotErase.push_back(shot);
 					}
 				}
 			}
