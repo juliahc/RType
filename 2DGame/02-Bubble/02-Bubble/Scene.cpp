@@ -626,7 +626,9 @@ void Scene::updateGameEnemies(int deltaTime) {
 void Scene::updateGamePlayer(int deltaTime)
 {
 	//If "s" released, add shot with damage > 1
-	if (Game::instance().getKey('s') == PRESS || (Game::instance().getKey('s') == RELEASE && player->getShotCharge() > 1)) addPlayerShot();
+	if (Game::instance().getKey('s') == PRESS || (Game::instance().getKey('s') == RELEASE && player->getShotCharge() > 1)) {
+		if (!player->inInitAnimation()) addPlayerShot();
+	}
 	
 	//Player update
 	player->update(deltaTime, screenExtraPosition, force->getWidth());
@@ -1158,7 +1160,7 @@ void Scene::checkCollisions()
 		enemyPos = enemy->getPosition();
 		enemySize = enemy->getSize();
 		if (isCollision(playerPos, playerSize, enemyPos, enemySize)) player->collision();
-		if (isCollision(forcePos, forceSize, enemyPos, enemySize)) eraseByForce.push_back(enemy);
+		if (force->isActive() && isCollision(forcePos, forceSize, enemyPos, enemySize)) eraseByForce.push_back(enemy);
 	}
 	for (Enemy* enemy : eraseByForce) {
 		enemy->collision();
