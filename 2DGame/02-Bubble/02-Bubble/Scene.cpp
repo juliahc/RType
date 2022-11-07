@@ -130,7 +130,7 @@ void Scene::initGame()
 	heartTex.loadFromFile("images/heart_13x10.png", TEXTURE_PIXEL_FORMAT_RGBA);
 
 	//Tokens
-	for (int i = 0; i < sizeof(showTokens); i++) showTokens[i] = true; //TODO: set to false
+	for (int i = 0; i < sizeof(showTokens); i++) showTokens[i] = false; //TODO: set to false
 	glm::vec2 geomToken[2] = { glm::vec2(0.f, 0.f), glm::vec2(10.f, 10.f) };
 	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(0.5f, 0.5f);
 	upgradeTokens[0] = TexturedQuad::createTexturedQuad(geomToken, texCoords, texProgramGame); //Token force
@@ -616,12 +616,6 @@ void Scene::updateGamePlayer(int deltaTime)
 
 void Scene::updateGameForce(int deltaTime)
 {
-	//Tokens TODO: que apareguin quan mor enemic
-	//for (int i = 0; i < sizeof(showTokens); i++) showTokens[i] = true;
-	tokenPositions[0] = glm::vec3(200.f, 50.f, 0.f);
-	tokenPositions[1] = glm::vec3(400.f, 10.f, 0.f);
-	tokenPositions[2] = glm::vec3(400.f, 200.f, 0.f);
-	
 	//Force update
 	force->update(currentTime, player->getPosition(), screenExtraPosition);
 
@@ -687,6 +681,8 @@ void Scene::restartGame() {
 	force->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize() + player->getSize().x, INIT_PLAYER_Y_TILES * map->getTileSize() + 1));
 	force->setTileMap(map);
 
+	for (int i = 0; i < 3; ++i) showTokens[i] = false;
+
 	playerShots.clear();
 	enemyShots.clear();
 	enemies.clear();
@@ -698,7 +694,6 @@ void Scene::restartGame() {
 	count = 0;
 	lastUpgrade1Shot = 0;
 	lastUpgrade2Shot = 0;
-	for (int i = 0; i < sizeof(showTokens); i++) showTokens[i] = true; //TODO: set to false
 	
 	initEnemies();
 
@@ -1236,6 +1231,21 @@ void Scene::checkCollisions()
 					if (isBoss) isDead = enemy->reduceHP();
 					if (isDead) {
 						enemyErase.push_back(enemy);
+						if (enemy->getType() == BASIC3) {
+							//Show upgrades
+							int forceUpgrade;
+							if (!force->isActive() && !showTokens[0]) {
+								forceUpgrade = 0;
+							}
+							else if (force->isActive() && force->getType() == 0) {
+								forceUpgrade = 1;
+							}
+							else {
+								forceUpgrade = 2;
+							}
+							showTokens[forceUpgrade] = true;
+							tokenPositions[forceUpgrade] = glm::vec3(enemy->getPosition(), 0);
+						}
 					}
 					enemyErase.push_back(enemy);
 					if (shot->getDamage() == 1) shotErase.push_back(shot);
