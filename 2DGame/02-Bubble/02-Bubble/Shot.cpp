@@ -17,7 +17,6 @@ void Shot::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram, cons
 	category = upgrade;
 	if (upgrade == 1) upgrade1 = true;
 	else if (upgrade == 2) upgrade2 = true;
-
 	else if (upgrade >= 3) {
 		bossShot = true;
 		//Boss is shooting
@@ -97,7 +96,8 @@ void Shot::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram, cons
 
 	shaderProgramShot = shaderProgram;
 
-	if (category< 1) {
+	if (category < 1) {
+		type = 0;
 		sizeShot = size;
 		shotDamage = damage;
 
@@ -201,199 +201,203 @@ void Shot::update(int deltaTime, glm::ivec2 forcePos, glm::ivec2 forceSize, Shad
 	count++;
 	sprite->update(deltaTime);
 
-	if (upgrade1) {
+	if (boom >= 0) {
+		if (boom < 3 && count % 5 == 0) ++boom;
+		sprite->changeAnimation(boom);
+	}
+	else if (upgrade1) {
 		glm::ivec2 auxPos;
 		bool up, down, left, right;
 		switch (state) {
-		case 0:
-			//init
-			up = down = left = right = false;
-			//velocity
-			if (directionX == RIGHT) velocity = glm::ivec2(8, -8);
-			else if (directionX == LEFT) velocity = glm::ivec2(-8, 8);
-			//check collisions
-			auxPos = posShot;
-			auxPos.x += velocity.x;
-			if (map->collisionMoveRight(auxPos, sizeShot)) right = true;
-			else if (map->collisionMoveLeft(auxPos, sizeShot)) left = true;
-			else {
-				auxPos.y += velocity.y;
-				if (map->collisionMoveUp(auxPos, sizeShot, &auxPos.y)) up = true;
-				else if (map->collisionMoveDown(auxPos, sizeShot, &auxPos.y)) down = true;
-			}
-			//collision treatment
-			if (right) {
+			case 0:
+				//init
+				up = down = left = right = false;
+				//velocity
+				if (directionX == RIGHT) velocity = glm::ivec2(8, -8);
+				else if (directionX == LEFT) velocity = glm::ivec2(-8, 8);
+				//check collisions
+				auxPos = posShot;
 				auxPos.x += velocity.x;
-				while (map->collisionMoveRight(auxPos, sizeShot)) auxPos.x--;
-				velocity = glm::ivec2(0, 0);
-				int move = auxPos.x - posShot.x;
-				posShot.y = posShot.y + move - 7;
-				posShot.x = auxPos.x;
-				state = 5;
-				initState = true;
-				sprite->changeAnimation(state);
-			}
-			else if (up) {
-				velocity = glm::ivec2(0, 0);
-				int move = posShot.y - auxPos.y;
-				posShot.y = auxPos.y;
-				posShot.x = posShot.x + 8 - move;
-				state = 2;
-				initState = true;
-				sprite->changeAnimation(state);
-			}
-			else if (left) {
-				auxPos.x += velocity.x;
-				while (map->collisionMoveLeft(auxPos, sizeShot)) auxPos.x++;
-				velocity = glm::ivec2(0, 0);
-				int move = posShot.x - auxPos.x;
-				posShot.y = posShot.y + move + 7;
-				posShot.x = auxPos.x;
-				state = 5;
-				initState = true;
-				sprite->changeAnimation(state);
-			}
-			else if (down) {
-				velocity = glm::ivec2(0, 0);
-				int move = auxPos.y - posShot.y;
-				posShot.y = auxPos.y;
-				posShot.x = posShot.x + 8 - move;
-				state = 3;
-				initState = true;
-				sprite->changeAnimation(state);
-			}
-			break;
-		case 1:
-			up = down = left = right = false;
-			if (directionX == RIGHT) velocity = glm::ivec2(8, 8);
-			else if (directionX == LEFT) velocity = glm::ivec2(-8, -8);
+				if (map->collisionMoveRight(auxPos, sizeShot)) right = true;
+				else if (map->collisionMoveLeft(auxPos, sizeShot)) left = true;
+				else {
+					auxPos.y += velocity.y;
+					if (map->collisionMoveUp(auxPos, sizeShot, &auxPos.y)) up = true;
+					else if (map->collisionMoveDown(auxPos, sizeShot, &auxPos.y)) down = true;
+				}
+				//collision treatment
+				if (right) {
+					auxPos.x += velocity.x;
+					while (map->collisionMoveRight(auxPos, sizeShot)) auxPos.x--;
+					velocity = glm::ivec2(0, 0);
+					int move = auxPos.x - posShot.x;
+					posShot.y = posShot.y + move - 7;
+					posShot.x = auxPos.x;
+					state = 5;
+					initState = true;
+					sprite->changeAnimation(state);
+				}
+				else if (up) {
+					velocity = glm::ivec2(0, 0);
+					int move = posShot.y - auxPos.y;
+					posShot.y = auxPos.y;
+					posShot.x = posShot.x + 8 - move;
+					state = 2;
+					initState = true;
+					sprite->changeAnimation(state);
+				}
+				else if (left) {
+					auxPos.x += velocity.x;
+					while (map->collisionMoveLeft(auxPos, sizeShot)) auxPos.x++;
+					velocity = glm::ivec2(0, 0);
+					int move = posShot.x - auxPos.x;
+					posShot.y = posShot.y + move + 7;
+					posShot.x = auxPos.x;
+					state = 5;
+					initState = true;
+					sprite->changeAnimation(state);
+				}
+				else if (down) {
+					velocity = glm::ivec2(0, 0);
+					int move = auxPos.y - posShot.y;
+					posShot.y = auxPos.y;
+					posShot.x = posShot.x + 8 - move;
+					state = 3;
+					initState = true;
+					sprite->changeAnimation(state);
+				}
+				break;
+			case 1:
+				up = down = left = right = false;
+				if (directionX == RIGHT) velocity = glm::ivec2(8, 8);
+				else if (directionX == LEFT) velocity = glm::ivec2(-8, -8);
 
-			auxPos = posShot;
-			auxPos.x += velocity.x;
-			if (map->collisionMoveRight(auxPos, sizeShot)) right = true;
-			else if (map->collisionMoveLeft(auxPos, sizeShot)) left = true;
-			else {
-				auxPos.y += velocity.y;
-				if (map->collisionMoveUp(auxPos, sizeShot, &auxPos.y)) up = true;
-				else if (map->collisionMoveDown(auxPos, sizeShot, &auxPos.y)) down = true;
-			}
+				auxPos = posShot;
+				auxPos.x += velocity.x;
+				if (map->collisionMoveRight(auxPos, sizeShot)) right = true;
+				else if (map->collisionMoveLeft(auxPos, sizeShot)) left = true;
+				else {
+					auxPos.y += velocity.y;
+					if (map->collisionMoveUp(auxPos, sizeShot, &auxPos.y)) up = true;
+					else if (map->collisionMoveDown(auxPos, sizeShot, &auxPos.y)) down = true;
+				}
 
-			if (right) {
-				auxPos.x += velocity.x;
-				while (map->collisionMoveRight(auxPos, sizeShot)) auxPos.x--;
-				velocity = glm::ivec2(0, 0);
-				int move = auxPos.x - posShot.x;
-				posShot.y = posShot.y + move + 7;
-				posShot.x = auxPos.x;
-				state = 5;
-				initState = true;
-				sprite->changeAnimation(state);
-			}
-			else if (up) {
-				velocity = glm::ivec2(0, 0);
-				int move = posShot.y - auxPos.y;
-				posShot.y = auxPos.y;
-				posShot.x = posShot.x - 8 - move;
-				state = 2;
-				initState = true;
-				sprite->changeAnimation(state);
-			}
-			else if (left) {
-				auxPos.x += velocity.x;
-				while (map->collisionMoveLeft(auxPos, sizeShot)) auxPos.x++;
-				velocity = glm::ivec2(0, 0);
-				int move = posShot.x - auxPos.x;
-				posShot.y = posShot.y - move - 7;
-				posShot.x = auxPos.x;
-				state = 4;
-				initState = true;
-				sprite->changeAnimation(state);
-			}
-			else if (down) {
-				velocity = glm::ivec2(0, 0);
-				int move = auxPos.y - posShot.y;
-				posShot.y = auxPos.y;
-				posShot.x = posShot.x + 8 + move;
-				state = 3;
-				initState = true;
-				sprite->changeAnimation(state);
-			}
-			break;
-		case 2:
-			//sprite->changeAnimation(2);
-			if (initState) initState = false;
-			else {
-				velocity = glm::ivec2(0, 0);
-				directionY = DOWN;
-				posShot.y += 4;
-				if (directionX == RIGHT) {
-					state = 1;
-					posShot.x += 12;
+				if (right) {
+					auxPos.x += velocity.x;
+					while (map->collisionMoveRight(auxPos, sizeShot)) auxPos.x--;
+					velocity = glm::ivec2(0, 0);
+					int move = auxPos.x - posShot.x;
+					posShot.y = posShot.y + move + 7;
+					posShot.x = auxPos.x;
+					state = 5;
+					initState = true;
+					sprite->changeAnimation(state);
 				}
+				else if (up) {
+					velocity = glm::ivec2(0, 0);
+					int move = posShot.y - auxPos.y;
+					posShot.y = auxPos.y;
+					posShot.x = posShot.x - 8 - move;
+					state = 2;
+					initState = true;
+					sprite->changeAnimation(state);
+				}
+				else if (left) {
+					auxPos.x += velocity.x;
+					while (map->collisionMoveLeft(auxPos, sizeShot)) auxPos.x++;
+					velocity = glm::ivec2(0, 0);
+					int move = posShot.x - auxPos.x;
+					posShot.y = posShot.y - move - 7;
+					posShot.x = auxPos.x;
+					state = 4;
+					initState = true;
+					sprite->changeAnimation(state);
+				}
+				else if (down) {
+					velocity = glm::ivec2(0, 0);
+					int move = auxPos.y - posShot.y;
+					posShot.y = auxPos.y;
+					posShot.x = posShot.x + 8 + move;
+					state = 3;
+					initState = true;
+					sprite->changeAnimation(state);
+				}
+				break;
+			case 2:
+				//sprite->changeAnimation(2);
+				if (initState) initState = false;
 				else {
-					state = 0;
-					posShot.x -= 12;
+					velocity = glm::ivec2(0, 0);
+					directionY = DOWN;
+					posShot.y += 4;
+					if (directionX == RIGHT) {
+						state = 1;
+						posShot.x += 12;
+					}
+					else {
+						state = 0;
+						posShot.x -= 12;
+					}
+					sprite->changeAnimation(state);
 				}
-				sprite->changeAnimation(state);
-			}
-			break;
-		case 3:
-			//sprite->changeAnimation(3);
-			if (initState) initState = false;
-			else {
-				//direction = LEFT;
-				velocity = glm::ivec2(0, 0);
-				directionY = UP;
-				posShot.y -= 4;
-				if (directionX == RIGHT) {
-					state = 0;
-					posShot.x += 12;
-				}
+				break;
+			case 3:
+				//sprite->changeAnimation(3);
+				if (initState) initState = false;
 				else {
-					state = 1;
-					posShot.x -= 12;
+					//direction = LEFT;
+					velocity = glm::ivec2(0, 0);
+					directionY = UP;
+					posShot.y -= 4;
+					if (directionX == RIGHT) {
+						state = 0;
+						posShot.x += 12;
+					}
+					else {
+						state = 1;
+						posShot.x -= 12;
+					}
+					sprite->changeAnimation(state);
 				}
-				sprite->changeAnimation(state);
-			}
-			break;
-		case 4:
-			if (initState) initState = false;
-			else {
-				velocity = glm::ivec2(0, 0);
-				directionX = RIGHT;
-				posShot.x += 4;
-				if (directionY == UP) {
-					state = 0;
-					posShot.y -= 12;
-				}
+				break;
+			case 4:
+				if (initState) initState = false;
 				else {
-					state = 1;
-					posShot.y += 12;
+					velocity = glm::ivec2(0, 0);
+					directionX = RIGHT;
+					posShot.x += 4;
+					if (directionY == UP) {
+						state = 0;
+						posShot.y -= 12;
+					}
+					else {
+						state = 1;
+						posShot.y += 12;
+					}
+					sprite->changeAnimation(state);
 				}
-				sprite->changeAnimation(state);
-			}
-			break;
-		case 5:
-			if (initState) initState = false;
-			else {
-				velocity = glm::ivec2(0, 0);
-				directionX = LEFT;
-				posShot.x -= 4;
-				if (directionY == UP) {
-					state = 1;
-					posShot.y -= 12;
-				}
+				break;
+			case 5:
+				if (initState) initState = false;
 				else {
-					state = 0;
-					posShot.y += 12;
+					velocity = glm::ivec2(0, 0);
+					directionX = LEFT;
+					posShot.x -= 4;
+					if (directionY == UP) {
+						state = 1;
+						posShot.y -= 12;
+					}
+					else {
+						state = 0;
+						posShot.y += 12;
+					}
+					sprite->changeAnimation(state);
 				}
-				sprite->changeAnimation(state);
-			}
-			break;
-		case 6:
-			if (directionX == RIGHT) velocity = glm::ivec2(16, 0);
-			else velocity = glm::ivec2(-16, 0);
-			break;
+				break;
+			case 6:
+				if (directionX == RIGHT) velocity = glm::ivec2(16, 0);
+				else velocity = glm::ivec2(-16, 0);
+				break;
 		}
 		posShot.x += velocity.x;
 		posShot.y += velocity.y;
@@ -508,8 +512,9 @@ void Shot::update(int deltaTime, glm::ivec2 forcePos, glm::ivec2 forceSize, Shad
 	else {
 		posShot.x += velocity.x;
 		posShot.y += velocity.y;
-		sprite->setPosition(glm::vec2(float(tileMapDispl.x + posShot.x), float(tileMapDispl.y + posShot.y)));
 	}
+
+	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posShot.x), float(tileMapDispl.y + posShot.y)));
 }
 
 void Shot::render()
@@ -662,4 +667,28 @@ void Shot::collisionsUpgrade1(vector<glm::ivec2>& positions, vector<glm::ivec2>&
 		default:
 			break;
 	}
+}
+
+void Shot::shotBoom(ShaderProgram& shaderProgram) {
+	//change position
+	posShot.x += sizeShot.x - 8;
+	
+	boom = 0;
+	sizeShot = glm::vec2(14, 16);
+	spritesheet.loadFromFile("images/shotBoom.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	sprite = Sprite::createSprite(glm::vec2(14, 16), glm::vec2(0.5f,0.5f), &spritesheet, &shaderProgram);
+	sprite->setNumberAnimations(3);
+		sprite->setAnimationSpeed(0, 8);
+		sprite->addKeyframe(0, glm::vec2(0.f, 0.5f));
+		sprite->setAnimationSpeed(1, 8);
+		sprite->addKeyframe(1, glm::vec2(0.5f, 0.f));
+		sprite->setAnimationSpeed(2, 8);
+		sprite->addKeyframe(2, glm::vec2(0.f, 0.f));
+	sprite->changeAnimation(0);
+
+	velocity = glm::ivec2(0,0);
+}
+
+bool Shot::boomFinished() {
+	return boom == 3;
 }

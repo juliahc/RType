@@ -131,7 +131,7 @@ private:
 	int bossfight = -1;
 
 	//Shots
-	std::set<Shot*> playerShots, enemyShots;
+	std::set<Shot*> playerShots, enemyShots, boomShots;
 	int lastUpgrade1Shot = 0, lastUpgrade2Shot = 0;
 
 	//Lifes (hearts)
@@ -177,7 +177,7 @@ private:
 	int theEndCount = 0;
 
 	/* BREAKPOINTS */
-	vector<int> breakpoints = { 0, 74 * 8, 141 * 8, 187 * 8, 239 * 8, 298 * 8, 55*8};
+	vector<int> breakpoints = { 0, 74 * 8, 141 * 8, 187 * 8, 239 * 8, 298 * 8, 5000};
 };
 
 

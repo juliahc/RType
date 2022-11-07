@@ -26,6 +26,8 @@ public:
 	int getCategory();
 	int getType();
 	void collisionsUpgrade1(vector<glm::ivec2>& positions, vector<glm::ivec2>& sizes);
+	void shotBoom(ShaderProgram& shaderProgram);
+	bool boomFinished();
 
 private:
 	glm::ivec2 tileMapDispl, velocity, posShot, sizeShot;
@@ -38,8 +40,10 @@ private:
 	Texture spritesheet;
 	ShaderProgram shaderProgramShot;
 	int count;
-  directionTypeX directionX;
+	directionTypeX directionX;
 	directionTypeY directionY;
+
+	int boom = -1;
 
 	/*
 	BOSS Helpers
@@ -57,6 +61,7 @@ private:
 	glm::ivec2 calcVelocity();
 	int eggStartY; // 0 => top, 1 => bottom
 	bool horizontalMovement = false, right = true, up = false;
+	
 };
 
 
