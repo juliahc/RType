@@ -292,6 +292,7 @@ void Enemy::update(int deltaTime, glm::ivec2 posPlayer)
 					bJumping = false;
 					stopJumping = false;
 					timesWithoutJumping = 0;
+					stay = true;
 				}
 				else {
 					//If the enemy is jumping
@@ -305,7 +306,7 @@ void Enemy::update(int deltaTime, glm::ivec2 posPlayer)
 			//Horizontal movement + Animations
 			if (bJumping || (!bJumping && !stay)) moveEnemyHorizontally(1, false);
 			else if (stay) {
-				if (stayCounter > 80) {
+				if (stayCounter > 60) {
 					stay = false; 
 					stayCounter = -1;
 				}
@@ -343,7 +344,6 @@ bool Enemy::checkCollisionRight() {
 	if (map->collisionMoveRight(posEnemy, enemySizes[myType])) return true;
 	return false;
 }
-
 bool Enemy::checkCollisionLeft() {
 	if (map->collisionMoveLeft(posEnemy, enemySizes[myType])) return true;
 	return false;
@@ -427,31 +427,15 @@ void Enemy::moveEnemyHorizontally(int length, bool right) {
 				bJumping = true;
 			}
 			if (!bJumping) {
+				posEnemy.y += 2;
 				if (checkCollisionDown() && !stay && (rand() % 100) < 5 && (rand() % 100) < 5) {
 					stay = true;
-				}if (!checkCollisionDown()) ++posEnemy.y;
+					posEnemy.y -= 2;
+					return;
+				}
+				if (!checkCollisionDown()) -posEnemy.y;
 				//Change animations
-				if (timeLastRotationAnim > 15) {
-					if (rightFoot) {
-						++lastRotationAnim;
-						if (lastRotationAnim == 4) {
-							lastRotationAnim = 2;
-							rightFoot = false;
-						}
-					}
-					else {
-						--lastRotationAnim;
-						if (lastRotationAnim <= 0) {
-							lastRotationAnim = 2;
-							rightFoot = true;
-						}
-					}
-					sprite->changeAnimation(lastRotationAnim);
-					timeLastRotationAnim = 0;
-				}
-				else {
-					++timeLastRotationAnim;
-				}
+				changeAnimation();
 			}
 			break;
 	}
@@ -649,6 +633,29 @@ void Enemy::changeAnimation() {
 				if (lastRotationAnim == 5) lastRotationAnim = -1;
 				sprite->changeAnimation(++lastRotationAnim);
 				timeLastRotationAnim = 0;
+			}
+			break;
+		case BASIC3:
+			if (timeLastRotationAnim > 15) {
+				if (rightFoot) {
+					++lastRotationAnim;
+					if (lastRotationAnim == 4) {
+						lastRotationAnim = 2;
+						rightFoot = false;
+					}
+				}
+				else {
+					--lastRotationAnim;
+					if (lastRotationAnim <= 0) {
+						lastRotationAnim = 2;
+						rightFoot = true;
+					}
+				}
+				sprite->changeAnimation(lastRotationAnim);
+				timeLastRotationAnim = 0;
+			}
+			else {
+				++timeLastRotationAnim;
 			}
 			break;
 
@@ -887,7 +894,7 @@ void Enemy::jumpEnemy() {
 
 bool Enemy::startJumping() {
 	if (bJumping) return true;
-	else if ((up == true && timesWithoutJumping > 30) || (timesWithoutJumping > 200)) {
+	else if (timesWithoutJumping > 150) {
 		bJumping = true;
 		up = true;
 		stopJumping = false;
