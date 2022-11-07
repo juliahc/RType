@@ -16,6 +16,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <utility>
 
 enum menuTypeEnum {INITIAL, PLAYING};
 // Scene contains all the entities of our game.
@@ -115,6 +116,11 @@ private:
 	//Background
 	int screenMovement = 0;
 	int screenExtraPosition = 0;
+	Texture starsTex;
+	vector <pair<TexturedQuad*, int> > stars;
+	vector <glm::ivec2> starsPos;
+	glm::ivec2 starsVel[2];
+	int starsOpt = 0;
 
 	//Player
 	Player *player;
