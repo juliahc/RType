@@ -395,8 +395,8 @@ void Shot::update(int deltaTime, glm::ivec2 forcePos, glm::ivec2 forceSize, Shad
 			else velocity = glm::ivec2(-16, 0);
 			break;
 		}
-		posShot.x += velocity.x;
-		posShot.y += velocity.y;
+		/*posShot.x += velocity.x;
+		posShot.y += velocity.y;*/
 	}
 	else if (upgrade2) {
 		if (initState) {
@@ -456,8 +456,8 @@ void Shot::update(int deltaTime, glm::ivec2 forcePos, glm::ivec2 forceSize, Shad
 				}
 			}
 		}
-		posShot.x += velocity.x;
-		posShot.y += velocity.y;
+		/*posShot.x += velocity.x;
+		posShot.y += velocity.y;*/
 	}
 	//Boos updates
 	else if (bossShot) {

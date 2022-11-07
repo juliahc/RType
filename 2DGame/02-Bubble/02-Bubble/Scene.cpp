@@ -9,7 +9,7 @@
 #define SCREEN_X 0
 #define SCREEN_Y 0
 
-#define INIT_PLAYER_X_TILES -3
+#define INIT_PLAYER_X_TILES 2
 #define INIT_PLAYER_Y_TILES 16
 
 #define INIT_BASIC_ENEMY_X_TILES 15
@@ -110,7 +110,7 @@ void Scene::initGame()
 	
 	//player
 	player = new Player();
-	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame);
+	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame, true);
 	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 	player->setTileMap(map);
 	
@@ -437,26 +437,30 @@ void Scene::updateGame(int deltaTime)
 	if (!player->died()) {
 		updateGameBackground(deltaTime);
 		updateGameEnemies(deltaTime);
+		glm::ivec2 p0 = player->getPosition();
 		updateGamePlayer(deltaTime);
+		glm::ivec2 p1 = player->getPosition();
 		updateGameForce(deltaTime);
 		updateGameShots(deltaTime);
 		checkCollisions();
 		//Check if player is out of screen
-		if (!inScreen(player->getPosition(), player->getSize())) {
+		if (!inScreen(player->getPosition(), player->getSize()) && !player->inInitAnimation()) {
 			player->collision();
 		}
 		if (Game::instance().getKey('m') == PRESS) Game::instance().setState(MENU);
-		for (int i = '1'; i <= '7'; ++i) {
+		for (int i = '1'; i <= '6'; ++i) {
 			if (Game::instance().getKey(i) == PRESS) {
 				// spawnEnemies(i);
+				player->setPosition(glm::vec2(breakpoints[(i - '0') - 1], player->getPosition().y));
+				screenExtraPosition = breakpoints[(i - '0') - 1];
+				/*
 				if (i == '6' && bossfight == 0) {
 					player->setPosition(glm::vec2(330 * 8, player->getPosition().y));
 					screenExtraPosition = 330 * 8;
 				} else{
 					if (bossfight == 0) bossfight = -1;
-					player->setPosition(glm::vec2(breakpoints[(i - '0') - 1], player->getPosition().y));
-					screenExtraPosition = breakpoints[(i - '0') - 1];
 				}
+				*/
 			}
 		}
 	}
@@ -466,12 +470,12 @@ void Scene::updateGame(int deltaTime)
 			lifes--;
 			if (lifes > 0) {
 				Game::instance().setState(READY);
-				restartGame(); //Play again with one less life
+				//restartGame(); //Play again with one less life
 			}
 			else {
 				//Game over, player lifes == 0
 				Game::instance().setState(GAMEOVER);
-				restartGame();
+				//restartGame();
 			}
 		}
 	}
@@ -499,8 +503,23 @@ void Scene::updateTransition(int deltaTime)
 
 	int middle = 80;
 	int max = 160;
+	if (transitionCount == 1) {
+		int a = 0;
+	}
+	if (transitionCount < middle) {
+		//Game before READY?
+		//if (Game::instance().getNextState() == READY && player->inInitAnimation()) updateGame(deltaTime);
 
-	if (transitionCount >= max) {
+	}
+	else if (transitionCount == middle) {
+		if (Game::instance().getNextState() == GAME && !player->inInitAnimation()) restartGame();
+	}
+	else if (transitionCount > middle && transitionCount < max) {
+		//Game init animation
+		if (Game::instance().getNextState() == GAME && player->inInitAnimation()) updateGame(deltaTime);
+		//Restart game after READY?
+	}
+	else if (transitionCount >= max) {
 		transitionCount = 0;
 		GameState nextState = Game::instance().getNextState();
 		Game::instance().setState(nextState);
@@ -675,25 +694,37 @@ void Scene::createEnemies() {
 }
 
 void Scene::restartGame() {
+	//player position (checkpoints)
+	int x = 0;
+	if (lifes < 3) {
+		glm::ivec2 posPlayer = player->getPosition();
+		x = posPlayer.x;
+		for (int i = 1; i < breakpoints.size(); i++) {
+			if (x >= breakpoints[i - 1] && x < breakpoints[i]) x = breakpoints[i - 1];
+		}
+	}
+
 	//restart player
 	player = new Player();
-	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame);
-	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
+	bool animation = lifes == 3;
+	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame, animation);
+	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize() + x, INIT_PLAYER_Y_TILES * map->getTileSize()));
 	player->setTileMap(map);
 
 	//restart force
 	force = new Force();
 	force->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgramGame);
-	force->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize() + player->getSize().x, INIT_PLAYER_Y_TILES * map->getTileSize() + 1));
+	force->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize() + x + player->getSize().x, INIT_PLAYER_Y_TILES * map->getTileSize() + 1));
 	force->setTileMap(map);
 
+	bossfight = -1;
 	playerShots.clear();
 	enemyShots.clear();
 	enemies.clear();
 	activeEnemies.clear();
 	boomEnemies.clear();
 	screenMovement = 0;
-	screenExtraPosition = 0;
+	screenExtraPosition = 0 + x;
 	enemyGenerator = 0;
 	count = 0;
 	lastUpgrade1Shot = 0;
@@ -702,7 +733,7 @@ void Scene::restartGame() {
 	
 	initEnemies();
 
-	gameProjection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
+	gameProjection = glm::ortho(0.f, float(SCREEN_WIDTH - 1) + x, float(SCREEN_HEIGHT - 1), 0.f);
 	currentTime = 0.0f;
 }
 
@@ -867,7 +898,7 @@ void Scene::renderGame()
 	texProgram.setUniformMatrix4f("projection", projection);
 	texProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
 
-	if (!player->died()) {
+	//if (!player->died()) {
 
 		//background
 		modelview = glm::mat4(1.0f);
@@ -924,7 +955,7 @@ void Scene::renderGame()
 		//enemies
 		for (Enemy* enemy : activeEnemies) enemy->render();
 		for (Enemy* boomEnemy : boomEnemies) boomEnemy->render();
-	}
+	//}
 
 	if (Game::instance().getKey('m')) {
 		Game::instance().setState(MENU);
@@ -1021,12 +1052,13 @@ void Scene::renderTransition()
 	int max = 160;
 
 	float alpha;
-
+	if (transitionCount == 1) {
+		int a = 0;
+	}
 	if (transitionCount < middle) { //fadeOut
 		GameState previousState = Game::instance().getPreviousState();
 		if (previousState != NONE) Game::instance().renderState(previousState);
 		alpha = float(transitionCount) / float(middle);
-		int a = 0;
 	}
 	else if (transitionCount >= middle && transitionCount < max) { //fadeIn
 		GameState nextState = Game::instance().getNextState();
@@ -1215,10 +1247,6 @@ Merged, mirar que canviar
 	}
 
 	//Player & force
-	if (Game::instance().getKey('a') == PRESS) {
-		int a = 0;
-	}
-
 	glm::ivec2 playerFrontPos, playerBottomPos, playerMidSize;
 	playerMidSize = glm::ivec2(playerSize.x / 2, playerSize.y / 2);
 	playerBottomPos = playerPos;

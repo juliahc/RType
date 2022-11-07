@@ -14,14 +14,13 @@
 enum PlayerAnims { NORMAL, MOVE_UP, MOVE_DOWN };
 
 
-void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
+void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, bool animation)
 {
 	bJumping = false;
 	invulnerable =false;
 	tileMapDispl = tileMapPos;
 	sizePlayer = glm::ivec2(24, 11);
-	initAnimation = true;
-	right = true;
+	initAnimation = right = animation;
 
 	//Ship
 	spritesheet.loadFromFile("images/ship/ships.png", TEXTURE_PIXEL_FORMAT_RGBA);
@@ -90,7 +89,6 @@ void Player::update(int deltaTime, int screenPosX, int forceWidth)
 
 	if (initAnimation) {
 		glm::ivec2 posFire;
-		//player
 		if (right) {
 			if (posPlayer.x + sizePlayer.x + 4 <= 383 + screenPosX) posPlayer += glm::ivec2(4, 0);
 			else {
@@ -222,7 +220,6 @@ void Player::setPosition(const glm::vec2 &pos)
 	posPlayer = pos;
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
 	spriteBoom->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
-
 }
 
 void Player::setTileMap(TileMap* tileMap)
@@ -256,6 +253,10 @@ void Player::setShotCharge(int charge)
 int Player::getShotCharge()
 {
 	return shotCharge;
+}
+
+bool Player::inInitAnimation() {
+	return initAnimation;
 }
 
 bool Player::died() {
