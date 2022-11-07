@@ -67,6 +67,8 @@ void Force::update(int deltaTime, const glm::ivec2& posPlayer, const int screenP
 	sprites[1]->update(deltaTime);
 	sprites[2]->update(deltaTime);
 
+	glm::ivec2 initialPos = posForce;
+
 	if (Game::instance().getKey('f') == PRESS) {
 		active = true;
 		state = ACTIVE;
@@ -130,9 +132,21 @@ void Force::update(int deltaTime, const glm::ivec2& posPlayer, const int screenP
 		else animation++;
 		sprites[type]->changeAnimation(animation);
 	}
-	if (Game::instance().getKey('a')) {
-		int a = 0;
+	
+
+	//check collisions
+	if (map->collisionMoveLeft(posForce, sizeForce)) {
+		posForce.x++;
+		while (map->collisionMoveLeft(posForce, sizeForce))posForce.x++;
 	}
+	else if (map->collisionMoveRight(posForce, sizeForce)) {
+		posForce.x--;
+		while (map->collisionMoveLeft(posForce, sizeForce))posForce.x--;
+	}
+	if (!map->collisionMoveUp(posForce, sizeForce, &posForce.y)) map->collisionMoveDown(posForce, sizeForce, &posForce.y);
+	
+
+
 	sprites[type]->setPosition(glm::vec2(float(tileMapDispl.x + posForce.x), float(tileMapDispl.y + posForce.y)));
 }
 
@@ -169,6 +183,10 @@ bool Force::isActive()
 
 bool Force::isAttached() {
 	return !(attached == NOATTACHED);
+}
+
+bool Force::isAttachedFront() {
+	return attached == FRONT;
 }
 
 void Force::setActive(bool newActive)
@@ -221,13 +239,13 @@ void Force::nextPosition(const int screenPosX)
 	glm::ivec2 posPlayer = lastPlayerPos.front();
 	bool playerLeft = posPlayer.x <= (screenPosX + (SCREEN_WIDTH / 2));
 	bool forceLeft = posForce.x <= (screenPosX + (SCREEN_WIDTH / 2));
-	if (Game::instance().getKey('a') == PRESS) {
-		int a = 0;
-	}
+
 	if (playerLeft) { //Player left
 		if (forceLeft) { //Force left
 			//Anar cap a la dreta
 			posForce.x += vel.x;
+			if (posPlayer.y > posForce.y) posForce.y += vel.y;
+			else if (posPlayer.y < posForce.y) posForce.y -= vel.y;
 		}
 		else { //Force right
 			if (posForce.x == rightLine) { //Force in rightLine
@@ -237,9 +255,13 @@ void Force::nextPosition(const int screenPosX)
 			} 
 			else if (posForce.x > rightLine) { //Force passed the rightLine
 				posForce.x -= vel.x;
+				if (posPlayer.y > posForce.y) posForce.y += vel.y;
+				else if (posPlayer.y < posForce.y) posForce.y -= vel.y;
 			}
 			else { //Force not in leftLine
 				posForce.x += vel.x;
+				if (posPlayer.y > posForce.y) posForce.y += vel.y;
+				else if (posPlayer.y < posForce.y) posForce.y -= vel.y;
 			}
 		}
 	}
@@ -252,14 +274,20 @@ void Force::nextPosition(const int screenPosX)
 			}
 			else if (posForce.x < leftLine) {
 				posForce.x += vel.x;
+				if (posPlayer.y > posForce.y) posForce.y += vel.y;
+				else if (posPlayer.y < posForce.y) posForce.y -= vel.y;
 			}
 			else { //Force not in leftLine
 				posForce.x -= vel.x;
+				if (posPlayer.y > posForce.y) posForce.y += vel.y;
+				else if (posPlayer.y < posForce.y) posForce.y -= vel.y;
 			}
 		}
 		else { //Force right
 			//Anar cap a l'a dreta'esquerra
 			posForce.x -= vel.x;
+			if (posPlayer.y > posForce.y) posForce.y += vel.y;
+			else if (posPlayer.y < posForce.y) posForce.y -= vel.y;
 		}
 	}
 }
@@ -272,6 +300,11 @@ void Force::nextPositionPushed(const int screenPosX)
 		if (space < 6 && space > 0) posForce.x += space;
 		else if (posForce.x < maxX) posForce.x += 6;
 		else state = ACTIVE;
+		if (map->collisionMoveRight(posForce, sizeForce)) {
+			posForce.x--;
+			while (map->collisionMoveRight(posForce, sizeForce)) posForce.x--;
+			state = ACTIVE;
+		}
 	} 
 	else {
 		int minX = screenPosX;
@@ -279,6 +312,11 @@ void Force::nextPositionPushed(const int screenPosX)
 		if (space < 6 && space > 0) posForce.x -= space;
 		else if (posForce.x > minX) posForce.x -= 6;
 		else state = ACTIVE;
+		if (map->collisionMoveRight(posForce, sizeForce)) {
+			posForce.x++;
+			while (map->collisionMoveRight(posForce, sizeForce)) posForce.x++;
+			state = ACTIVE;
+		}
 	}
 }
 
@@ -288,7 +326,7 @@ void Force::addShot(int& nbShots, glm::ivec2& posShot, glm::ivec2* velocities, b
 	posShot.x += sizeForce.x;
 	posShot.y += sizeForce.y / 2;
 
-	if (!attached) {
+	if (attached == NOATTACHED) {
 		if (type == 0) {
 			nbShots = 1;
 		}
@@ -315,7 +353,13 @@ void Force::addShot(int& nbShots, glm::ivec2& posShot, glm::ivec2* velocities, b
 			//upgrade 2 shot
 			nbShots = 6;
 		}
+		if (attached == FRONT)  velocities[0].x = 1;
+		else velocities[0].x = -1;
 	}
 
 	front = attached == FRONT;
+}
+
+int Force::getType() {
+	return type;
 }
