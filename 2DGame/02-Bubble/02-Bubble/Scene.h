@@ -131,7 +131,7 @@ private:
 	int bossfight = -1;
 
 	//Shots
-	std::set<Shot*> playerShots, enemyShots;
+	std::set<Shot*> playerShots, enemyShots, boomShots;
 	int lastUpgrade1Shot = 0, lastUpgrade2Shot = 0;
 
 	//Lifes (hearts)

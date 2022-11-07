@@ -682,6 +682,14 @@ void Scene::updateGameShots(int deltaTime)
 		if (shot->getCategory() != 5 && !inScreen(shot->getPosition(), shot->getSize())) erase.push_back(shot);
 	}
 	for (Shot* shot : erase) enemyShots.erase(shot);
+
+
+	//Check if shots collision with map
+	for (Shot* shot : boomShots) {
+		shot->update(deltaTime, forcePos, forceSize, texProgramGame);
+		if (shot->boomFinished()) erase.push_back(shot);
+	}
+	for (Shot* shot : erase) boomShots.erase(shot);
 }
 
 //Other subupdate functions
@@ -900,64 +908,66 @@ void Scene::renderGame()
 	texProgram.setUniformMatrix4f("projection", projection);
 	texProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
 
-	//if (!player->died()) {
 
-		//background
-		modelview = glm::mat4(1.0f);
-		modelview = glm::translate(modelview, glm::vec3(0.f - screenExtraPosition, 0.f, 0.f));
-		texProgram.setUniformMatrix4f("modelview", modelview);
-		gameBackground->render(gameBackTex);
+	//background
+	modelview = glm::mat4(1.0f);
+	modelview = glm::translate(modelview, glm::vec3(0.f - screenExtraPosition, 0.f, 0.f));
+	texProgram.setUniformMatrix4f("modelview", modelview);
+	gameBackground->render(gameBackTex);
 
-		texProgramGame.use();
-		texProgramGame.setUniformMatrix4f("projection", gameProjection);
-		texProgramGame.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
+	texProgramGame.use();
+	texProgramGame.setUniformMatrix4f("projection", gameProjection);
+	texProgramGame.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
 
-		//map
-		modelview = glm::mat4(1.0f);
-		texProgramGame.setUniformMatrix4f("modelview", modelview);
-		texProgramGame.setUniform2f("texCoordDispl", 0.f, 0.f);
-		map->render();
+	//map
+	modelview = glm::mat4(1.0f);
+	texProgramGame.setUniformMatrix4f("modelview", modelview);
+	texProgramGame.setUniform2f("texCoordDispl", 0.f, 0.f);
+	map->render();
 
-		//hearts
-		modelview = glm::translate(modelview, glm::vec3(2.f + screenExtraPosition, 2.f, 0.f));
+	//hearts
+	modelview = glm::translate(modelview, glm::vec3(2.f + screenExtraPosition, 2.f, 0.f));
+	texProgramGame.setUniformMatrix4f("modelview", modelview);
+	heart->render(heartTex);
+
+	if (lifes >= 2) {
+		modelview = glm::translate(modelview, glm::vec3(15.f, 0.f, 0.f));
 		texProgramGame.setUniformMatrix4f("modelview", modelview);
 		heart->render(heartTex);
+	}
+	if (lifes >= 3) {
+		modelview = glm::translate(modelview, glm::vec3(15.f, 0.f, 0.f));
+		texProgramGame.setUniformMatrix4f("modelview", modelview);
+		heart->render(heartTex);
+	}
 
-		if (lifes >= 2) {
-			modelview = glm::translate(modelview, glm::vec3(15.f, 0.f, 0.f));
+	//upgrade tokens
+	for (int i = 0; i < sizeof(showTokens); i++) {
+		if (showTokens[i]) {
+			modelview = glm::mat4(1.0f);
+			modelview = glm::translate(modelview, tokenPositions[i]);
 			texProgramGame.setUniformMatrix4f("modelview", modelview);
-			heart->render(heartTex);
+			upgradeTokens[i]->render(upgradeTokensTex);
 		}
-		if (lifes >= 3) {
-			modelview = glm::translate(modelview, glm::vec3(15.f, 0.f, 0.f));
-			texProgramGame.setUniformMatrix4f("modelview", modelview);
-			heart->render(heartTex);
-		}
+	}
 
-		//upgrade tokens
-		for (int i = 0; i < sizeof(showTokens); i++) {
-			if (showTokens[i]) {
-				modelview = glm::mat4(1.0f);
-				modelview = glm::translate(modelview, tokenPositions[i]);
-				texProgramGame.setUniformMatrix4f("modelview", modelview);
-				upgradeTokens[i]->render(upgradeTokensTex);
-			}
-		}
+	//player and force
+	player->render();
+	if (force->isActive()) force->render();
 
-		//player and force
-		player->render();
-		if (force->isActive()) force->render();
+	//shots
+	for (Shot* shot : playerShots) {
+		shot->render();
+	}
+	for (Shot* shot : enemyShots) shot->render();
+	for (Shot* shot : boomShots) {
+		shot->render();
+	}
 
-		//shots
-		for (Shot* shot : playerShots) {
-			shot->render();
-		}
-		for (Shot* shot : enemyShots) shot->render();
 
-		//enemies
-		for (Enemy* enemy : activeEnemies) enemy->render();
-		for (Enemy* boomEnemy : boomEnemies) boomEnemy->render();
-	//}
+	//enemies
+	for (Enemy* enemy : activeEnemies) enemy->render();
+	for (Enemy* boomEnemy : boomEnemies) boomEnemy->render();
 
 	if (Game::instance().getKey('m')) {
 		Game::instance().setState(MENU);
@@ -1253,6 +1263,34 @@ Merged, mirar que canviar
 	playerMidSize = glm::ivec2(playerSize.x / 2, playerSize.y / 2);
 	playerBottomPos = playerPos;
 	playerFrontPos = glm::ivec2(playerPos.x + playerMidSize.x - 1, playerPos.y);
+
+	//Shots with map
+	vector<Shot*> boomPlayer;
+	for (Shot* shot : playerShots) {
+		glm::ivec2 shotSize = shot->getSize(), shotPos = shot->getPosition();
+		if (map->collisionMoveLeft(shotPos, shotSize)) boomPlayer.push_back(shot);
+		else if (map->collisionMoveRight(shotPos, shotSize)) boomPlayer.push_back(shot);
+		else if (map->collisionMoveUp(shotPos, shotSize, 0)) boomPlayer.push_back(shot);
+		else if (map->collisionMoveDown(shotPos, shotSize, 0)) boomPlayer.push_back(shot);
+	}
+	for (Shot* shot : boomPlayer) {
+		shot->shotBoom(texProgramGame);
+		boomShots.insert(shot);
+		playerShots.erase(shot);
+	}
+	vector<Shot*> boomEnemies;
+	for (Shot* shot : enemyShots) {
+		glm::ivec2 shotSize = shot->getSize(), shotPos = shot->getPosition();
+		if (map->collisionMoveLeft(shotPos, shotSize)) boomEnemies.push_back(shot);
+		else if (map->collisionMoveRight(shotPos, shotSize)) boomEnemies.push_back(shot);
+		else if (map->collisionMoveUp(shotPos, shotSize, 0)) boomEnemies.push_back(shot);
+		else if (map->collisionMoveDown(shotPos, shotSize, 0)) boomEnemies.push_back(shot);
+	}
+	for (Shot* shot : boomEnemies) {
+		shot->shotBoom(texProgramGame);
+		boomShots.insert(shot);
+		enemyShots.erase(shot);
+	}
 	
 
 	forcePos = force->getPosition();
