@@ -15,6 +15,18 @@ enum BASIC2Anims
 	BASIC2_STAYLEFT, BASIC2_LEFT_UP1, BASIC2_LEFT_UP2, BASIC2_LEFT_UP3, BASIC2_STAYRIGHT, BASIC2_RIGHT_UP1, BASIC2_RIGHT_UP2, BASIC2_RIGHT_UP3, BASIC2_UP
 };
 
+enum BASIC3Anims
+{
+	BASIC3_STAYLEFT, BASIC3_RIGHTFOOT, BASIC3_NEUTRAL, BASIC3_LEFTFOOT, BASIC3_JUMPING, BASIC3_AIR
+};
+
+enum BASIC4Anims
+{
+	BASIC4_UP_LEFT1, BASIC4_UP_LEFT2, BASIC4_UP_LEFT3, BASIC4_UP_LEFT4, BASIC4_UP_LEFT5,
+	BASIC4_UP_RIGHT5, BASIC4_UP_RIGHT4, BASIC4_UP_RIGHT3, BASIC4_UP_RIGHT2, BASIC4_UP_RIGHT1,
+	BASIC4_DOWN_LEFT5, BASIC4_DOWN_LEFT4, BASIC4_DOWN_LEFT3, BASIC4_DOWN_LEFT2, BASIC4_DOWN_LEFT1,
+	BASIC4_DOWN_RIGHT1, BASIC4_DOWN_RIGHT2, BASIC4_DOWN_RIGHT3, BASIC4_DOWN_RIGHT4, BASIC4_DOWN_RIGHT5
+};
 
 void Enemy::init(const glm::ivec2& tileMapPos, Enemies enemy, ShaderProgram& shaderProgram)
 {
@@ -76,8 +88,94 @@ void Enemy::init(const glm::ivec2& tileMapPos, Enemies enemy, ShaderProgram& sha
 			sprite->addKeyframe(BASIC2_UP, glm::vec2(0.8f, 0.f));
 			break;
 		case BASIC3:
+			sprite->setNumberAnimations(6);
+			
+			sprite->setAnimationSpeed(BASIC3_STAYLEFT, 8);
+			sprite->addKeyframe(BASIC3_STAYLEFT, glm::vec2(0.0f, 0.0f));
+			
+			sprite->setAnimationSpeed(BASIC3_RIGHTFOOT, 8);
+			sprite->addKeyframe(BASIC3_RIGHTFOOT, glm::vec2(0.25f, 0.0f));
+			
+			sprite->setAnimationSpeed(BASIC3_NEUTRAL, 8);
+			sprite->addKeyframe(BASIC3_NEUTRAL, glm::vec2(0.5f, 0.0f));
+			
+			sprite->setAnimationSpeed(BASIC3_LEFTFOOT, 8);
+			sprite->addKeyframe(BASIC3_LEFTFOOT, glm::vec2(0.75f, 0.0f));
+
+			sprite->setAnimationSpeed(BASIC3_JUMPING, 8);
+			sprite->addKeyframe(BASIC3_JUMPING, glm::vec2(0.25f, 0.5f));
+
+			sprite->setAnimationSpeed(BASIC3_AIR, 8);
+			sprite->addKeyframe(BASIC3_AIR, glm::vec2(0.0f, 0.5f));
 			break;
 		case BASIC4:
+			sprite->setNumberAnimations(20);
+
+			//LEFT UP
+			sprite->setAnimationSpeed(BASIC4_UP_LEFT1, 8);
+			sprite->addKeyframe(BASIC4_UP_LEFT1, glm::vec2(0.0f, 0.0f));
+
+			sprite->setAnimationSpeed(BASIC4_UP_LEFT2, 8);
+			sprite->addKeyframe(BASIC4_UP_LEFT2, glm::vec2(0.2f, 0.0f));
+
+			sprite->setAnimationSpeed(BASIC4_UP_LEFT3, 8);
+			sprite->addKeyframe(BASIC4_UP_LEFT3, glm::vec2(0.4f, 0.0f));
+
+			sprite->setAnimationSpeed(BASIC4_UP_LEFT4, 8);
+			sprite->addKeyframe(BASIC4_UP_LEFT4, glm::vec2(0.6f, 0.0f));
+
+			sprite->setAnimationSpeed(BASIC4_UP_LEFT5, 8);
+			sprite->addKeyframe(BASIC4_UP_LEFT5, glm::vec2(0.8f, 0.0f));
+
+			//RIGHT UP
+			sprite->setAnimationSpeed(BASIC4_UP_RIGHT5, 8);
+			sprite->addKeyframe(BASIC4_UP_RIGHT5, glm::vec2(0.0f, 0.25f));
+			
+			sprite->setAnimationSpeed(BASIC4_UP_RIGHT4, 8);
+			sprite->addKeyframe(BASIC4_UP_RIGHT4, glm::vec2(0.2f, 0.25f));
+			
+			sprite->setAnimationSpeed(BASIC4_UP_RIGHT3, 8);
+			sprite->addKeyframe(BASIC4_UP_RIGHT3, glm::vec2(0.4f, 0.25f));
+			
+			sprite->setAnimationSpeed(BASIC4_UP_RIGHT2, 8);
+			sprite->addKeyframe(BASIC4_UP_RIGHT2, glm::vec2(0.6f, 0.25f));
+			
+			sprite->setAnimationSpeed(BASIC4_UP_RIGHT1, 8);
+			sprite->addKeyframe(BASIC4_UP_RIGHT1, glm::vec2(0.8f, 0.25f));
+
+			//LEFT DOWN
+			sprite->setAnimationSpeed(BASIC4_DOWN_LEFT5, 8);
+			sprite->addKeyframe(BASIC4_DOWN_LEFT5, glm::vec2(0.0f, 0.5f));
+
+			sprite->setAnimationSpeed(BASIC4_DOWN_LEFT4, 8);
+			sprite->addKeyframe(BASIC4_DOWN_LEFT4, glm::vec2(0.2f, 0.5f));
+
+			sprite->setAnimationSpeed(BASIC4_DOWN_LEFT3, 8);
+			sprite->addKeyframe(BASIC4_DOWN_LEFT3, glm::vec2(0.4f, 0.5f));
+
+			sprite->setAnimationSpeed(BASIC4_DOWN_LEFT2, 8);
+			sprite->addKeyframe(BASIC4_DOWN_LEFT2, glm::vec2(0.6f, 0.5f));
+
+			sprite->setAnimationSpeed(BASIC4_DOWN_LEFT1, 8);
+			sprite->addKeyframe(BASIC4_DOWN_LEFT1, glm::vec2(0.8f, 0.5f));
+
+
+			//RIGHT DOWN
+			sprite->setAnimationSpeed(BASIC4_DOWN_RIGHT1, 8);
+			sprite->addKeyframe(BASIC4_DOWN_RIGHT1, glm::vec2(0.0f, 0.75f));
+
+			sprite->setAnimationSpeed(BASIC4_DOWN_RIGHT2, 8);
+			sprite->addKeyframe(BASIC4_DOWN_RIGHT2, glm::vec2(0.2f, 0.75f));
+
+			sprite->setAnimationSpeed(BASIC4_DOWN_RIGHT3, 8);
+			sprite->addKeyframe(BASIC4_DOWN_RIGHT3, glm::vec2(0.4f, 0.75f));
+
+			sprite->setAnimationSpeed(BASIC4_DOWN_RIGHT4, 8);
+			sprite->addKeyframe(BASIC4_DOWN_RIGHT4, glm::vec2(0.6f, 0.75f));
+
+			sprite->setAnimationSpeed(BASIC4_DOWN_RIGHT5, 8);
+			sprite->addKeyframe(BASIC4_DOWN_RIGHT5, glm::vec2(0.8f, 0.75f));
+
 			break;
 	}
 
@@ -111,8 +209,9 @@ void Enemy::init(const glm::ivec2& tileMapPos, Enemies enemy, ShaderProgram& sha
 	spriteBoom->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
 }
 
-void Enemy::update(int deltaTime)
+void Enemy::update(int deltaTime, glm::ivec2 posPlayer)
 {
+	this->posPlayer = posPlayer;
 	if (!boom) {
 
 		//Incrememnt the frame counter for rotation animations
@@ -121,7 +220,7 @@ void Enemy::update(int deltaTime)
 		switch (myType) {
 		case BASIC1:
 			//Check if the enemy have to attack the player. Probability 2%
-			attacking = attack(2);
+			attacking = attack(5);
 			if (attacking) attackPlayer();
 
 			//Change animation
@@ -135,21 +234,67 @@ void Enemy::update(int deltaTime)
 			if (right) moveEnemyHorizontally(2, true);
 			else moveEnemyHorizontally(2, false);
 			break;
-		case BASIC2:
-			//Check if the enemy have to attack the player. Probability 5%
-			attacking = attack(5);
-			//Attack + animation
-			if (attacking) attackPlayer();
 
+		case BASIC2:
+			if (startWalking) {
+				//restart Walking
+				restartWalking();
+			}
+			else {
+				if (!attacking) {
+					//Check if the enemy have to attack the player. Probability 5%
+					attacking = attack(10);
+				}
+				//Attack + animation
+				if (attacking) attackPlayer();
+				else {
+					//Horizontal movement + Animations
+					if (right) moveEnemyHorizontally(1, true);
+					else moveEnemyHorizontally(1, false);
+				}
+			}
+
+			break;
+
+		case BASIC3:
+			//Check if the enemy is jumping
+			if (startJumping()) {
+				//Check the jump states
+				jumpEnemy();
+				if (stopJumping) {
+					//In case the enemy arrives to ground, stop jumping && change animation
+					sprite->changeAnimation(BASIC3_STAYLEFT);
+					lastRotationAnim = BASIC3_STAYLEFT;
+					bJumping = false;
+					stopJumping = false;
+					timesWithoutJumping = 0;
+				}
+				else {
+					//If the enemy is jumping
+					if (up) moveEnemyVertically(1, true);
+					else moveEnemyVertically(1, false);	
+				}
+			}
+			else {
+				++timesWithoutJumping;
+			}
 			//Horizontal movement + Animations
-			if (!attacking) {
-				if (right) moveEnemyHorizontally(2, true);
-				else moveEnemyHorizontally(2, false);
+			if (bJumping || (!bJumping && !stay)) moveEnemyHorizontally(1, false);
+			else if (stay) {
+				if (stayCounter > 80) {
+					stay = false; 
+					stayCounter = -1;
+				}
+				++stayCounter;
 			}
 			break;
-		case BASIC3:
-			break;
+
 		case BASIC4:
+			//changeAnimation taking into account if the enemy is in the top side
+			changeAnimation();
+			//Check if the enemy have to attack
+			attacking = attack(4);
+			if (attacking) attackPlayer();
 			break;
 		}
 		sprite->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
@@ -186,25 +331,25 @@ void Enemy::moveEnemyHorizontally(int length, bool right) {
 	switch (myType) {
 		case BASIC1:
 			if (right) {
-				posEnemy.x += 2;
+				posEnemy.x += length;
 				if (checkCollisionRight()) {
-					posEnemy.x -= 2;
+					posEnemy.x -= length;
 					this->right = false;
 				}
 			}
 			else {
-				posEnemy.x -= 2;
+				posEnemy.x -= length;
 				if (checkCollisionLeft()) {
-					posEnemy.x += 2;
+					posEnemy.x += length;
 					this->right = true;
 				}
 			}
 			break;
 		case BASIC2:
 			if (right) {
-				posEnemy.x += 1;
+				posEnemy.x += length;
 				if (checkCollisionRight()) {
-					posEnemy.x -= 1;
+					posEnemy.x -= length;
 					this->right = false;
 					sprite->changeAnimation(BASIC2_STAYLEFT);
 					lastRotationAnim = BASIC2_STAYLEFT;
@@ -223,9 +368,9 @@ void Enemy::moveEnemyHorizontally(int length, bool right) {
 				posEnemy.x -= 15;
 			}
 			else {
-				posEnemy.x -= 1;
+				posEnemy.x -= length;
 				if (checkCollisionLeft()) {
-					posEnemy.x += 2;
+					posEnemy.x += length;
 					this->right = true;
 					sprite->changeAnimation(BASIC2_STAYRIGHT);
 					lastRotationAnim = BASIC2_STAYRIGHT;
@@ -243,6 +388,41 @@ void Enemy::moveEnemyHorizontally(int length, bool right) {
 				}
 				posEnemy.x += 15;
 			}
+			break;
+		case BASIC3:
+			//Move the enemy horizontally
+			posEnemy.x -= length;
+			if (checkCollisionLeft()) {
+				posEnemy.x += length;
+			}
+			if (!bJumping) {
+				if (!stay && (rand() % 100) < 5 && (rand() % 100) < 5) {
+					stay = true;
+				}
+				//Change animations
+				if (timeLastRotationAnim > 15) {
+					if (rightFoot) {
+						++lastRotationAnim;
+						if (lastRotationAnim == 4) {
+							lastRotationAnim = 2;
+							rightFoot = false;
+						}
+					}
+					else {
+						--lastRotationAnim;
+						if (lastRotationAnim <= 0) {
+							lastRotationAnim = 2;
+							rightFoot = true;
+						}
+					}
+					sprite->changeAnimation(lastRotationAnim);
+					timeLastRotationAnim = 0;
+				}
+				else {
+					++timeLastRotationAnim;
+				}
+			}
+			break;
 	}
 }
 
@@ -250,32 +430,73 @@ void Enemy::moveEnemyVertically(int length, bool up) {
 	switch (myType) {
 		case BASIC1:
 			if (up) {
-				posEnemy.y -= 1;
+				posEnemy.y -= length;
 				if (checkCollisionUp() || posEnemy.y < 98) {
-					posEnemy.y += 1;
+					posEnemy.y += length;
 					this->up = false;
 				}
 			}
 			else {
-				posEnemy.y += 1;
+				posEnemy.y += length;
 				if (checkCollisionDown() || posEnemy.y > 158) {
-					posEnemy.y -= 1;
+					posEnemy.y -= length;
 					this->up = true;
 				}
 			}
 			break;
+		case BASIC3:
+			if (timesToNextY > 10) {
+				if (up) {
+					posEnemy.y -= length;
+					if (lastRotationAnim != BASIC3_AIR && lastRotationAnim != BASIC3_JUMPING) {
+						lastRotationAnim = BASIC3_JUMPING;
+						sprite->changeAnimation(lastRotationAnim);
+					}
+					else if (lastRotationAnim != BASIC3_AIR && timeLastRotationAnim > 10) {
+						lastRotationAnim = BASIC3_AIR;
+						sprite->changeAnimation(lastRotationAnim);
+						timeLastRotationAnim = 0;
+					}
+				}
+				else {
+					posEnemy.y += length;
+				}
+				timesToNextY = 0;
+			}
+			++timesToNextY;
+			break;
 	}
+}
+
+void Enemy::restartWalking() {
+	if (timeLastRotationAnim > 30) {
+		--lastRotationAnim;
+		if (!right && lastRotationAnim == BASIC2_RIGHT_UP3) {
+			lastRotationAnim = BASIC2_LEFT_UP3;
+		}
+		if (lastRotationAnim == BASIC2_STAYLEFT || lastRotationAnim == BASIC2_STAYRIGHT) startWalking = false;
+		sprite->changeAnimation(lastRotationAnim);
+		actualAttackAnimation = lastRotationAnim;
+		timeLastRotationAnim = 0;
+	}
+	else ++timeLastRotationAnim;
 }
 
 bool Enemy::attack(int probability) {
 	// Random number to decide actions
 	int random_number = rand();
-	if (random_number % 100 < probability % 101 && timesWithoutAttacking > 49) {
-		timesWithoutAttacking = 0;
-		return true;
+	switch (myType) {
+		case BASIC1:
+		case BASIC2:
+		case BASIC4:
+			if ((random_number % 100) < (probability % 101) && (rand() % 100 < (probability * 2) && timesWithoutAttacking > 49)) {
+				timesWithoutAttacking = 0;
+				return true;
+			}
+			timesWithoutAttacking++;
+			return false;
+			break;
 	}
-	timesWithoutAttacking++;
-	return false;
 }
 
 void Enemy::attackPlayer() {
@@ -293,34 +514,33 @@ void Enemy::attackPlayer() {
 				else {
 					sprite->changeAnimation(++lastRotationAnim);
 				}
+				actualAttackAnimation = lastRotationAnim;
+			}
+			else if (lastRotationAnim == BASIC2_UP) {
+				if (timeLastRotationAnim > 30) {
+					shooting = true;
+					timeLastRotationAnim = 0;
+				}
+				else ++timeLastRotationAnim;
+				return;
 			}
 			else {
-				if (timeLastRotationAnim > 40) {
-					if (right) {
-						if (lastRotationAnim < BASIC2_UP) {
-							sprite->changeAnimation(++lastRotationAnim);
-						}
-						else {
-							attacking = false;
-							sprite->changeAnimation(BASIC2_STAYRIGHT);
-							lastRotationAnim = BASIC2_STAYRIGHT;
-						}
+				if (timeLastRotationAnim > 30) {
+					++lastRotationAnim;
+					if (!right && lastRotationAnim == BASIC2_STAYRIGHT) {
+						lastRotationAnim = BASIC2_UP;
 					}
-					else {
-						if (lastRotationAnim < BASIC2_LEFT_UP3) {
-							sprite->changeAnimation(++lastRotationAnim);
-						}
-						else {
-							attacking = false;
-							sprite->changeAnimation(BASIC2_STAYLEFT);
-							lastRotationAnim = BASIC2_STAYLEFT;
-						}
-					}
+					sprite->changeAnimation(lastRotationAnim);
 					timeLastRotationAnim = 0;
+					actualAttackAnimation = lastRotationAnim;
 					break;
 				}
 				else ++timeLastRotationAnim;
 			}
+			break;
+
+		case BASIC4:
+			shooting = true;
 			break;
 	}
 }
@@ -332,6 +552,36 @@ void Enemy::changeAnimation() {
 				if (lastRotationAnim == 5) lastRotationAnim = -1;
 				sprite->changeAnimation(++lastRotationAnim);
 				timeLastRotationAnim = 0;
+			}
+			break;
+
+		case BASIC4:
+			int cannonDirection = (posPlayer.x - posEnemy.x) / 38;
+			if (lookingTop) {
+				//Top
+				if (cannonDirection < 0) {
+					//Left
+					cannonDirection = 4 - min(abs(cannonDirection), 4);
+					sprite->changeAnimation(cannonDirection);
+				}
+				else {
+					//Right
+					cannonDirection = min(abs(cannonDirection), 4);
+					sprite->changeAnimation(5+cannonDirection);
+				}
+			}
+			else {
+				//Bottom
+				if (cannonDirection < 0) {
+					//Left
+					cannonDirection = 4 - min(abs(cannonDirection), 4);
+					sprite->changeAnimation(15 + cannonDirection);
+				}
+				else {
+					//Right
+					cannonDirection = min(abs(cannonDirection), 4);
+					sprite->changeAnimation(10 + cannonDirection);
+				}
 			}
 			break;
 	}
@@ -351,6 +601,7 @@ void Enemy::setTileMap(TileMap* tileMap)
 void Enemy::setPosition(const glm::vec2& pos)
 {
 	posEnemy = pos;
+	if (myType == BASIC4) lookingTop = (posEnemy.y < (256/2)) ? false : true;
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
 }
 
@@ -389,14 +640,56 @@ bool Enemy::isShooting() {
 glm::ivec2 Enemy::getShotSize() {
 	return shotSize[myType];
 }
-glm::ivec2 Enemy::getShotVelocity(glm::ivec2 playerPosition) {
-	int difference = playerPosition.y - posEnemy.y;
-	int yvel = ceil(difference / 20);
-	if (yvel < 0) yvel = max(yvel, -3);
-	else yvel = min(yvel, 3);
-	int xvel = playerPosition.x - posEnemy.x;
-	if (xvel < 1) xvel = -4;
-	else xvel = 4;
+glm::ivec2 Enemy::getShotVelocity() {
+	int xvel, yvel, differenceX, differenceY, threashholdX, threashholdY, denominator;
+	switch (myType) {
+		case BASIC1:
+			threashholdX = 4;
+			threashholdY = 3;
+			denominator = 20;
+
+			differenceY = posPlayer.y - posEnemy.y;
+			yvel = ceil(differenceY / denominator);
+			if (yvel < 0) yvel = max(yvel, -threashholdY);
+			else yvel = min(yvel, threashholdY);
+
+			xvel = posPlayer.x - posEnemy.x;
+			if (xvel < 1) xvel = -threashholdX;
+			else xvel = threashholdX;
+
+			break;
+		case BASIC2:
+			threashholdX = 4;
+			threashholdY = 3;
+			denominator = 20;
+
+			differenceX = posPlayer.x - posEnemy.x;
+			differenceY = posPlayer.y - posEnemy.y;
+			yvel = ceil(differenceY / denominator);
+			xvel = ceil(differenceX / denominator);
+			if (yvel < 0) yvel = max(yvel, -threashholdY);
+			else yvel = min(yvel, threashholdY);
+
+			if (xvel < 0) xvel = max(xvel, -threashholdX);
+			else xvel = min(xvel, threashholdX);
+
+			break;
+
+		case BASIC4:
+			threashholdX = 4;
+			threashholdY = 3;
+			denominator = 20;
+
+			differenceX = posPlayer.x - posEnemy.x;
+			differenceY = posPlayer.y - posEnemy.y;
+			yvel = ceil(differenceY / denominator);
+			xvel = ceil(differenceX / denominator);
+			if (yvel < 0) yvel = max(yvel, -threashholdY);
+			else yvel = min(yvel, threashholdY);
+
+			if (xvel < 0) xvel = max(xvel, -threashholdX);
+			else xvel = min(xvel, threashholdX);
+	}
 	return glm::ivec2(xvel, yvel);
 }
 string Enemy::getShotSprite() {
@@ -405,7 +698,48 @@ string Enemy::getShotSprite() {
 
 void Enemy::enemyAlreadyAttacked() {
 	this->shooting = false;
+	switch (myType) {
+		case BASIC2:
+			attacking = false;
+			startWalking = true;
+			timeLastRotationAnim = 0;
+			break;
+	}
 }
 glm::vec2 Enemy::getShotSizeInSpriteSheet() {
 	return shotSizeInSpriteSheet;
+}
+
+void Enemy::jumpEnemy() {
+	int jump = rand() % 130;
+	jump = max(jump, 80);
+	int finalY = startY - jump;
+	if (up) {
+		posEnemy.y -= 2;
+		if (posEnemy.y > finalY && checkCollisionUp()) {
+			// Enemy is going up, but there's a collision
+			up = false;
+			posEnemy.y -= 2;
+		}
+		else if (posEnemy.y <= finalY) up = false;
+	}
+	else {
+		posEnemy.y += 2;
+		//If there is collision with the ground, stop jumping
+		if (checkCollisionDown()) {
+			stopJumping = true;
+		}
+	}
+}
+
+bool Enemy::startJumping() {
+	if (bJumping) return true;
+	else if ((up == true && timesWithoutJumping > 30) || (timesWithoutJumping > 200)) {
+		bJumping = true;
+		up = true;
+		stopJumping = false;
+		startY = posEnemy.y;
+		return true;
+	}
+	return false;
 }
