@@ -71,7 +71,7 @@ private:
 	int delayFirstAnimation = 0;
 
 	shotTypes newShotType;
-
+	int recivedDmg = 0;
 	int health = 60;
 	bool electricShots = false;
 	bool eggs = false;
@@ -141,8 +141,8 @@ private:
 	*/
 
 	//Spritesheets
-	Texture spritesheet, spritesheetBoom;
-	Sprite *sprite, *spriteBoom;
+	Texture spritesheet, spritesheetBoom, boomBossSpritesheet;
+	Sprite* sprite, * spriteBoom, * bossSpriteDmg;
 
 	//Tilemap
 	TileMap* map;
