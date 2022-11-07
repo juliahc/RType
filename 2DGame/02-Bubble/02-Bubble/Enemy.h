@@ -46,6 +46,8 @@ public:
 	shotTypes getNewShotType();
 	glm::ivec2 getShotPosition();
 	int getShotDamage();
+	glm::ivec2 getCheckboxSizeBoss();
+	glm::ivec2 getCheckboxPosBoss();
 
 private:
 

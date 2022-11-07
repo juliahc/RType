@@ -1125,8 +1125,78 @@ void Scene::checkCollisions()
 	for (Enemy* enemy : activeEnemies) {
 		enemyPos = enemy->getPosition();
 		enemySize = enemy->getSize();
-		if (isCollision(playerPos, playerSize, enemyPos, enemySize)) player->collision();
-		if (isCollision(forcePos, forceSize, enemyPos, enemySize)) eraseByForce.push_back(enemy);
+		if (isCollision(playerPos, playerSize, enemyPos, enemySize)) {
+			if (enemy->getType() == BOSS)
+			{
+				glm::ivec2 bossPosition = enemy->getPosition();
+				vector<glm::ivec2> bossColiders = {
+					glm::ivec2(bossPosition.x + 27, bossPosition.y + 0),
+					glm::ivec2(bossPosition.x + 28, bossPosition.y + 12),
+					glm::ivec2(bossPosition.x + 24, bossPosition.y + 31),
+					glm::ivec2(bossPosition.x + 23, bossPosition.y + 36),
+					glm::ivec2(bossPosition.x + 21, bossPosition.y + 37),
+					glm::ivec2(bossPosition.x + 17, bossPosition.y + 40),
+					glm::ivec2(bossPosition.x + 14, bossPosition.y + 47),
+					glm::ivec2(bossPosition.x + 9, bossPosition.y + 51),
+					glm::ivec2(bossPosition.x + 7, bossPosition.y + 58),
+					glm::ivec2(bossPosition.x + 9, bossPosition.y + 68),
+					glm::ivec2(bossPosition.x + 12, bossPosition.y + 74),
+					glm::ivec2(bossPosition.x + 16, bossPosition.y + 78),
+					glm::ivec2(bossPosition.x + 28, bossPosition.y + 82),
+					glm::ivec2(bossPosition.x + 37, bossPosition.y + 90),
+					glm::ivec2(bossPosition.x + 26, bossPosition.y + 95),
+					glm::ivec2(bossPosition.x + 22, bossPosition.y + 102),
+					glm::ivec2(bossPosition.x + 17, bossPosition.y + 106),
+					glm::ivec2(bossPosition.x + 10, bossPosition.y + 115),
+					glm::ivec2(bossPosition.x + 6, bossPosition.y + 127),
+					glm::ivec2(bossPosition.x + 7, bossPosition.y + 149),
+					glm::ivec2(bossPosition.x + 20, bossPosition.y + 158),
+					glm::ivec2(bossPosition.x + 24, bossPosition.y + 164),
+					glm::ivec2(bossPosition.x + 33, bossPosition.y + 171),
+					glm::ivec2(bossPosition.x + 29, bossPosition.y + 177),
+					glm::ivec2(bossPosition.x + 17, bossPosition.y + 200),
+					glm::ivec2(bossPosition.x + 19, bossPosition.y + 194),
+				};
+				vector<glm::ivec2> bossColidersSizes = { 
+					glm::ivec2(12,12),
+					glm::ivec2(12,20),
+					glm::ivec2(15,5),
+					glm::ivec2(5,5),
+					glm::ivec2(3,4),
+					glm::ivec2(5,7),
+					glm::ivec2(7,5),
+					glm::ivec2(7,7),
+					glm::ivec2(9,10),
+					glm::ivec2(7,6),
+					glm::ivec2(6,4),
+					glm::ivec2(7,6),
+					glm::ivec2(15,8),
+					glm::ivec2(6,7),
+					glm::ivec2(11,8),
+					glm::ivec2(5,5),
+					glm::ivec2(6,9),
+					glm::ivec2(9,12),
+					glm::ivec2(13,22),
+					glm::ivec2(14,9),
+					glm::ivec2(12,6),
+					glm::ivec2(10,7),
+					glm::ivec2(7,6),
+					glm::ivec2(6,18),
+					glm::ivec2(9,7),
+					glm::ivec2(12,6)
+				};
+				for (int i = 0; i < bossColiders.size(); ++i) {
+					if (isCollision(playerPos, playerSize, bossColiders[i], bossColidersSizes[i])) {
+						player->collision();
+						break;
+					}
+				}
+			}
+			else player->collision();
+		}
+		if (isCollision(forcePos, forceSize, enemyPos, enemySize)) {
+			if (enemy->getType() != BOSS )eraseByForce.push_back(enemy);
+		}
 	}
 	for (Enemy* enemy : eraseByForce) {
 		enemy->collision();
@@ -1153,21 +1223,20 @@ void Scene::checkCollisions()
 		for (Shot* shot : playerShots) {
 			shotPos = shot->getPosition();
 			shotSize = shot->getSize();
-/*
-Merged, mirar que canviar
-
-			if (isCollision(enemyPos, enemySize, shotPos, shotSize)) {
+			if (shot->getType() != 1) {
 				bool isDead = true;
+				bool isBoss = false;
 				if (enemy->getType() == BOSS) {
+					isBoss = true;
+					enemySize = enemy->getCheckboxSizeBoss();
+					enemyPos = enemy->getCheckboxPosBoss();
 					isDead = enemy->reduceHP();
 				}
-				if (isDead) {
-					enemyErase.push_back(enemy);
-				}
-				if (shot->getDamage() == 1) shotErase.push_back(shot);
-        */
-			if (shot->getType() != 1) {
 				if (isCollision(enemyPos, enemySize, shotPos, shotSize)) {
+					if (isBoss) isDead = enemy->reduceHP();
+					if (isDead) {
+						enemyErase.push_back(enemy);
+					}
 					enemyErase.push_back(enemy);
 					if (shot->getDamage() == 1) shotErase.push_back(shot);
 				}
