@@ -1158,7 +1158,7 @@ void Scene::checkCollisions()
 		enemyPos = enemy->getPosition();
 		enemySize = enemy->getSize();
 		if (isCollision(playerPos, playerSize, enemyPos, enemySize)) player->collision();
-		if (isCollision(forcePos, forceSize, enemyPos, enemySize)) eraseByForce.push_back(enemy);
+		if (force->isActive() && isCollision(forcePos, forceSize, enemyPos, enemySize)) eraseByForce.push_back(enemy);
 	}
 	for (Enemy* enemy : eraseByForce) {
 		enemy->collision();
