@@ -1236,11 +1236,8 @@ void Scene::checkCollisions()
 			}
 			else player->collision();
 		}
-		if (isCollision(forcePos, forceSize, enemyPos, enemySize)) {
-			if (enemy->getType() != BOSS )eraseByForce.push_back(enemy);
-		}
 		if (isCollision(playerPos, playerSize, enemyPos, enemySize)) player->collision();
-		if (force->isActive() && isCollision(forcePos, forceSize, enemyPos, enemySize)) eraseByForce.push_back(enemy);
+		if (force->isActive() && isCollision(forcePos, forceSize, enemyPos, enemySize)) if (enemy->getType() != BOSS) eraseByForce.push_back(enemy);
 	}
 	for (Enemy* enemy : eraseByForce) {
 		enemy->collision();
