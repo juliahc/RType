@@ -1,5 +1,6 @@
 #include <cmath>
 #include <iostream>
+#include<algorithm>
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include "Player.h"
@@ -83,9 +84,11 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, bo
 		spriteCharge->changeAnimation(0);
 }
 
-void Player::update(int deltaTime, int screenPosX, int forceWidth)
+void Player::update(int deltaTime, int screenPosX, Force* force)
 {
 	count++;
+
+
 
 	if (initAnimation) {
 		glm::ivec2 posFire;
@@ -120,13 +123,8 @@ void Player::update(int deltaTime, int screenPosX, int forceWidth)
 		if ((Game::instance().getSpecialKey(GLUT_KEY_UP) == PRESS) || (Game::instance().getSpecialKey(GLUT_KEY_UP) == REPEAT))
 		{
 			if (sprite->animation() != MOVE_UP) sprite->changeAnimation(MOVE_UP);
-			posPlayer.y -= 2;
-			if (map->collisionMoveUp(posPlayer, sizePlayer, &posPlayer.y))
-			{
-				//posPlayer.y += 2;
-				//sprite->changeAnimation(NORMAL);
-				collision();
-			}
+			if (map->collisionMoveUp(posPlayer, sizePlayer, &posPlayer.y))collision();
+			else posPlayer.y -= 2;
 		}
 		if ((Game::instance().getSpecialKey(GLUT_KEY_DOWN) == PRESS) || (Game::instance().getSpecialKey(GLUT_KEY_DOWN) == REPEAT))
 		{
@@ -167,7 +165,7 @@ void Player::update(int deltaTime, int screenPosX, int forceWidth)
 		//Charge animation
 		if (Game::instance().getKey('s') == REPEAT)
 		{
-			spriteCharge->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x + sizePlayer.x + forceWidth), float(tileMapDispl.y + posPlayer.y)));
+			spriteCharge->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x + sizePlayer.x + force->getWidth()), float(tileMapDispl.y + posPlayer.y)));
 			if (!charging) {
 				charging = true;
 				chargeAnimationChangeTime = 0;

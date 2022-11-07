@@ -5,6 +5,7 @@
 #include "Sprite.h"
 #include "TileMap.h"
 #include "Entity.h"
+#include "Force.h"
 
 
 // Player is basically a Sprite that represents the player. As such it has
@@ -16,7 +17,7 @@ class Player: public Entity
 
 public:
 	void init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, bool animation);
-	void update(int deltaTime, int screenPosX, int forceWidth);
+	void update(int deltaTime, int screenPosX, Force* force);
 	void render();
 	
 	void setTileMap(TileMap *tileMap);

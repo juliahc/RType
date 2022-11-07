@@ -134,7 +134,7 @@ void Scene::initGame()
 	heartTex.loadFromFile("images/heart_13x10.png", TEXTURE_PIXEL_FORMAT_RGBA);
 
 	//Tokens
-	for (int i = 0; i < sizeof(showTokens); i++) showTokens[i] = false; //TODO: set to false
+	for (int i = 0; i < sizeof(showTokens); i++) showTokens[i] = false; 
 	glm::vec2 geomToken[2] = { glm::vec2(0.f, 0.f), glm::vec2(10.f, 10.f) };
 	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(0.5f, 0.5f);
 	upgradeTokens[0] = TexturedQuad::createTexturedQuad(geomToken, texCoords, texProgramGame); //Token force
@@ -441,9 +441,7 @@ void Scene::updateGame(int deltaTime)
 	if (!player->died()) {
 		updateGameBackground(deltaTime);
 		updateGameEnemies(deltaTime);
-		glm::ivec2 p0 = player->getPosition();
 		updateGamePlayer(deltaTime);
-		glm::ivec2 p1 = player->getPosition();
 		updateGameForce(deltaTime);
 		updateGameShots(deltaTime);
 		checkCollisions();
@@ -469,7 +467,7 @@ void Scene::updateGame(int deltaTime)
 		}
 	}
 	else {
-		if (!player->boomFinished()) player->update(deltaTime, screenExtraPosition, force->getWidth()); //Player explosion animation
+		if (!player->boomFinished()) player->update(deltaTime, screenExtraPosition, force); //Player explosion animation
 		else {
 			lifes--;
 			if (lifes > 0) {
@@ -681,7 +679,7 @@ void Scene::updateGamePlayer(int deltaTime)
 	}
 	
 	//Player update
-	player->update(deltaTime, screenExtraPosition, force->getWidth());
+	player->update(deltaTime, screenExtraPosition, force);
 
 }
 
