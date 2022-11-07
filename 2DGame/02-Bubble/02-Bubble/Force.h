@@ -30,10 +30,12 @@ public:
 	int getWidth();
 	bool isActive();
 	bool isAttached();
+	bool isAttachedFront();
 	void setActive(bool newActive);
 	void setAttached(string newAttached);
 	void setType(int newType);
 	void addShot(int& nbShots, glm::ivec2 & posShot, glm::ivec2* velocities, bool& front);
+	int getType();
 
 private:
 

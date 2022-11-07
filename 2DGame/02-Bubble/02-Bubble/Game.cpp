@@ -7,7 +7,10 @@ void Game::init()
 	bPlay = true;
 	previousState = NONE;
 	state = TRANSITION;
-	nextState = MENU;;
+	nextState = MENU;
+	/*previousState = TRANSITION;
+	state = GAME;
+	nextState = NONE;*/
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 	scene.init();
 	for (int key : keysInt) key = 0;
