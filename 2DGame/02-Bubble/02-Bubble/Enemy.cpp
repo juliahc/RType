@@ -201,32 +201,60 @@ void Enemy::init(const glm::ivec2& tileMapPos, Enemies enemy, ShaderProgram& sha
 
 	//Enemy boom
 	spritesheetBoom.loadFromFile("images/enemies/enemyBoom.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	spriteBoom = Sprite::createSprite(glm::ivec2(16, 16), glm::vec2(0.5, 0.5f), &spritesheetBoom, &shaderProgram);
-	spriteBoom->setNumberAnimations(8);
-	spriteBoom->setAnimationSpeed(0, 8);
-	spriteBoom->addKeyframe(0, glm::vec2(0.f, 0.f));
-	spriteBoom->setAnimationSpeed(1, 8);
-	spriteBoom->addKeyframe(1, glm::vec2(0.5f, 0.f));
-	spriteBoom->setAnimationSpeed(2, 8);
-	spriteBoom->addKeyframe(2, glm::vec2(0.f, 0.f));
-	spriteBoom->setAnimationSpeed(3, 8);
-	spriteBoom->addKeyframe(3, glm::vec2(0.5f, 0.f));
-	spriteBoom->setAnimationSpeed(4, 8);
-	spriteBoom->addKeyframe(4, glm::vec2(0.f, 0.5f));
-	spriteBoom->setAnimationSpeed(5, 8);
-	spriteBoom->addKeyframe(5, glm::vec2(0.5f, 0.f));
-	spriteBoom->setAnimationSpeed(6, 8);
-	spriteBoom->addKeyframe(6, glm::vec2(0.0f, 0.f));
-	spriteBoom->setAnimationSpeed(7, 8);
-	spriteBoom->addKeyframe(7, glm::vec2(0.5f, 0.5f));
+	tileMapDispl = tileMapPos;
 
-	
+	if (myType == BOSS) {
+		for (auto bossBP : bossBoomPositions) {
+			Sprite* auxiliar;
+			auxiliar = Sprite::createSprite(glm::ivec2(16, 16), glm::vec2(0.5, 0.5f), &spritesheetBoom, &shaderProgram);
+			auxiliar->setNumberAnimations(8);
+			auxiliar->setAnimationSpeed(0, 8);
+			auxiliar->addKeyframe(0, glm::vec2(0.f, 0.f));
+			auxiliar->setAnimationSpeed(1, 8);
+			auxiliar->addKeyframe(1, glm::vec2(0.5f, 0.f));
+			auxiliar->setAnimationSpeed(2, 8);
+			auxiliar->addKeyframe(2, glm::vec2(0.f, 0.f));
+			auxiliar->setAnimationSpeed(3, 8);
+			auxiliar->addKeyframe(3, glm::vec2(0.5f, 0.f));
+			auxiliar->setAnimationSpeed(4, 8);
+			auxiliar->addKeyframe(4, glm::vec2(0.f, 0.5f));
+			auxiliar->setAnimationSpeed(5, 8);
+			auxiliar->addKeyframe(5, glm::vec2(0.5f, 0.f));
+			auxiliar->setAnimationSpeed(6, 8);
+			auxiliar->addKeyframe(6, glm::vec2(0.0f, 0.f));
+			auxiliar->setAnimationSpeed(7, 8);
+			auxiliar->addKeyframe(7, glm::vec2(0.5f, 0.5f));
+
+			auxiliar->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x + bossBP.x), float(tileMapDispl.y + posEnemy.y + bossBP.y)));
+			boomBossSprites.push_back(auxiliar);
+		}
+	}
+	else {
+		spriteBoom = Sprite::createSprite(glm::ivec2(16, 16), glm::vec2(0.5, 0.5f), &spritesheetBoom, &shaderProgram);
+		spriteBoom->setNumberAnimations(8);
+		spriteBoom->setAnimationSpeed(0, 8);
+		spriteBoom->addKeyframe(0, glm::vec2(0.f, 0.f));
+		spriteBoom->setAnimationSpeed(1, 8);
+		spriteBoom->addKeyframe(1, glm::vec2(0.5f, 0.f));
+		spriteBoom->setAnimationSpeed(2, 8);
+		spriteBoom->addKeyframe(2, glm::vec2(0.f, 0.f));
+		spriteBoom->setAnimationSpeed(3, 8);
+		spriteBoom->addKeyframe(3, glm::vec2(0.5f, 0.f));
+		spriteBoom->setAnimationSpeed(4, 8);
+		spriteBoom->addKeyframe(4, glm::vec2(0.f, 0.5f));
+		spriteBoom->setAnimationSpeed(5, 8);
+		spriteBoom->addKeyframe(5, glm::vec2(0.5f, 0.f));
+		spriteBoom->setAnimationSpeed(6, 8);
+		spriteBoom->addKeyframe(6, glm::vec2(0.0f, 0.f));
+		spriteBoom->setAnimationSpeed(7, 8);
+		spriteBoom->addKeyframe(7, glm::vec2(0.5f, 0.5f));
+		
+		spriteBoom->changeAnimation(0);
+		spriteBoom->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
+	}
 	
 	sprite->changeAnimation(0);
-	spriteBoom->changeAnimation(0);
-	tileMapDispl = tileMapPos;
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
-	spriteBoom->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
 }
 void Enemy::update(int deltaTime, glm::ivec2 posPlayer)
 {
@@ -326,10 +354,23 @@ void Enemy::update(int deltaTime, glm::ivec2 posPlayer)
 		sprite->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
 	}
 	else {
-		spriteBoom->update(deltaTime);
-		if (boomAnimation < 8) {
-			boomAnimation += 1;
-			spriteBoom->changeAnimation(boomAnimation);
+		if (myType != BOSS) {
+			spriteBoom->update(deltaTime);
+			if (boomAnimation < 8) {
+				boomAnimation += 1;
+				spriteBoom->changeAnimation(boomAnimation);
+			}
+		}
+		else {
+			if (extraBoomBossTime > 10) {
+				extraBoomBossTime = 0;
+				if (boomAnimation < 8) boomAnimation += 1;
+				for (auto bS : boomBossSprites) {
+					bS->update(deltaTime);
+					bS->changeAnimation(boomAnimation);
+				}
+			}
+			else extraBoomBossTime += rand() % 3;
 		}
 	}
 	sprite->update(deltaTime);
@@ -717,7 +758,14 @@ void Enemy::attackPlayer() {
 void Enemy::render()
 {
 	if (!boom) sprite->render();
-	else spriteBoom->render();
+	else {
+		if (myType == BOSS) {
+			for (Sprite* bS : boomBossSprites) {
+				bS->render();
+			}
+		}
+		else spriteBoom->render();
+	}
 }
 
 void Enemy::setTileMap(TileMap* tileMap)
@@ -744,7 +792,12 @@ glm::ivec2 Enemy::getSize()
 
 void Enemy::collision()
 {
-	spriteBoom->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
+	if (myType != BOSS) spriteBoom->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
+	else {
+		for (int i = 0; i < boomBossSprites.size(); ++i) {
+			boomBossSprites[i]->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x + bossBoomPositions[i].x), float(tileMapDispl.y + posEnemy.y + bossBoomPositions[i].y)));
+		}
+	}
 	boom = true;
 }
 
@@ -898,8 +951,8 @@ bool Enemy::startJumping() {
 Enemies Enemy::getType() {
 	return myType;
 }
-bool Enemy::reduceHP() {
-	--health;
+bool Enemy::reduceHP(int damage) {
+	health -= damage;
 	if (health <= 0) return true;
 	return false;
 }

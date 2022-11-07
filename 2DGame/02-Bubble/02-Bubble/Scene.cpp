@@ -599,6 +599,9 @@ void Scene::updateGameEnemies(int deltaTime) {
 	vector<Enemy*> enemyErase;
 	for (Enemy* enemy : boomEnemies) {
 		enemy->update(deltaTime, player->getPosition());
+		if (enemy->getType() == BOSS && enemy->boomFinished()) {
+			Game::instance().setState(THEEND);
+		}
 		if (enemy->boomFinished()) enemyErase.push_back(enemy);
 	}
 	for (Enemy* enemy : enemyErase) boomEnemies.erase(enemy);
@@ -1225,10 +1228,9 @@ void Scene::checkCollisions()
 					isBoss = true;
 					enemySize = enemy->getCheckboxSizeBoss();
 					enemyPos = enemy->getCheckboxPosBoss();
-					isDead = enemy->reduceHP();
 				}
 				if (isCollision(enemyPos, enemySize, shotPos, shotSize)) {
-					if (isBoss) isDead = enemy->reduceHP();
+					if (isBoss) isDead = enemy->reduceHP(shot->getDamage());
 					if (isDead) {
 						enemyErase.push_back(enemy);
 						if (enemy->getType() == BASIC3) {
@@ -1246,18 +1248,46 @@ void Scene::checkCollisions()
 							showTokens[forceUpgrade] = true;
 							tokenPositions[forceUpgrade] = glm::vec3(enemy->getPosition(), 0);
 						}
+						enemyErase.push_back(enemy);
 					}
-					enemyErase.push_back(enemy);
 					if (shot->getDamage() == 1) shotErase.push_back(shot);
+					else if (isBoss) shotErase.push_back(shot);
 				}
 			}
 			else {
 				vector<glm::ivec2> positions, sizes;
 				shot->collisionsUpgrade1(positions, sizes);
+				bool isBoss = false;
+				bool isDead = true;
+				if (enemy->getType() == BOSS) {
+					isBoss = true;
+					enemySize = enemy->getCheckboxSizeBoss();
+					enemyPos = enemy->getCheckboxPosBoss();
+				}
 				for (int i = 0; i < positions.size(); i++) {
 					if (isCollision(enemyPos, enemySize, positions[i], sizes[i])) {
-						enemyErase.push_back(enemy);
+						if (isBoss) isDead = enemy->reduceHP(shot->getDamage());
+						if (isDead) {
+							enemyErase.push_back(enemy);
+							if (enemy->getType() == BASIC3) {
+								//Show upgrades
+								int forceUpgrade;
+								if (!force->isActive() && !showTokens[0]) {
+									forceUpgrade = 0;
+								}
+								else if (force->isActive() && force->getType() == 0) {
+									forceUpgrade = 1;
+								}
+								else {
+									forceUpgrade = 2;
+								}
+								showTokens[forceUpgrade] = true;
+								tokenPositions[forceUpgrade] = glm::vec3(enemy->getPosition(), 0);
+							}
+							enemyErase.push_back(enemy);
+						}
 						if (shot->getDamage() == 1) shotErase.push_back(shot);
+						else if (isBoss) shotErase.push_back(shot);
 					}
 				}
 			}
