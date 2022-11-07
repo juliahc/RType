@@ -179,7 +179,11 @@ void Enemy::init(const glm::ivec2& tileMapPos, Enemies enemy, ShaderProgram& sha
 
 			break;
 		case BOSS:
+			boomBossSpritesheet.loadFromFile("images/enemies/boss/bossWhite.png", TEXTURE_PIXEL_FORMAT_RGBA);
+			bossSpriteDmg = Sprite::createSprite(enemySizes[enemy], spriteSheetSize[enemy], &boomBossSpritesheet, &shaderProgram);
+
 			sprite->setNumberAnimations(5);
+			bossSpriteDmg->setNumberAnimations(5);
 			//BASIC, EGG1, EGG2, EGG3, ANGRY
 			
 			sprite->setAnimationSpeed(BASIC, 8);
@@ -196,6 +200,24 @@ void Enemy::init(const glm::ivec2& tileMapPos, Enemies enemy, ShaderProgram& sha
 
 			sprite->setAnimationSpeed(ANGRY, 8);
 			sprite->addKeyframe(ANGRY, glm::vec2(0.8f, 0.0f));
+
+
+			bossSpriteDmg->setAnimationSpeed(BASIC, 8);
+			bossSpriteDmg->addKeyframe(BASIC, glm::vec2(0.0f, 0.0f));
+
+			bossSpriteDmg->setAnimationSpeed(EGG1, 8);
+			bossSpriteDmg->addKeyframe(EGG1, glm::vec2(0.2f, 0.0f));
+
+			bossSpriteDmg->setAnimationSpeed(EGG2, 8);
+			bossSpriteDmg->addKeyframe(EGG2, glm::vec2(0.4f, 0.0f));
+
+			bossSpriteDmg->setAnimationSpeed(EGG3, 8);
+			bossSpriteDmg->addKeyframe(EGG3, glm::vec2(0.6f, 0.0f));
+
+			bossSpriteDmg->setAnimationSpeed(ANGRY, 8);
+			bossSpriteDmg->addKeyframe(ANGRY, glm::vec2(0.8f, 0.0f));
+			bossSpriteDmg->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
+			bossSpriteDmg->changeAnimation(0);
 			break;
 	}
 
@@ -349,6 +371,7 @@ void Enemy::update(int deltaTime, glm::ivec2 posPlayer)
 			//Change the animation of the boss
 			changeAnimation();
 			if (attack(0)) attackPlayer();
+			bossSpriteDmg->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
 			break;
 		}
 		sprite->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
@@ -373,6 +396,7 @@ void Enemy::update(int deltaTime, glm::ivec2 posPlayer)
 			else extraBoomBossTime += rand() % 3;
 		}
 	}
+	if (myType == BOSS) bossSpriteDmg->update(deltaTime);
 	sprite->update(deltaTime);
 }
 
@@ -604,6 +628,7 @@ void Enemy::changeAnimation() {
 						restartSprite = false;
 					}
 					sprite->changeAnimation(lastRotationAnim);
+					bossSpriteDmg->changeAnimation(lastRotationAnim);
 					timeLastRotationAnim = 0;
 				}
 			}
@@ -620,6 +645,7 @@ void Enemy::changeAnimation() {
 							beam = true;
 						}
 						sprite->changeAnimation(lastRotationAnim);
+						bossSpriteDmg->changeAnimation(lastRotationAnim);
 						timeLastRotationAnim = 0;
 					}
 					//timeLastRotationAnim++;
@@ -757,7 +783,15 @@ void Enemy::attackPlayer() {
 
 void Enemy::render()
 {
-	if (!boom) sprite->render();
+	if (!boom) {
+		if (myType == BOSS && recivedDmg) {
+			recivedDmg--;
+			bossSpriteDmg->render();
+		}
+		else {
+			sprite->render();
+		}
+	}
 	else {
 		if (myType == BOSS) {
 			for (Sprite* bS : boomBossSprites) {
@@ -777,6 +811,7 @@ void Enemy::setPosition(const glm::vec2& pos)
 {
 	posEnemy = pos;
 	if (myType == BASIC4) lookingTop = (posEnemy.y < (256/2)) ? false : true;
+	if (myType == BOSS) bossSpriteDmg->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
 }
 
@@ -953,6 +988,7 @@ Enemies Enemy::getType() {
 }
 bool Enemy::reduceHP(int damage) {
 	health -= damage;
+	recivedDmg = 5;
 	if (health <= 0) return true;
 	return false;
 }
