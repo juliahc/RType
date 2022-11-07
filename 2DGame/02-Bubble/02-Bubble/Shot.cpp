@@ -80,7 +80,7 @@ void Shot::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram, cons
 			sprite->changeAnimation(0);
 			state = 0;
 			break;
-			
+
 		case 6:
 			//Beam shot
 			beam = true;
@@ -465,6 +465,7 @@ void Shot::update(int deltaTime, glm::ivec2 forcePos, glm::ivec2 forceSize, Shad
 	}
 	//Boos updates
 	else if (bossShot) {
+		//Electric shots
 		if (category == 3 || category == 4) {
 			++pause;
 			if (category == 4) {
@@ -507,7 +508,6 @@ void Shot::update(int deltaTime, glm::ivec2 forcePos, glm::ivec2 forceSize, Shad
 		if (category == 5 && posShot == finalEggPosition) {
 			horizontalMovement = true;
 		}
-
 	}
 	else {
 		posShot.x += velocity.x;

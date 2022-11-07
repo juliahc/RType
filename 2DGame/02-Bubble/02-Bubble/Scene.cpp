@@ -99,6 +99,9 @@ void Scene::initGame()
 	count = 0;
 	
 	//background
+	auxBackground1 = Quad::createQuad(0.f, 0.f, 480 * 8, 4 * 8, simpleProgram);
+	auxBackground2 = Quad::createQuad(0.f, 30*8, 480*8, 32*8, simpleProgram);
+
 	glm::vec2 texCoords[2];
 	glm::vec2 geomBack[2] = { glm::vec2(0.f, 0.f), glm::vec2(3840.f, 256.f) };
 	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f);
@@ -282,6 +285,7 @@ void Scene::initShaders()
 
 void Scene::initEnemies() {
 	vector<pair<Enemies, glm::ivec2>> enemyPositions = { 
+		{make_pair(BASIC2, glm::ivec2 {55 * 8, 25 * 8 + 4})},
 		{make_pair(BASIC1, glm::ivec2 {480, 140})},
 		{make_pair(BASIC1, glm::ivec2 {488, 140})},
 		{make_pair(BASIC1, glm::ivec2 {496, 140})},
@@ -292,9 +296,10 @@ void Scene::initEnemies() {
 
 		{make_pair(BASIC2, glm::ivec2 {77 * 8, 25 * 8 + 4})},
 		{make_pair(BASIC2, glm::ivec2 {87 * 8, 25*8 + 4})},
-		{make_pair(BASIC1, glm::ivec2 {96*8 + 2, 140})},
-		{make_pair(BASIC1, glm::ivec2 {96*8 + 10, 140})},
-		{make_pair(BASIC1, glm::ivec2 {96*8 + 18, 140})},
+		{make_pair(BASIC1, glm::ivec2 {96 * 8 + 2, 140})},
+		{make_pair(BASIC1, glm::ivec2 {96 * 8 + 10, 140})},
+		{make_pair(BASIC1, glm::ivec2 {96 * 8 + 18, 140})},
+		{make_pair(BASIC1, glm::ivec2 {96 * 8 + 26, 140})},
 
 
 		{make_pair(BASIC3, glm::ivec2 {117 * 8, 8 * 24})},
@@ -314,6 +319,7 @@ void Scene::initEnemies() {
 		{make_pair(BASIC1, glm::ivec2 {150 * 8 + 8, 140})},
 		{make_pair(BASIC1, glm::ivec2 {150 * 8 + 16, 140})},
 		{make_pair(BASIC1, glm::ivec2 {150 * 8 + 24, 140})},
+		{make_pair(BASIC2, glm::ivec2 {154 * 8, 25 * 8 + 4})},
 
 
 		{make_pair(BASIC2, glm::ivec2 {173 * 8, 25 * 8 + 4})},
@@ -357,6 +363,8 @@ void Scene::initEnemies() {
 		{make_pair(BASIC1, glm::ivec2 {282 * 8 + 16, 140})},
 		{make_pair(BASIC1, glm::ivec2 {282 * 8 + 24, 140})},
 		{make_pair(BASIC1, glm::ivec2 {282 * 8 + 32, 140})},
+
+		{make_pair(BASIC3, glm::ivec2 {287 * 8, 8 * 24})},
 
 		{make_pair(BASIC4, glm::ivec2 {273 * 8 + 1, 5 * 8})},
 		{make_pair(BASIC4, glm::ivec2 {273 * 8 + 2, 8 * 27})},
@@ -947,6 +955,15 @@ void Scene::renderGame()
 {
 	glm::mat4 modelview;
 
+	simpleProgram.use();
+	simpleProgram.setUniformMatrix4f("projection", projection);
+	simpleProgram.setUniform4f("color", 15.f/255.f, 176.f/255.f, 162.f/255.f, 1);
+
+	modelview = glm::mat4(1.0f);
+	simpleProgram.setUniformMatrix4f("modelview", modelview);
+	auxBackground1->render();
+	auxBackground2->render();
+
 	texProgram.use();
 	texProgram.setUniformMatrix4f("projection", projection);
 	texProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
@@ -1140,7 +1157,7 @@ void Scene::renderTransition()
 
 	modelview = glm::mat4(1.0f);
 	simpleProgram.setUniformMatrix4f("modelview", modelview);
-	quad->render();
+	quad->render();	
 }
 
 void Scene::renderGameover()
@@ -1443,11 +1460,13 @@ void Scene::checkCollisions()
 	}
 	vector<Shot*> boomEnemies;
 	for (Shot* shot : enemyShots) {
-		glm::ivec2 shotSize = shot->getSize(), shotPos = shot->getPosition();
-		if (map->collisionMoveLeft(shotPos, shotSize)) boomEnemies.push_back(shot);
-		else if (map->collisionMoveRight(shotPos, shotSize)) boomEnemies.push_back(shot);
-		else if (map->collisionMoveUp(shotPos, shotSize, 0)) boomEnemies.push_back(shot);
-		else if (map->collisionMoveDown(shotPos, shotSize, 0)) boomEnemies.push_back(shot);
+		if (shot->getCategory() != 5) {
+			glm::ivec2 shotSize = shot->getSize(), shotPos = shot->getPosition();
+			if (map->collisionMoveLeft(shotPos, shotSize)) boomEnemies.push_back(shot);
+			else if (map->collisionMoveRight(shotPos, shotSize)) boomEnemies.push_back(shot);
+			else if (map->collisionMoveUp(shotPos, shotSize, 0)) boomEnemies.push_back(shot);
+			else if (map->collisionMoveDown(shotPos, shotSize, 0)) boomEnemies.push_back(shot);
+		}
 	}
 	for (Shot* shot : boomEnemies) {
 		shot->shotBoom(texProgramGame);
@@ -1486,7 +1505,7 @@ bool Scene::isCollision(const glm::ivec2& pos1, const glm::ivec2& size1, const g
 
 void Scene::createEggs(Enemy* boss) {
 	glm::ivec2 bossPosition = boss->getPosition();
-	vector<glm::ivec2> eggPositions = { 
+	vector<glm::ivec2> eggPositions = {
 		glm::ivec2(bossPosition.x - 30, bossPosition.y + 2),
 		glm::ivec2(bossPosition.x - 60, bossPosition.y + 4),
 		glm::ivec2(bossPosition.x - 90, bossPosition.y + 6),
@@ -1502,7 +1521,7 @@ void Scene::createEggs(Enemy* boss) {
 		glm::ivec2(bossPosition.x - 30, bossPosition.y + 178),
 		glm::ivec2(bossPosition.x, bossPosition.y + 180),
 	};
- 	for (int i = 0; i < 14; ++i) {
+	for (int i = 0; i < 14; ++i) {
 		int yheight = ((eggPositions[i]).y > 135) ? 1 : 0;
 		addShot(boss->getShotSprite(), boss->getShotVelocity(), eggPositions[i], boss->getShotSize(), boss->getShotSizeInSpriteSheet(), boss->getShotDamage(), false, (3 + boss->getNewShotType()), yheight);
 	}

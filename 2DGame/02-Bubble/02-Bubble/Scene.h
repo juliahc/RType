@@ -161,6 +161,8 @@ private:
 	Quad* quad;
 	int transitionCount = 0;
 
+	/* BAR COLOR */
+	Quad *auxBackground1,*auxBackground2;
 
 	/* GAMEOVER ATTRIBUTES */
 	
