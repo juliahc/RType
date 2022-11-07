@@ -14,7 +14,7 @@ enum Enemies {
 };
 
 enum shotTypes {
-	ELECTRIC, EGG, BEAM
+	ELECTRIC1, ELECTRIC2, EGG, BEAM
 };
 
 class Entity

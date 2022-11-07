@@ -75,7 +75,7 @@ private:
 	void restartGame();
 	void addPlayerShot();
 	void addForceShot();
-	void addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2& pos, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage, bool fromPlayer, int upgrade);
+	void addShot(string& spriteFolder, const glm::ivec2& velocity, glm::ivec2& pos, const glm::ivec2& size, const glm::vec2& sizeInSpriteSheet, const int& damage, bool fromPlayer, int upgrade, int type);
 
 	//Collisions
 	void checkCollisions();
@@ -119,6 +119,10 @@ private:
 	std::map<int, Enemy> enemies;
 	set<Enemy*> activeEnemies;
 	set<Enemy*> boomEnemies;
+
+	void createEggs(Enemy*);
+
+	int bossfight = -1;
 
 	//Shots
 	std::set<Shot*> playerShots, enemyShots;
