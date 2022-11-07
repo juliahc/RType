@@ -155,6 +155,9 @@ private:
 	TexturedQuad* gameOver;
 	Texture gameOverTex;
 	int gameOverCount = 0;
+
+	/* BREAKPOINTS */
+	vector<int> breakpoints = { 0, 74 * 8, 141 * 8, 187 * 8, 239 * 8, 298 * 8, 55*8};
 };
 
 

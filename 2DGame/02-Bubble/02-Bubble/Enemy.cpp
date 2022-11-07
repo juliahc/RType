@@ -255,8 +255,8 @@ void Enemy::update(int deltaTime, glm::ivec2 posPlayer)
 			else moveEnemyVertically(1, false);
 
 			//Horizontal movement
-			if (right) moveEnemyHorizontally(2, true);
-			else moveEnemyHorizontally(2, false);
+			if (right) moveEnemyHorizontally(1, true);
+			else moveEnemyHorizontally(1, false);
 			break;
 
 		case BASIC2:
@@ -424,11 +424,12 @@ void Enemy::moveEnemyHorizontally(int length, bool right) {
 			posEnemy.x -= length;
 			if (checkCollisionLeft()) {
 				posEnemy.x += length;
+				bJumping = true;
 			}
 			if (!bJumping) {
-				if (!stay && (rand() % 100) < 5 && (rand() % 100) < 5) {
+				if (checkCollisionDown() && !stay && (rand() % 100) < 5 && (rand() % 100) < 5) {
 					stay = true;
-				}
+				}if (!checkCollisionDown()) ++posEnemy.y;
 				//Change animations
 				if (timeLastRotationAnim > 15) {
 					if (rightFoot) {
@@ -475,25 +476,27 @@ void Enemy::moveEnemyVertically(int length, bool up) {
 			}
 			break;
 		case BASIC3:
-			if (timesToNextY > 10) {
-				if (up) {
-					posEnemy.y -= length;
-					if (lastRotationAnim != BASIC3_AIR && lastRotationAnim != BASIC3_JUMPING) {
-						lastRotationAnim = BASIC3_JUMPING;
-						sprite->changeAnimation(lastRotationAnim);
+			if (bJumping) {
+				if (timesToNextY > 10) {
+					if (up) {
+						posEnemy.y -= length;
+						if (lastRotationAnim != BASIC3_AIR && lastRotationAnim != BASIC3_JUMPING) {
+							lastRotationAnim = BASIC3_JUMPING;
+							sprite->changeAnimation(lastRotationAnim);
+						}
+						else if (lastRotationAnim != BASIC3_AIR && timeLastRotationAnim > 10) {
+							lastRotationAnim = BASIC3_AIR;
+							sprite->changeAnimation(lastRotationAnim);
+							timeLastRotationAnim = 0;
+						}
 					}
-					else if (lastRotationAnim != BASIC3_AIR && timeLastRotationAnim > 10) {
-						lastRotationAnim = BASIC3_AIR;
-						sprite->changeAnimation(lastRotationAnim);
-						timeLastRotationAnim = 0;
+					else {
+						posEnemy.y += length;
 					}
+					timesToNextY = 0;
 				}
-				else {
-					posEnemy.y += length;
-				}
-				timesToNextY = 0;
+				++timesToNextY;
 			}
-			++timesToNextY;
 			break;
 	}
 }
@@ -597,7 +600,7 @@ void Enemy::attackPlayer() {
 						timeLastRotationAnim = true;
 					}
 				}
-				else if (beamShots < 35) {
+				else if (beamShots < 1) {
 					newShotType = BEAM;
 					shooting = true;
 					beamShots++;
@@ -642,7 +645,7 @@ void Enemy::changeAnimation() {
 	int cannonDirection;
 	switch (myType) {
 		case BASIC1:
-			if (lastRotationAnim <= 5 && timeLastRotationAnim > 5) {
+			if (lastRotationAnim <= 5 && timeLastRotationAnim > 3) {
 				if (lastRotationAnim == 5) lastRotationAnim = -1;
 				sprite->changeAnimation(++lastRotationAnim);
 				timeLastRotationAnim = 0;
@@ -868,7 +871,7 @@ void Enemy::jumpEnemy() {
 		if (posEnemy.y > finalY && checkCollisionUp()) {
 			// Enemy is going up, but there's a collision
 			up = false;
-			posEnemy.y -= 2;
+			posEnemy.y += 2;
 		}
 		else if (posEnemy.y <= finalY) up = false;
 	}
@@ -876,6 +879,7 @@ void Enemy::jumpEnemy() {
 		posEnemy.y += 2;
 		//If there is collision with the ground, stop jumping
 		if (checkCollisionDown()) {
+			posEnemy.y -= 1;
 			stopJumping = true;
 		}
 	}

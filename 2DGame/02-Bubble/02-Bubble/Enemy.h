@@ -54,7 +54,7 @@ private:
 	*/
 	int delayFirstAnimation = 0;
 
-	shotTypes newShotType = EGG;
+	shotTypes newShotType;
 
 	int health = 10;
 	bool electricShots = false;
@@ -95,7 +95,7 @@ private:
 	glm::ivec2 posPlayer;
 	bool attacking = false;
 
-	bool shooting = true;
+	bool shooting = false;
 	vector<glm::ivec2> shotSize = { glm::ivec2(6, 6), glm::ivec2(6, 6), glm::ivec2(1,1), glm::ivec2(6,6) };
 	glm::ivec2 shotvelocity = glm::ivec2(-4, 0);
 	vector<string> spriteShot = { "images/enemies/basic1/shot.png", "images/enemies/basic1/shot.png", "", "images/enemies/basic1/shot.png" };

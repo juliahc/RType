@@ -51,7 +51,7 @@ void Scene::init()
 	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
 	gameProjection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
 
-	
+	bossfight = -1;
 	currentTime = 0.0f;
 }
 
@@ -258,14 +258,103 @@ void Scene::initShaders()
 
 void Scene::initEnemies() {
 	vector<pair<Enemies, glm::ivec2>> enemyPositions = { 
-		{make_pair(BOSS, glm::ivec2 {385/*8 * 388*/, 8 * 4})},
-		/*{make_pair(BASIC1, glm::ivec2 {402, 150})},
-		{make_pair(BASIC2, glm::ivec2 {403, 220})},
+		{make_pair(BASIC1, glm::ivec2 {480, 140})},
+		{make_pair(BASIC1, glm::ivec2 {488, 140})},
+		{make_pair(BASIC1, glm::ivec2 {496, 140})},
+		{make_pair(BASIC1, glm::ivec2 {504, 140})},
+		{make_pair(BASIC1, glm::ivec2 {512, 140})},
+		{make_pair(BASIC1, glm::ivec2 {520, 140})},
+
+
+		{make_pair(BASIC2, glm::ivec2 {77 * 8, 25 * 8 + 4})},
+		{make_pair(BASIC2, glm::ivec2 {87 * 8, 25*8 + 4})},
+		{make_pair(BASIC1, glm::ivec2 {96*8 + 2, 140})},
+		{make_pair(BASIC1, glm::ivec2 {96*8 + 10, 140})},
+		{make_pair(BASIC1, glm::ivec2 {96*8 + 18, 140})},
+
+
+		{make_pair(BASIC3, glm::ivec2 {117 * 8, 8 * 24})},
+
+
+		{make_pair(BASIC4, glm::ivec2 {124 * 8, 8 * 24})},
+		{make_pair(BASIC4, glm::ivec2 {124*8 + 1, 8 * 8})},
+
+		{make_pair(BASIC4, glm::ivec2 {130 * 8, 8 * 24})},
+		{make_pair(BASIC4, glm::ivec2 {130 * 8 + 1, 8 * 8})},
+
+		{make_pair(BASIC4, glm::ivec2 {137 * 8 -2, 8 * 24})},
+		{make_pair(BASIC4, glm::ivec2 {137 * 8 -3, 8 * 8})},
+
+
+		{make_pair(BASIC1, glm::ivec2 {150 * 8, 140})},
+		{make_pair(BASIC1, glm::ivec2 {150 * 8 + 8, 140})},
+		{make_pair(BASIC1, glm::ivec2 {150 * 8 + 16, 140})},
+		{make_pair(BASIC1, glm::ivec2 {150 * 8 + 24, 140})},
+
+
+		{make_pair(BASIC2, glm::ivec2 {173 * 8, 25 * 8 + 4})},
+		{make_pair(BASIC1, glm::ivec2 {182 * 8, 140})},
+		{make_pair(BASIC1, glm::ivec2 {182 * 8 + 8, 140})},
+		{make_pair(BASIC1, glm::ivec2 {182 * 8 + 16, 140})},
+
+
+		{make_pair(BASIC3, glm::ivec2 {208 * 8, 8 * 24})},
+		{make_pair(BASIC1, glm::ivec2 {210 * 8, 140})},
+		{make_pair(BASIC1, glm::ivec2 {210 * 8 + 8, 140})},
+		{make_pair(BASIC1, glm::ivec2 {210 * 8 + 16, 140})},
+
+		
+		{make_pair(BASIC4, glm::ivec2 {224 * 8, 8 * 23})},
+		{make_pair(BASIC4, glm::ivec2 {224 * 8 - 1, 8 * 9})},
+
+		{make_pair(BASIC4, glm::ivec2 {228 * 8, 8 * 23})},
+		{make_pair(BASIC4, glm::ivec2 {228 * 8 - 1, 8 * 9})},
+
+		{make_pair(BASIC4, glm::ivec2 {232 * 8, 8 * 23})},
+		{make_pair(BASIC4, glm::ivec2 {232 * 8 - 1, 8 * 9})},
+
+		{make_pair(BASIC4, glm::ivec2 {236 * 8, 8 * 23})},
+		{make_pair(BASIC4, glm::ivec2 {236 * 8 - 1, 8 * 9})},
+
+		{make_pair(BASIC4, glm::ivec2 {240 * 8, 8 * 23})},
+		{make_pair(BASIC4, glm::ivec2 {240 * 8 - 1, 8 * 9})},
+
+
+		{make_pair(BASIC2, glm::ivec2 {271 * 8, 25 * 8 + 4})},
+
+		{make_pair(BASIC1, glm::ivec2 {273 * 8, 140})},
+		{make_pair(BASIC1, glm::ivec2 {273 * 8 + 8, 140})},
+		{make_pair(BASIC1, glm::ivec2 {273 * 8 + 16, 140})},
+		{make_pair(BASIC1, glm::ivec2 {273 * 8 + 24, 140})},
+		{make_pair(BASIC1, glm::ivec2 {273 * 8 + 32, 140})},
+
+		{make_pair(BASIC1, glm::ivec2 {282 * 8, 140})},
+		{make_pair(BASIC1, glm::ivec2 {282 * 8 + 8, 140})},
+		{make_pair(BASIC1, glm::ivec2 {282 * 8 + 16, 140})},
+		{make_pair(BASIC1, glm::ivec2 {282 * 8 + 24, 140})},
+		{make_pair(BASIC1, glm::ivec2 {282 * 8 + 32, 140})},
+
+		{make_pair(BASIC4, glm::ivec2 {273 * 8 + 1, 5 * 8})},
+		{make_pair(BASIC4, glm::ivec2 {273 * 8 + 2, 8 * 27})},
+
+		{make_pair(BASIC4, glm::ivec2 {281 * 8 + 1, 5 * 8})},
+		{make_pair(BASIC4, glm::ivec2 {281 * 8 + 2, 8 * 27})},
+
+		{make_pair(BASIC4, glm::ivec2 {295 * 8, 5 * 8})},
+		{make_pair(BASIC4, glm::ivec2 {295 * 8 + 1, 8 * 27})},
+
+		{make_pair(BASIC4, glm::ivec2 {299 * 8, 5 * 8})},
+		{make_pair(BASIC4, glm::ivec2 {299 * 8 + 1, 8 * 27})},
+
+
+		{make_pair(BOSS, glm::ivec2 {8 * 348, 8 * 4 + 1})},
+
+
+		/*{make_pair(BASIC2, glm::ivec2 {403, 220})},
 		{make_pair(BASIC1, glm::ivec2 {408, 150})},
 		{make_pair(BASIC1, glm::ivec2 {413, 150})},
 		{make_pair(BASIC1, glm::ivec2 {418, 150})},
 		{make_pair(BASIC3, glm::ivec2 {404, 8 * 27})},
-		{make_pair(BASIC4, glm::ivec2 {420, 8 * 27})},
 		{make_pair(BASIC4, glm::ivec2 {436, 8 * 27})},
 		{make_pair(BASIC4, glm::ivec2 {452, 8 * 27})},
 		{make_pair(BASIC4, glm::ivec2 {468, 8 * 5})},
@@ -323,7 +412,7 @@ void Scene::updateGame(int deltaTime)
 	count++;
 	currentTime += deltaTime;
 
-	if (bossfight != 0) --bossfight;
+	if (bossfight > 0) --bossfight;
 
 	if (!player->died()) {
 		updateGameBackground(deltaTime);
@@ -337,6 +426,19 @@ void Scene::updateGame(int deltaTime)
 			player->collision();
 		}
 		if (Game::instance().getKey('m') == PRESS) Game::instance().setState(MENU);
+		for (int i = '1'; i <= '7'; ++i) {
+			if (Game::instance().getKey(i) == PRESS) {
+				// spawnEnemies(i);
+				if (i == '6' && bossfight == 0) {
+					player->setPosition(glm::vec2(330 * 8, player->getPosition().y));
+					screenExtraPosition = 330 * 8;
+				} else{
+					if (bossfight == 0) bossfight = -1;
+					player->setPosition(glm::vec2(breakpoints[(i - '0') - 1], player->getPosition().y));
+					screenExtraPosition = breakpoints[(i - '0') - 1];
+				}
+			}
+		}
 	}
 	else {
 		if (!player->boomFinished()) player->update(deltaTime, screenExtraPosition, force->getWidth()); //Player explosion animation
@@ -523,7 +625,7 @@ void Scene::createEnemies() {
 	auto it = enemies.find(acutalPosition);
 	if (it != enemies.end()) {
 		activeEnemies.insert(&it->second);
-		if (it->second.getType() == BOSS) bossfight = 280;
+		if (it->second.getType() == BOSS) bossfight = 340;
 	}
 }
 
