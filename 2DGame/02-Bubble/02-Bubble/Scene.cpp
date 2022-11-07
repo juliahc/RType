@@ -626,7 +626,9 @@ void Scene::updateGameEnemies(int deltaTime) {
 void Scene::updateGamePlayer(int deltaTime)
 {
 	//If "s" released, add shot with damage > 1
-	if (Game::instance().getKey('s') == PRESS || (Game::instance().getKey('s') == RELEASE && player->getShotCharge() > 1)) addPlayerShot();
+	if (Game::instance().getKey('s') == PRESS || (Game::instance().getKey('s') == RELEASE && player->getShotCharge() > 1)) {
+		if (!player->inInitAnimation()) addPlayerShot();
+	}
 	
 	//Player update
 	player->update(deltaTime, screenExtraPosition, force->getWidth());
