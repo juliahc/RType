@@ -9,8 +9,8 @@
 #define SCREEN_X 0
 #define SCREEN_Y 0
 
-#define INIT_PLAYER_X_TILES 4
-#define INIT_PLAYER_Y_TILES 4
+#define INIT_PLAYER_X_TILES -3
+#define INIT_PLAYER_Y_TILES 16
 
 #define INIT_BASIC_ENEMY_X_TILES 15
 #define INIT_BASIC_ENEMY_Y_TILES 24
@@ -258,7 +258,7 @@ void Scene::initShaders()
 
 void Scene::initEnemies() {
 	vector<pair<Enemies, glm::ivec2>> enemyPositions = { 
-		{make_pair(BOSS, glm::ivec2 {385/*8 * 388*/, 8 * 4})},
+		{make_pair(BOSS, glm::ivec2 {8 * 388, 8 * 4})},
 		/*{make_pair(BASIC1, glm::ivec2 {402, 150})},
 		{make_pair(BASIC2, glm::ivec2 {403, 220})},
 		{make_pair(BASIC1, glm::ivec2 {408, 150})},
