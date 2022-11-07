@@ -136,6 +136,14 @@ void Scene::initGame()
 	heart = TexturedQuad::createTexturedQuad(geomHeart, texCoords, texProgramGame);
 	heartTex.loadFromFile("images/heart_13x10.png", TEXTURE_PIXEL_FORMAT_RGBA);
 
+	//locks
+	glm::vec2 geomLock[2] = { glm::vec2(0.f, 0.f), glm::vec2(8.f, 13.f) };
+	texCoords[0] = glm::vec2(0.f, 0.f); texCoords[1] = glm::vec2(0.5f, 1.f);
+	closedLock = TexturedQuad::createTexturedQuad(geomLock, texCoords, texProgramGame);
+	texCoords[0] = glm::vec2(0.5f, 0.f); texCoords[1] = glm::vec2(1.f, 1.f);
+	openLock = TexturedQuad::createTexturedQuad(geomLock, texCoords, texProgramGame);
+	lockTex.loadFromFile("images/lock.png", TEXTURE_PIXEL_FORMAT_RGBA);
+
 	//Tokens
 	for (int i = 0; i < sizeof(showTokens); i++) showTokens[i] = false; 
 	glm::vec2 geomToken[2] = { glm::vec2(0.f, 0.f), glm::vec2(10.f, 10.f) };
@@ -459,18 +467,10 @@ void Scene::updateGame(int deltaTime)
 		}
 		if (Game::instance().getKey('m') == PRESS) Game::instance().setState(MENU);
 		for (int i = '1'; i <= '6'; ++i) {
-			if (Game::instance().getKey(i) == PRESS) {
+			if (!player->inInitAnimation() && Game::instance().getKey(i) == PRESS) {
 				// spawnEnemies(i);
 				player->setPosition(glm::vec2(breakpoints[(i - '0') - 1], player->getPosition().y));
 				screenExtraPosition = breakpoints[(i - '0') - 1];
-				/*
-				if (i == '6' && bossfight == 0) {
-					player->setPosition(glm::vec2(330 * 8, player->getPosition().y));
-					screenExtraPosition = 330 * 8;
-				} else{
-					if (bossfight == 0) bossfight = -1;
-				}
-				*/
 			}
 		}
 	}
@@ -996,7 +996,7 @@ void Scene::renderGame()
 	map->render();
 
 	//hearts
-	modelview = glm::translate(modelview, glm::vec3(2.f + screenExtraPosition, 2.f, 0.f));
+	modelview = glm::translate(modelview, glm::vec3(171.f + screenExtraPosition, 11.f, 0.f));
 	texProgramGame.setUniformMatrix4f("modelview", modelview);
 	heart->render(heartTex);
 
@@ -1010,6 +1010,13 @@ void Scene::renderGame()
 		texProgramGame.setUniformMatrix4f("modelview", modelview);
 		heart->render(heartTex);
 	}
+
+	//lock
+	modelview = glm::mat4(1.0f);
+	modelview = glm::translate(modelview, glm::vec3(10.f + screenExtraPosition, 12.f, 0.f));
+	texProgramGame.setUniformMatrix4f("modelview", modelview);
+	if (player->isInvulnerable()) closedLock->render(lockTex);
+	else openLock->render(lockTex);
 
 	//upgrade tokens
 	for (int i = 0; i < sizeof(showTokens); i++) {

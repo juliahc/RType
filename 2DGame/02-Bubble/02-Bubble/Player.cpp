@@ -265,3 +265,8 @@ bool Player::boomFinished()
 {
 	return boomFinish;
 }
+
+bool Player::isInvulnerable()
+{
+	return invulnerable;
+}

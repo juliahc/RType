@@ -110,8 +110,8 @@ private:
 	float currentTime;
 	TileMap *map;
 	glm::mat4 gameProjection;
-	TexturedQuad *gameBackground, *heart, *upgradeTokens[3];
-	Texture gameBackTex, heartTex, upgradeTokensTex;
+	TexturedQuad *gameBackground, *heart, *openLock, *closedLock, *upgradeTokens[3];
+	Texture gameBackTex, heartTex, lockTex, upgradeTokensTex;
 
 	//Background
 	int screenMovement = 0;

@@ -32,6 +32,7 @@ public:
 	bool inInitAnimation();
 	bool died();
 	bool boomFinished();
+	bool isInvulnerable();
 
 private:
 	int count, initAnimationId;
