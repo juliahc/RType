@@ -1,0 +1,114 @@
+R-TYPE
+
+-------- NOMS --------
+
+Júlia Herrera Caba
+Iván Jimeno Ramírez
+
+--- FUNCIONALITATS ---
+
+En base a les funcionalitats demanades a l'entrega:
+
+1) PART BÀSICA 
+
+ JOC: El Joc consta de 4 pantalles: menú principal, jugar, instruccions, crèdits.
+
+ NIVELL :Consisteix en un únic nivell en el que la nau comença en l'espai i més endavant s'introdueix dins d'una nau. Per acabar, la nau surt de la base i torna a l'exterior, on s'enfrenta amb el boss final.
+
+ NAU
+	 Té dos tipus de dispars:
+		- Dispar simple: el menys poderós. La seva càrrega finalitza quan col·lisiona amb un enemic i el destrueix.
+		- Dispar carregat: si es manté la tecla "S" s'aconsegueix que el següent dispar sigui més poderós. La seva càrrega i força dependrà de l'estona que s'hagi mantingut la tecla. En aquest cas, si destrueix a algún enemic no desapareix, els travessa i segueix atacant a la resta.
+	 Pot adquirir el dispositiu Force quan recull el token del force quan destrueix a un dels enemics (o prement la tecla "F").
+
+ FORCE
+	 Es pot situar enganxat davant o darrere de la nau movent-se amb ella. També pot anar desenganxat de la nau, movent-se de forma semblant a la nau però en el costat oposat de la pantalla.
+	 Quan el force està enganxat a la nau, fa que aquesta sigui invulnerable. Quan no, el force dispara trets simples a l'hora que ho fa el jugador.
+	 Quan el force toca a un enemic el destrueix.
+
+ MILLORES DEL FORCE
+  El force pot adquirir dues millores diferents:
+	 Millora 1: Quan el force està enganxat a la nau dispara rajos en diagonal i horitzontals. La direcció de els x depén de la posició d'on es troba enganxat el force a la nau. Quan està desenganxat, dispara rajos simples per les dues diagonals.
+	 Millora 2: Quan el fotxe està enganxat a la nau, dispara rajos circulars de forma horitzontal. La direcció de les x també depén d'on es troba enganxat el force a la nau. Quan està desenganxat, dispara rajos simples per les dues diagonals.
+
+
+ TIPUS D'ENEMICS
+  El joc disposa de quatre tipus d'enemics anomenats: BASIC1, BASIC2, BASIC3, BASIC4 i BOSS.
+
+	  BASIC1: Enemic volador que fa moviments verticals. De tant en tant dispara apuntant a l'enemic. Es caracteritza per la animació giratòria.
+	  BASIC2: Enemic terrestre amb moviments horitzontals. Es caracteritza per haver de fer una animació prèviament a disparar.
+	  BASIC3: Enemic terrestre que realitza moviments horitzontals i verticals. Es caracteritza per no atacar, saltar, i dropejar amb l'item "force".
+	  BASIC4: Enemic estàtic que no realitza cap moviments per cap dels eixos. Es caracteritza per apuntar constantment al jugador, solen aparéixer en grup.
+	  BOSS:   Enemic estàtic que disposa de vida extre i atacs especials. Té inmunitat a la majoria del seu cos, però té un punt vulnerable.
+
+ TECLES ESPECIALS:
+	 Invulnerabilitat: La nau es torna involnerable (tecla 'g').
+	 Force: Apareix el dispositiu force (tecla 'f').
+	 Checkpoints: Salten a una posició determinada del mapa (tecles '1', '2', '3', '4', '5', '6').
+
+
+2) POLISH
+
+ SO:
+	El joc disposa de música de fons.
+
+ EFECTES ESPECIALS I ANIMACIONS:
+	 Carregar tir: Quan es manté la tecla de disparar, apareix una animació.
+	 Impacte tirs: Tant els tirs del jugador com els dels enemics tenen una animació quan impacta amb el terreny de joc.
+	 Mort enemics: Els enemics bàsics tenen una animació de mort.
+	 Transicions entre pantalles: Apareix un cartell amb un missatge explicatiu (p.e: Ready?).
+	 Boss final: Diposa d'un atac amb animació. A més a més, quan rep un impacte canvia el seu sprite per simular-lo. Al morir també apareix una animació de mort.
+	 Animació de la nau al moure's a les direccions verticals.
+	 Animació d'entrada del dispositiu force, a més de canviar d'sprite quan rep una millora.
+	 Enemics bàsics amb animacions de moviment / al disparar.
+	 Animació d'entrada de la nau al inici de la partida.
+
+ CAPA DE BACKGROUND:
+	 Estrelles amb dues velocitats quan la nau es troba a l'exterior.
+
+---- INSTRUCCIONS ----
+
+Un cop iniciat el joc, apareix el menú principal. Aquest disposa de 3 navegabilitats:
+	- Start playing
+	- Instructions
+	- Credits
+Tal com s'indica a la part inferior esquerra de la pantalla del menú, per tal de navegar entre les diferents opcions s'han d'utilitzar les fletxes del teclat (up, bottom, right, left), i prémer enter a l'opció desitjada.
+
+Veiem doncs el contingut de cada apartat:
+
+- Start Playing:
+
+La part superior de la pantalla té un espai extra per tal de poder visualitzar amb claredat les vides de la nau (inicialment són 3).
+
+En primer lloc, apareix l'animació d'entrada de la nau. 
+
+Per poder moure la nau s'usen les fletxes de direccionament (up, bottom, right, left).
+
+Per disparar bales s'utilitza la tecla 's'. Es pot mantenir polsada per tal de generar una bala que infligeix més mal i pugui travessar els enemics.
+
+Al llarg del nivell apareixen diversos enemics. Entre ells un és extremadament important, ja que al matar-lo apareix un ítem que et permet obtenir el dispositiu "force" (o en cas de ja disposar-ne d'un, una millora del "force").
+
+En cas que la nau sigui impactada per una bala enemiga o bé col·lisioni amb obstacles o fora del mapa es redueix una vida al jugador i la nau apareix al checkpoint més proper. En cas de perdre totes les vides s'ha de començar el joc des del principi, sense disposar dels checkpoints anteriors.
+
+
+En cas de voler afegir el dispositiu "force" automàticament i sense necessitat de matar cap enemic, s'ha de prémer la tecla 'f'.
+
+També es pot tornar la nau invulnerable mitjançant la tecla 'g'.
+
+Per avançar el nivell de forma més ràpida, es disposen dels checkpoints, configurats a les tecles '1', '2', '3', '4', '5' i '6'. En prémer un d'aquests botons, la nau apareix directament a una nova posició, sense generar els enemics d'aquella zona (per disposar de temps de reacció).
+
+En cas d'arribar a la part final del nivell, apareix el boss final. Aquest no mor d'una bala com els altres enemics. A més a més, només li pot baixar la vida quan es dispara exactament a un dels seus punts dèbils (quan rep mal, el boss comença una animació de parpelleig representant-ho).
+
+Quan es mata a l'enemic final apareix l'animació de victòria i es torna al menú principal.
+
+- Instructions:
+
+Pantalla que conté totes les instruccions necessàries per saber com jugar al joc.
+
+Es pot tornar al menú principal prement la tela 'enter'.
+
+- Credits
+
+Pantalla que conté els crèdits del joc.
+
+Es pot tornar al menú principal prement la tecla 'enter'.
